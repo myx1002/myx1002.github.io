@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://myx1002.github.io</id>
-    <title>Gridea</title>
-    <updated>2021-02-23T08:59:41.300Z</updated>
+    <title>鸡毛蒜皮事(●&apos;◡&apos;●)</title>
+    <updated>2021-02-23T09:34:28.472Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://myx1002.github.io"/>
     <link rel="self" href="https://myx1002.github.io/atom.xml"/>
-    <subtitle>温故而知新</subtitle>
+    <subtitle>打工人！打工魂！我爱打工！</subtitle>
     <logo>https://myx1002.github.io/images/avatar.png</logo>
     <icon>https://myx1002.github.io/favicon.ico</icon>
-    <rights>All rights reserved 2021, Gridea</rights>
+    <rights>All rights reserved 2021, 鸡毛蒜皮事(●&apos;◡&apos;●)</rights>
     <entry>
         <title type="html"><![CDATA[测试]]></title>
         <id>https://myx1002.github.io/post/ce-shi/</id>
