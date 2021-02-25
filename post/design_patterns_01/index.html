@@ -4,7 +4,7 @@
 <meta name="description" content="" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<title>Hello Gridea | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+<title>硬啃设计模式(一)：单例模式 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
 
 <link rel="shortcut icon" href="https://myx1002.github.io/favicon.ico?v=1614242459937">
 
@@ -202,45 +202,130 @@
         <div class="post-detail gt-bg-theme-color-second">
             <article class="gt-post-content">
                 <h2 class="post-title">
-                    Hello Gridea
+                    硬啃设计模式(一)：单例模式
                 </h2>
                 <div class="post-info">
                     <time class="post-time gt-c-content-color-first">
-                        · 2018-12-12 ·
+                        · 2021-02-24 ·
                     </time>
                     
-                        <a href="https://myx1002.github.io/tag/BnCmi8XrV/" class="post-tags">
-                            # Gridea
+                        <a href="https://myx1002.github.io/tag/qo6XPqkl5/" class="post-tags">
+                            # php
+                        </a>
+                    
+                        <a href="https://myx1002.github.io/tag/jmxx7i2hw/" class="post-tags">
+                            # 面试知识点
                         </a>
                     
                 </div>
                 <div class="post-content">
-                    <p>👏  欢迎使用 <strong>Gridea</strong> ！<br>
-✍️  <strong>Gridea</strong> 一个静态博客写作客户端。你可以用它来记录你的生活、心情、知识、笔记、创意... ...</p>
+                    <p>👏 今天开始就正式开始重新学习<strong>设计模式</strong>啦！！<br>
+💯 也算是为了跳槽而开始复习吧，由于之前的博客内容不小心清空了😤，所以一切从<strong>0</strong>开始吧</p>
 <!-- more -->
-<p><a href="https://github.com/getgridea/gridea">Github</a><br>
-<a href="https://gridea.dev/">Gridea 主页</a><br>
-<a href="http://fehey.com/">示例网站</a></p>
-<h2 id="特性">特性👇</h2>
-<p>📝  你可以使用最酷的 <strong>Markdown</strong> 语法，进行快速创作</p>
-<p>🌉  你可以给文章配上精美的封面图和在文章任意位置插入图片</p>
-<p>🏷️  你可以对文章进行标签分组</p>
-<p>📋  你可以自定义菜单，甚至可以创建外部链接菜单</p>
-<p>💻  你可以在 <strong>Windows</strong>，<strong>MacOS</strong> 或 <strong>Linux</strong> 设备上使用此客户端</p>
-<p>🌎  你可以使用 <strong>𝖦𝗂𝗍𝗁𝗎𝖻 𝖯𝖺𝗀𝖾𝗌</strong> 或 <strong>Coding Pages</strong> 向世界展示，未来将支持更多平台</p>
-<p>💬  你可以进行简单的配置，接入 <a href="https://github.com/gitalk/gitalk">Gitalk</a> 或 <a href="https://github.com/SukkaW/DisqusJS">DisqusJS</a> 评论系统</p>
-<p>🇬🇧  你可以使用<strong>中文简体</strong>或<strong>英语</strong></p>
-<p>🌁  你可以任意使用应用内默认主题或任意第三方主题，强大的主题自定义能力</p>
-<p>🖥  你可以自定义源文件夹，利用 OneDrive、百度网盘、iCloud、Dropbox 等进行多设备同步</p>
-<p>🌱 当然 <strong>Gridea</strong> 还很年轻，有很多不足，但请相信，它会不停向前 🏃</p>
-<p>未来，它一定会成为你离不开的伙伴</p>
-<p>尽情发挥你的才华吧！</p>
-<p>😘 Enjoy~</p>
+<figure data-type="image" tabindex="1"><img src="https://myx1002.github.io/post-images/1614179400072.jfif" alt="不行！我拒绝" width="200" height="200" loading="lazy"></figure>
+<p>好吧，别调皮了，我们继续学习吧。</p>
+<h2 id="概念">概念👇👇</h2>
+<pre><code>单例模式，是创建型模式中的一种。
+
+整个应用中某个类只有一个对象实例的设计模式， 注意！是只有！一个对象实例✔️
+
+具体来说，作为对象的创建方式，单例模式确保某一个类只有一个实例，而且自行实例化并向整个系统全局的提供这个实例。
+
+它不会创建实例副本，而是会向单例类内部存储的实例返回一个引用。
+</code></pre>
+<h2 id="特点">特点👇👇</h2>
+<pre><code>单例模式的主要特点是“三私一公”
+
+-  需要一个私有静态成员变量来保存类的唯一实例；
+-  构造函数必须声明为私有的，防止外部程序new一个对象从而失去单例的意义；
+-  克隆函数必须声明为私有的，防止对象被克隆；
+-  需要一个公共静态方法(通常命名为getInstance)来返回唯一实例的引用。
+</code></pre>
+<h2 id="使用场景">使用场景👇👇</h2>
+<pre><code>如果每次操作数据库都要重新实例化，对程序和数据来说也增大了系统和内存的消耗。
+
+而单例模式返回的唯一实例引用，可大大减少new操作的次数，
+
+从而减少初始化连接数据库操作，可避免‘too many connections’的情况。
+</code></pre>
+<h2 id="代码示例">代码示例👇👇</h2>
+<pre><code class="language-php">class Singleton
+{
+    /**
+     * 私有静态成员变量，保存类的唯一实例
+     * @var
+     */
+    private static $_instance = null;
+
+    private $pdo;
+
+    /**
+     * 构造函数私有，防止外部实例化
+     * Singleton constructor.
+     */
+    private function __construct()
+    {
+        try {
+            echo '开始链接数据库......'. PHP_EOL;
+            $this-&gt;pdo = new PDO('mysql:host=localhost;dbname=larabbs;port=3306;', 'root', '');
+        }catch (PDOException $exception) {
+            trigger_error('数据库连接失败'.$exception-&gt;getMessage(), E_USER_ERROR);
+        }
+    }
+
+    /**
+     * 克隆函数私有，方式外部克隆对象
+     */
+    private function __clone()
+    {
+        trigger_error('禁止clone', E_USER_ERROR);
+    }
+
+    /**
+     * 访问实例的公共静态方法
+     * @return Singleton|null
+     */
+    public static function getInstance()
+    {
+        if (is_null(self::$_instance)){
+            echo '正在实例化' . PHP_EOL;
+            self::$_instance = new self();
+        }
+        return self::$_instance;
+    }
+
+    /**
+     * 查询数据
+     */
+    public function fetchUser()
+    {
+        $result = $this-&gt;pdo-&gt;query(&quot;SELECT id,name,email from users LIMIT 1&quot;);
+        print_r($result-&gt;fetchAll(PDO::FETCH_ASSOC));
+    }
+}
+
+echo '第一次获取实例化对象' . PHP_EOL;
+$instance1 = Singleton::getInstance();
+echo 'instance1实例化完毕' . PHP_EOL;
+echo '---------------------------------' . PHP_EOL;
+echo '第二次获取实例化对象' . PHP_EOL;
+$instance2 = Singleton::getInstance();
+echo 'instance2实例化完毕，无需重新实例化，直接获取第一次实例化的对象即可' . PHP_EOL;
+
+$instance1-&gt;fetchUser();
+</code></pre>
 
                 </div>
             </article>
         </div>
 
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="https://myx1002.github.io/post/hello-gridea/" class="post-title gt-a-link">
+                    Hello Gridea
+                </a>
+            </div>
         
 
         

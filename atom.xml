@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://myx1002.github.io</id>
     <title>鸡毛蒜皮事(●&apos;◡&apos;●)</title>
-    <updated>2021-02-24T14:11:30.629Z</updated>
+    <updated>2021-02-25T08:41:05.628Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://myx1002.github.io"/>
     <link rel="self" href="https://myx1002.github.io/atom.xml"/>
@@ -10,6 +10,19 @@
     <logo>https://myx1002.github.io/images/avatar.png</logo>
     <icon>https://myx1002.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, 鸡毛蒜皮事(●&apos;◡&apos;●)</rights>
+    <entry>
+        <title type="html"><![CDATA[硬啃设计模式(一)：单例模式]]></title>
+        <id>https://myx1002.github.io/post/design_patterns_01/</id>
+        <link href="https://myx1002.github.io/post/design_patterns_01/">
+        </link>
+        <updated>2021-02-24T14:59:57.000Z</updated>
+        <summary type="html"><![CDATA[<p>👏 今天开始就正式开始重新学习<strong>设计模式</strong>啦！！<br>
+💯 也算是为了跳槽而开始复习吧，由于之前的博客内容不小心清空了😤，所以一切从<strong>0</strong>开始吧</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>👏 今天开始就正式开始重新学习<strong>设计模式</strong>啦！！<br>
+💯 也算是为了跳槽而开始复习吧，由于之前的博客内容不小心清空了😤，所以一切从<strong>0</strong>开始吧</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Hello Gridea]]></title>
         <id>https://myx1002.github.io/post/hello-gridea/</id>
