@@ -1,0 +1,544 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>硬啃设计模式(二)：工厂模式之简单工厂模式 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="https://myx1002.github.io/favicon.ico?v=1614697911130">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://myx1002.github.io/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1614697911130"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    硬啃设计模式(二)：工厂模式之简单工厂模式
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2021-02-25 ·
+                    </time>
+                    
+                        <a href="https://myx1002.github.io/tag/qo6XPqkl5/" class="post-tags">
+                            # php
+                        </a>
+                    
+                        <a href="https://myx1002.github.io/tag/jmxx7i2hw/" class="post-tags">
+                            # 面试知识点
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>👏 噢！我又来了，接下来第二章我们开始学习另外一个创建型模式-工厂模式，而其又分为三种</p>
+<p>这三种工厂模式在接下来的三章中我们一一讲解，免得放在一章里面太长了，顺便分开写还可以水多几篇😈</p>
+<!-- more -->
+<pre><code>☝️  简单工厂模式（本章内容）
+    1️⃣ 普通简单工厂模式
+    2️⃣ 多方法简单工厂模式
+    3️⃣ 静态方法简单工厂模式
+
+✌️  工厂方法模式（可退化为简单工厂模式）
+
+👌 抽象工厂模式
+</code></pre>
+<p>好滴👏👏那就让我们开始进入<code>简单工厂模式</code>的学习吧！<br>
+<img src="https://myx1002.github.io/post-images/1614694797368.jpg" alt="" width="200" height="200" loading="lazy"></p>
+<!-- more -->
+<h2 id="概念">概念👇👇</h2>
+<pre><code>    简单工厂模式属于“创建型模式”，通过专门定义一个工厂类来负责创建其他类的实例，
+被创建的实例通常具有相同的父类
+
+    如下面的例子()：
+    `Restaurant.php`中`HamburgerRestaurant`(汉堡包餐厅)和`PizzaRestaurant`(披萨餐厅)都实现了`Restaurant`类，
+而且都`SimpleRestaurantFactory`(工厂类)来实例化它们。
+</code></pre>
+<!-- more -->
+<h2 id="具体分类">具体分类👇👇</h2>
+<pre><code>1️⃣工厂（Factory）角色：简单工厂模式的核心，它负责实现创建所有实例的内部逻辑。工厂类方法可被外部调用，用于创建对应的产品对象
+
+2️⃣抽象（Product）角色：所有对象的父类，它负责描述所有实现类需要实现的功能方法
+
+3️⃣具体产品（ConcreteProduct）角色：具体实例对象
+</code></pre>
+<!-- more -->
+<h2 id="优缺点">优缺点👇👇</h2>
+<pre><code>优点✔️
+用户使用时，可以直接根据自己所需传入对应的类型参数来创建所需实例，
+而无需了解这些是如何创建的、如何组织的。有利于整个软件体系结构的优化。
+
+缺点❌
+简单工厂模式的缺点也体现在工厂类(Factory)上，由于工厂类集中了所有实例的创建逻辑，
+每次增加新的实例对象时，都修要修改工厂类，使得该类职责过重，
+而且不符合开闭原则(不属于23中设计模式)，因此在“高内聚”和“扩展性”上面不是很好。
+</code></pre>
+<!-- more -->
+<h2 id="普通简单工厂代码实例"><code>普通简单工厂</code>代码实例👇👇</h2>
+<p>Restaurant.php<br>
+定义了👮抽象角色（Restaurant）和👮‍♀产品角色（HamburgerRestaurant、PizzaRestaurant）</p>
+<pre><code class="language-php">&lt;?php
+
+/**
+ * 抽象角色，所有对象的父类
+ * 它负责描述所有实现类需要实现的功能方法
+ * Interface Restaurant
+ */
+interface Restaurant
+{
+    /** 下单 **/
+    public function placeOrder();
+
+    /** 备餐 **/
+    public function mealPreparation();
+
+    /** 上菜 **/
+    public function dishServe();
+}
+
+/**
+ * 具体实例对象：汉堡包餐厅
+ * Class HamburgerRestaurant
+ */
+class HamburgerRestaurant implements Restaurant
+{
+
+    /** 下单 **/
+    public function placeOrder()
+    {
+        echo '欢迎光临，你点了一份`板烧鸡腿堡`套餐，请拿好票在右边候餐' . PHP_EOL;
+    }
+
+    /** 备餐 **/
+    public function mealPreparation()
+    {
+        echo '不好意思，你是78号，这是18号，你的已经在做了，在稍等一下' . PHP_EOL;
+    }
+
+    /** 上菜 **/
+    public function dishServe()
+    {
+        echo '78号！78号！板烧鸡腿堡套餐好了，请来取餐' . PHP_EOL;
+    }
+}
+
+/**
+ * 具体实例对象：披萨餐厅
+ * Class PizzaRestaurant
+ */
+class PizzaRestaurant implements Restaurant
+{
+
+    /** 下单 **/
+    public function placeOrder()
+    {
+        echo '欢迎光临，你点了一份`日式照烧鳗鱼披萨`，请稍等......' . PHP_EOL;
+    }
+
+    /** 备餐 **/
+    public function mealPreparation()
+    {
+        echo '别催啦，很快就好了，披萨是这么久的，想快的话过去隔壁吃汉堡包吧！' . PHP_EOL;
+    }
+
+    /** 上菜 **/
+    public function dishServe()
+    {
+        echo '来啦来啦，B250座的披萨，久等了，快吃吧！' . PHP_EOL;
+    }
+}
+</code></pre>
+<!-- more -->
+<p>SimpleRestaurantFactory.php<br>
+定义了简单餐厅工厂，以及获取产品实例化对象的方法</p>
+<pre><code class="language-php">&lt;?php
+
+include_once &quot;./Restaurant.php&quot;;
+
+/**
+ * 简单餐厅工厂
+ * Class SimpleRestaurantFactory
+ */
+class SimpleRestaurantFactory
+{
+    public function getRestaurant(string $type)
+    {
+        switch ($type) {
+            case 'hamburger':
+                echo '你走进了汉堡包店' . PHP_EOL;
+                return new HamburgerRestaurant();
+            case 'pizza':
+                echo '你走进了披萨店' . PHP_EOL;
+                return new PizzaRestaurant();
+            default:
+                echo '请选择正确的餐厅' . PHP_EOL;
+                return false;
+        }
+    }
+}
+
+
+$restaurant = new SimpleRestaurantFactory();
+
+// pizza餐厅
+$pizzaRestaurant = $restaurant-&gt;getRestaurant('pizza');  // 获取实例
+$pizzaRestaurant-&gt;placeOrder();  // 下单
+$pizzaRestaurant-&gt;mealPreparation();  // 备餐
+$pizzaRestaurant-&gt;dishServe();  // 上菜
+
+echo '感觉有点吃不饱要咋整......' . PHP_EOL;
+
+// hamburger餐厅
+$hamburgerRestaurant = $restaurant-&gt;getRestaurant('hamburger');
+$hamburgerRestaurant-&gt;placeOrder();
+$hamburgerRestaurant-&gt;mealPreparation();
+$hamburgerRestaurant-&gt;dishServe();
+
+echo '溜了溜了，撑死了......' . PHP_EOL;
+</code></pre>
+<!-- more -->
+<figure data-type="image" tabindex="1"><img src="https://myx1002.github.io/post-images/1614696998801.PNG" alt="" loading="lazy"></figure>
+<!-- more -->
+<h2 id="普通简单工厂还有另外两种形式">普通简单工厂还有另外两种形式👇👇</h2>
+<pre><code>☝️ 多方法简单工厂（MethodsRestaurantFactory.php）：
+    是对普通简单工厂模式的一种改进，在普通简单工厂模式中，如果传递的类型有误，则不能正确的创建对象，
+    而多方法简单工厂模式，则是在工厂类中提供多个工厂方法，对应的实例化不用的产品对象。
+
+✌️ 静态方法简单工厂（StaticRestaurantFactory.php）
+    进一步改进，对工厂方法置为静态方法，无需创建实例，直接调用方法即可。
+</code></pre>
+<!-- more -->
+<p>❗️多方法简单工厂（MethodsRestaurantFactory.php）示例：</p>
+<pre><code class="language-php">&lt;?php
+
+include_once &quot;./Restaurant.php&quot;;
+
+/**
+ * 多方法简单工厂
+ * Class MethodsRestaurantFactory
+ */
+class MethodsRestaurantFactory
+{
+    public function getHamburgerRestaurant()
+    {
+        echo '你走进了汉堡包店' . PHP_EOL;
+        return new HamburgerRestaurant();
+    }
+
+    public function getPizzaRestaurant()
+    {
+        echo '你走进了披萨店' . PHP_EOL;
+        return new PizzaRestaurant();
+    }
+}
+
+
+$restaurant = new MethodsRestaurantFactory();
+
+// pizza餐厅
+$pizzaRestaurant = $restaurant-&gt;getPizzaRestaurant();
+$pizzaRestaurant-&gt;placeOrder();
+$pizzaRestaurant-&gt;mealPreparation();
+$pizzaRestaurant-&gt;dishServe();
+
+echo '感觉有点吃不饱要咋整......' . PHP_EOL;
+
+// hamburger餐厅
+$hamburgerRestaurant = $restaurant-&gt;getHamburgerRestaurant();
+$hamburgerRestaurant-&gt;placeOrder();
+$hamburgerRestaurant-&gt;mealPreparation();
+$hamburgerRestaurant-&gt;dishServe();
+</code></pre>
+<!-- more -->
+<p>❗️静态方法简单工厂（StaticRestaurantFactory.php）示例：</p>
+<pre><code class="language-php">&lt;?php
+
+include_once &quot;./Restaurant.php&quot;;
+
+/**
+ * 静态方法简单工厂
+ * Class StaticRestaurantFactory
+ */
+class StaticRestaurantFactory
+{
+    public static function getHamburgerRestaurant()
+    {
+        echo '你走进了汉堡包店' . PHP_EOL;
+        return new HamburgerRestaurant();
+    }
+
+    public static function getPizzaRestaurant()
+    {
+        echo '你走进了披萨店' . PHP_EOL;
+        return new PizzaRestaurant();
+    }
+}
+
+
+
+// pizza餐厅
+$pizzaRestaurant = StaticRestaurantFactory::getPizzaRestaurant();
+$pizzaRestaurant-&gt;placeOrder();
+$pizzaRestaurant-&gt;mealPreparation();
+$pizzaRestaurant-&gt;dishServe();
+
+echo '感觉有点吃不饱要咋整......' . PHP_EOL;
+
+// hamburger餐厅
+$hamburgerRestaurant = StaticRestaurantFactory::getHamburgerRestaurant();
+$hamburgerRestaurant-&gt;placeOrder();
+$hamburgerRestaurant-&gt;mealPreparation();
+$hamburgerRestaurant-&gt;dishServe();
+</code></pre>
+<!-- more -->
+<h2 id="总结">总结👇👇</h2>
+<pre><code>这......就这？这有啥好总结的？这都不会吗？😤
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="https://myx1002.github.io/post-images/1614242961890.jpg" alt="我要为你鼓掌吗？" width="200" height="200" loading="lazy"></figure>
+<pre><code>感觉简单功能模式还是比较好理解的😁，定义一个抽象产品类，不同的具体产品都对其进行实现
+
+再定义一个工厂对外提供实例化接口，从而让用户传递类型即可创建所需实例。
+
+So，`简单工厂模式`就总结完啦，下一章我们来学习`工厂方法模式`，请大家坚持学习噢👏👏👏</code></pre>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="https://myx1002.github.io/post/design_patterns_01/" class="post-title gt-a-link">
+                    硬啃设计模式(一)：单例模式
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="https://myx1002.github.io/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>
