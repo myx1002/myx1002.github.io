@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://myx1002.github.io</id>
     <title>鸡毛蒜皮事(●&apos;◡&apos;●)</title>
-    <updated>2021-03-02T16:56:42.108Z</updated>
+    <updated>2021-03-03T15:19:00.177Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://myx1002.github.io"/>
     <link rel="self" href="https://myx1002.github.io/atom.xml"/>
@@ -10,6 +10,19 @@
     <logo>https://myx1002.github.io/images/avatar.png</logo>
     <icon>https://myx1002.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, 鸡毛蒜皮事(●&apos;◡&apos;●)</rights>
+    <entry>
+        <title type="html"><![CDATA[硬啃设计模式(二)：工厂模式之工厂方法模式]]></title>
+        <id>https://myx1002.github.io/post/design_patterns_02_02/</id>
+        <link href="https://myx1002.github.io/post/design_patterns_02_02/">
+        </link>
+        <updated>2021-03-03T13:30:09.000Z</updated>
+        <summary type="html"><![CDATA[<p>🙋‍♂ 来啦来啦！今天带来的时候工厂模式的第二种-工厂方法模式😻</p>
+<p>👉 <code>工厂方法模式</code>该模式主要是为了弥补<code>简单工厂模式</code>每次新增角色时都需要修改工厂类的缺点。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>🙋‍♂ 来啦来啦！今天带来的时候工厂模式的第二种-工厂方法模式😻</p>
+<p>👉 <code>工厂方法模式</code>该模式主要是为了弥补<code>简单工厂模式</code>每次新增角色时都需要修改工厂类的缺点。</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[硬啃设计模式(二)：工厂模式之简单工厂模式]]></title>
         <id>https://myx1002.github.io/post/design_patterns_02_01/</id>

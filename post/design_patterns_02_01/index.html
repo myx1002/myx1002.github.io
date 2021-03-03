@@ -6,7 +6,7 @@
 
 <title>硬啃设计模式(二)：工厂模式之简单工厂模式 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
 
-<link rel="shortcut icon" href="https://myx1002.github.io/favicon.ico?v=1614704158319">
+<link rel="shortcut icon" href="https://myx1002.github.io/favicon.ico?v=1614784737690">
 
 <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://myx1002.github.io/styles/main.css">
@@ -179,7 +179,7 @@
             
         </div>
         <div style="text-align: center">
-            <form id="gridea-search-form" style="position: relative" data-update="1614704158319"
+            <form id="gridea-search-form" style="position: relative" data-update="1614784737690"
                 action="/search/index.html">
                 <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
                 <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
@@ -209,6 +209,10 @@
                         · 2021-02-25 ·
                     </time>
                     
+                        <a href="https://myx1002.github.io/tag/KmXvMvDsm/" class="post-tags">
+                            # 设计模式
+                        </a>
+                    
                         <a href="https://myx1002.github.io/tag/qo6XPqkl5/" class="post-tags">
                             # php
                         </a>
@@ -222,15 +226,12 @@
                     <p>👏 噢！我又来了，接下来第二章我们开始学习另外一个创建型模式-工厂模式，而其又分为三种</p>
 <p>这三种工厂模式在接下来的三章中我们一一讲解，免得放在一章里面太长了，顺便分开写还可以水多几篇😈</p>
 <!-- more -->
-<pre><code>☝️  简单工厂模式（本章内容）
-    1️⃣ 普通简单工厂模式
-    2️⃣ 多方法简单工厂模式
-    3️⃣ 静态方法简单工厂模式
-
-✌️  工厂方法模式（可退化为简单工厂模式）
-
-👌 抽象工厂模式
-</code></pre>
+<p>☝️  <a href='/post/design_patterns_02_01' target='_Blank'>简单工厂模式</a>（本章内容）<br>
+    1️⃣ 普通简单工厂模式<br>
+    2️⃣ 多方法简单工厂模式<br>
+    3️⃣ 静态方法简单工厂模式</p>
+<p>✌️  <a href='/post/design_patterns_02_02' target='_Blank'>工厂方法模式</a>（可退化为简单工厂模式）</p>
+<p>👌 <a href='/post/design_patterns_02_03' target='_Blank'>抽象工厂模式</a></p>
 <p>好滴👏👏那就让我们开始进入<code>简单工厂模式</code>的学习吧！<br>
 <img src="https://myx1002.github.io/post-images/1614694797368.jpg" alt="" width="200" height="200" loading="lazy"></p>
 <!-- more -->
@@ -262,7 +263,9 @@
 而且不符合开闭原则(不属于23中设计模式)，因此在“高内聚”和“扩展性”上面不是很好。
 </code></pre>
 <!-- more -->
-<h2 id="普通简单工厂代码实例"><code>普通简单工厂</code>代码实例👇👇</h2>
+<p>##“普通简单工厂”UML图👇👇</p>
+<figure data-type="image" tabindex="1"><img src="https://myx1002.github.io/post-images/1614784072439.png" alt="" loading="lazy"></figure>
+<h2 id="普通简单工厂代码实例">“普通简单工厂”代码实例👇👇</h2>
 <p>Restaurant.php<br>
 定义了👮抽象角色（Restaurant）和👮‍♀产品角色（HamburgerRestaurant、PizzaRestaurant）</p>
 <pre><code class="language-php">&lt;?php
@@ -341,7 +344,7 @@ class PizzaRestaurant implements Restaurant
 定义了简单餐厅工厂，以及获取产品实例化对象的方法</p>
 <pre><code class="language-php">&lt;?php
 
-include_once &quot;./Restaurant.php&quot;;
+include_once &quot;../Restaurant.php&quot;;
 
 /**
  * 简单餐厅工厂
@@ -385,7 +388,7 @@ $hamburgerRestaurant-&gt;dishServe();
 echo '溜了溜了，撑死了......' . PHP_EOL;
 </code></pre>
 <!-- more -->
-<figure data-type="image" tabindex="1"><img src="https://myx1002.github.io/post-images/1614696998801.PNG" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="2"><img src="https://myx1002.github.io/post-images/1614696998801.PNG" alt="" loading="lazy"></figure>
 <!-- more -->
 <h2 id="普通简单工厂还有另外两种形式">普通简单工厂还有另外两种形式👇👇</h2>
 <pre><code>☝️ 多方法简单工厂（MethodsRestaurantFactory.php）：
@@ -399,7 +402,7 @@ echo '溜了溜了，撑死了......' . PHP_EOL;
 <p>❗️多方法简单工厂（MethodsRestaurantFactory.php）示例：</p>
 <pre><code class="language-php">&lt;?php
 
-include_once &quot;./Restaurant.php&quot;;
+include_once &quot;../Restaurant.php&quot;;
 
 /**
  * 多方法简单工厂
@@ -441,7 +444,7 @@ $hamburgerRestaurant-&gt;dishServe();
 <p>❗️静态方法简单工厂（StaticRestaurantFactory.php）示例：</p>
 <pre><code class="language-php">&lt;?php
 
-include_once &quot;./Restaurant.php&quot;;
+include_once &quot;../Restaurant.php&quot;;
 
 /**
  * 静态方法简单工厂
@@ -482,7 +485,7 @@ $hamburgerRestaurant-&gt;dishServe();
 <h2 id="总结">总结👇👇</h2>
 <pre><code>这......就这？这有啥好总结的？这都不会吗？😤
 </code></pre>
-<figure data-type="image" tabindex="2"><img src="https://myx1002.github.io/post-images/1614242961890.jpg" alt="我要为你鼓掌吗？" width="200" height="200" loading="lazy"></figure>
+<figure data-type="image" tabindex="3"><img src="https://myx1002.github.io/post-images/1614242961890.jpg" alt="我要为你鼓掌吗？" width="200" height="200" loading="lazy"></figure>
 <pre><code>感觉简单功能模式还是比较好理解的😁，定义一个抽象产品类，不同的具体产品都对其进行实现
 
 再定义一个工厂对外提供实例化接口，从而让用户传递类型即可创建所需实例。
