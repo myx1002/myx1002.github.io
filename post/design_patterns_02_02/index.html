@@ -6,7 +6,7 @@
 
 <title>硬啃设计模式(二)：工厂模式之工厂方法模式 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
 
-<link rel="shortcut icon" href="https://myx1002.github.io/favicon.ico?v=1614928910997">
+<link rel="shortcut icon" href="https://myx1002.github.io/favicon.ico?v=1614936656668">
 
 <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://myx1002.github.io/styles/main.css">
@@ -179,7 +179,7 @@
             
         </div>
         <div style="text-align: center">
-            <form id="gridea-search-form" style="position: relative" data-update="1614928910997"
+            <form id="gridea-search-form" style="position: relative" data-update="1614936656668"
                 action="/search/index.html">
                 <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
                 <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
@@ -245,14 +245,14 @@
 </code></pre>
 <pre><code class="language-php">FactoryMethod.php
 &lt;?php
-
-include_once &quot;./Hamburger.php&quot;;
+include_once &quot;../Hamburger.php&quot;;
 
 /**
- * 工厂接口类
+ * 工厂方法模式：
+ * 汉堡包工厂接口类
  * Interface RestaurantFactory
  */
-interface RestaurantFactory
+interface HamburgerFactory
 {
     /**
      * 获取汉堡包实例
@@ -265,7 +265,7 @@ interface RestaurantFactory
  * 麦当劳餐厅工厂
  * Class HamburgerRestaurantFactory
  */
-class McDonaldRestaurantFactory implements RestaurantFactory
+class McDonaldHamburgerFactory implements HamburgerFactory
 {
 
     /**
@@ -282,7 +282,7 @@ class McDonaldRestaurantFactory implements RestaurantFactory
  * KFC餐厅工厂
  * Class PizzaRestaurantFactory
  */
-class KFCRestaurantFactory implements RestaurantFactory
+class KFCHamburgerFactory implements HamburgerFactory
 {
 
     /**
@@ -296,7 +296,7 @@ class KFCRestaurantFactory implements RestaurantFactory
 }
 
 
-$mcDonaldRestaurantFactory = new McDonaldRestaurantFactory();
+$mcDonaldRestaurantFactory = new McDonaldHamburgerFactory();
 $mcDonaldRestaurant = $mcDonaldRestaurantFactory-&gt;getHamburger();  // 获取实例
 $mcDonaldRestaurant-&gt;getName();
 $mcDonaldRestaurant-&gt;getMaterial();
