@@ -6,7 +6,7 @@
 
 <title>硬啃设计模式(二)：工厂模式之工厂方法模式 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
 
-<link rel="shortcut icon" href="https://myx1002.github.io/favicon.ico?v=1614785206820">
+<link rel="shortcut icon" href="https://myx1002.github.io/favicon.ico?v=1614928910997">
 
 <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://myx1002.github.io/styles/main.css">
@@ -179,7 +179,7 @@
             
         </div>
         <div style="text-align: center">
-            <form id="gridea-search-form" style="position: relative" data-update="1614785206820"
+            <form id="gridea-search-form" style="position: relative" data-update="1614928910997"
                 action="/search/index.html">
                 <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
                 <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
@@ -239,14 +239,14 @@
 </code></pre>
 <!-- more -->
 <p>##“工厂方法模式”UML图👇👇</p>
-<figure data-type="image" tabindex="1"><img src="https://myx1002.github.io/post-images/1614784702104.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="1"><img src="https://myx1002.github.io/post-images/1614928707456.png" alt="" loading="lazy"></figure>
 <p>##“工厂方法模式”代码实例👇👇</p>
 <pre><code>接下来，我们来看一下工厂接口和多个工厂实现类的创建实例：
 </code></pre>
-<pre><code class="language-php">&lt;?php
+<pre><code class="language-php">FactoryMethod.php
+&lt;?php
 
-include_once &quot;../Restaurant.php&quot;;
-
+include_once &quot;./Hamburger.php&quot;;
 
 /**
  * 工厂接口类
@@ -255,65 +255,108 @@ include_once &quot;../Restaurant.php&quot;;
 interface RestaurantFactory
 {
     /**
-     * 获取餐厅实例
+     * 获取汉堡包实例
      * @return mixed
      */
-    public function getRestaurant();
+    public function getHamburger();
 }
 
 /**
- * 汉堡包餐厅工厂
+ * 麦当劳餐厅工厂
  * Class HamburgerRestaurantFactory
  */
-class HamburgerRestaurantFactory implements RestaurantFactory
+class McDonaldRestaurantFactory implements RestaurantFactory
 {
 
     /**
      * 获取汉堡包餐厅实例
      * @return mixed
      */
-    public function getRestaurant()
+    public function getHamburger()
     {
-        return new HamburgerRestaurant();
+        return new McDonaldHamburger();
     }
 }
 
 /**
- * 披萨餐厅工厂
+ * KFC餐厅工厂
  * Class PizzaRestaurantFactory
  */
-class PizzaRestaurantFactory implements RestaurantFactory
+class KFCRestaurantFactory implements RestaurantFactory
 {
 
     /**
      * 获取披萨餐厅实例
      * @return mixed
      */
-    public function getRestaurant()
+    public function getHamburger()
     {
-        return new PizzaRestaurant();
+        return new KFCHamburger();
     }
 }
 
 
+$mcDonaldRestaurantFactory = new McDonaldRestaurantFactory();
+$mcDonaldRestaurant = $mcDonaldRestaurantFactory-&gt;getHamburger();  // 获取实例
+$mcDonaldRestaurant-&gt;getName();
+$mcDonaldRestaurant-&gt;getMaterial();
+</code></pre>
+<pre><code class="language-php">Hamburger.php
+&lt;?php
 
-// pizza餐厅
-$pizzaRestaurant = new PizzaRestaurantFactory();
-$pizzaRestaurant = $pizzaRestaurant-&gt;getRestaurant();  // 获取实例
-$pizzaRestaurant-&gt;placeOrder();  // 下单
-$pizzaRestaurant-&gt;mealPreparation();  // 备餐
-$pizzaRestaurant-&gt;dishServe();  // 上菜
+/**
+ * 抽象角色，所有汉堡包对象的父类
+ * 用于描述汉堡包的所有功能方法
+ * Interface Hamburger
+ */
+interface Hamburger
+{
+    /** 汉堡包名称 **/
+    public function getName();
 
-echo '感觉有点吃不饱要咋整......' . PHP_EOL;
+    /** 汉堡包材料 **/
+    public function getMaterial();
+}
 
-// hamburger餐厅
-$hamburgerRestaurant = new HamburgerRestaurantFactory();
-$hamburgerRestaurant = $hamburgerRestaurant-&gt;getRestaurant();
-$hamburgerRestaurant-&gt;placeOrder();
-$hamburgerRestaurant-&gt;mealPreparation();
-$hamburgerRestaurant-&gt;dishServe();
+/**
+ * 麦当劳汉堡包
+ * Class McDonaldHamburger
+ */
+class McDonaldHamburger implements Hamburger
+{
 
-echo '溜了溜了，撑死了......' . PHP_EOL;
+    /** 汉堡包名称 **/
+    public function getName()
+    {
+        echo '这是你的`板烧鸡腿堡`' . PHP_EOL;
+    }
+
+    /** 汉堡包材料 **/
+    public function getMaterial()
+    {
+        echo '两块面包、一颗生菜、一丢丢沙拉酱、最重要的是一块板烧鸡扒' . PHP_EOL;
+    }
+}
+
+/**
+ * 肯德基汉堡包
+ * Class KFCHamburger
+ */
+class KFCHamburger implements Hamburger
+{
+
+    /** 汉堡包名称 **/
+    public function getName()
+    {
+        echo '这是你的`奥尔良鸡腿堡`' . PHP_EOL;
+    }
+
+    /** 汉堡包材料 **/
+    public function getMaterial()
+    {
+        echo '两块面包、一颗生菜、一丢丢沙拉酱、最重要的是一块奥尔良鸡扒' . PHP_EOL;
+    }
+}
 </code></pre>
 <!-- more -->
 <h2 id="总结">总结👇👇</h2>
