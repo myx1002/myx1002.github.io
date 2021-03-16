@@ -1,10 +1,10 @@
-<html lang="zh">
+<html>
 <head>
     <meta charset="utf-8" />
 <meta name="description" content="" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<title>关于 - 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+<title>Redis学习之路(一)：5大基础数据类型之String | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
 
 <link rel="shortcut icon" href="https://myx1002.github.io/favicon.ico?v=1615886056053">
 
@@ -33,7 +33,7 @@
 <!--<script src="media/scripts/index.js"></script>-->
 
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
 </head>
 <body>
 <div class="main gt-bg-theme-color-first">
@@ -199,18 +199,139 @@
     }
 </script>
     <div class="post-container">
-        <div class="post-detail">
+        <div class="post-detail gt-bg-theme-color-second">
             <article class="gt-post-content">
-                <div class="post-content">
+                <h2 class="post-title">
+                    Redis学习之路(一)：5大基础数据类型之String
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2021-03-15 ·
+                    </time>
                     
+                        <a href="https://myx1002.github.io/tag/P-RRy8DydH/" class="post-tags">
+                            # redis
+                        </a>
+                    
+                        <a href="https://myx1002.github.io/tag/jmxx7i2hw/" class="post-tags">
+                            # 面试知识点
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>🤺来，今天开始整理的是Redis的相关知识点，当然<code>设计模式</code>的也会继续同步更新</p>
+<p>🗣🗣 所以，要抓紧时间巩固啦！虽然这些知识点以前已经整理过一遍，但是因为数据丢了，所以只能重新整理了😤</p>
+<p>❗️❗️ 但是这里会整理的更加详细，而且还会有对应示例和底层原理的分析，所以大家不要走开噢😀</p>
+<!-- more -->
+<h2 id="目录">目录</h2>
+<ul>
+<li><a href="#类型简述">类型简述</a></li>
+<li><a href="#常用场景">常用场景</a></li>
+<li><a href="#基本命令">基本命令</a></li>
+<li><a href="#底层原理">底层原理</a></li>
+<li><a href="#实践">实践</a></li>
+</ul>
+<!-- more -->
+<p>Redis自身是一个<code>Map</code>，其中所有数据都是采用<code>key-value</code>的形式存储</p>
+<p>而<code>数据类型</code>指的是存储数据的类型，也就是value的部分，key部分永远都是字符串</p>
+<figure data-type="image" tabindex="1"><img src="https://myx1002.github.io/post-images/1615818561700.png" alt="" width="400" height="400" loading="lazy"></figure>
+<h2 id="a-name类型简述类型简述a"><a name="类型简述">类型简述</a>👇👇</h2>
+<ul>
+<li>存储的数据：单个数据，最贱的数据存储类型，也是我们最常用到的类型</li>
+<li>存储数据的格式：一个存储空间保存一个数据</li>
+<li>存储内容：字符串、整数、浮点数</li>
+</ul>
+<!-- more -->
+<br>
+<h2 id="a-name类型简述常用场景a"><a name="类型简述">常用场景</a>👇👇</h2>
+<ul>
+<li>计数器（如：粉丝数）</li>
+<li>查询频繁且处理逻辑复杂，但不必实时更新的数据（如：月活量、转码排队数）</li>
+<li>乐观锁（incr 命令）</li>
+<li>分布式锁（set 命令的 NX 参数）</li>
+</ul>
+<!-- more -->
+<br>
+<h2 id="a-name常用命令常用命令a"><a name="常用命令">常用命令</a>👇👇</h2>
+<p>自己上网看去！！！！👋👋</p>
+<!-- more -->
+<br>
+<h2 id="a-name类型简述底层原理a"><a name="类型简述">底层原理</a>👇👇</h2>
+<h3 id="简单动态字符串sds">简单动态字符串SDS</h3>
+<pre><code>Redis底层使用的是C语言实现的，对于字符串String类型的，Redis的实现方法并没用采用传统的C语言中的字符串表示，
+
+而是通过改进后自己定义了一种叫做简单动态字符串（simple dynamic string, 简称SDS）的抽象类型。
+
+此外SDS在兼容C语言标准字符串极其处理函数外，还在此基础上保证了`二进制安全`，下面我们将详细的介绍SDS的实现。
+</code></pre>
+<p>PS❗️：二进制安全通俗地讲，C 语言中，用 &quot;\0&quot; 表示字符串的结束， 如果字符串中本身就有 &quot;\0&quot; 字符，字符串就会被截断，即非二进制安全；若通过某种机制，保证读写字符串时不损害其内容，则是二进制安全。</p>
+<h3 id="数据结构">数据结构</h3>
+<p>在Redis中，SDS根据字符串长短定义了5种数据接口，分别叫 sdshdr5、sdshdr8、sdshdr16、sdshdr32 和 sdshdr64，其结构体如下。</p>
+<pre><code class="language-C++">sds.h
+
+//定义了一个char 指针
+typedef char *sds;
+
+/* Note: sdshdr5 is never used, we just access the flags byte directly.
+ * However is here to document the layout of type 5 SDS strings. */
+
+struct __attribute__ ((__packed__)) sdshdr5 {
+    unsigned char flags;  /* 低三位存类型, 高五位存长度 */
+    char buf[];  /* 柔性数组，存放实际内容 */
+};
+
+struct __attribute__ ((__packed__)) sdshdr8 {
+   //buf 已经使用的长度
+    uint8_t len;  /* 已使用长度，用 1 字节存 */
+
+    //buf 分配的长度，等于buf[]的总长度-1，因为buf有包括一个/0的结束符
+    uint8_t alloc;  /* 总长度，用 1 字节存 */
+
+    //只有3位有效位，因为类型的表示就是0到4，所有这个8位的flags 有5位没有被用到
+    unsigned char flags;  /* 低三位存类型, 高五位预留 */
+    
+    //实际的字符串存在这里
+    char buf[];  /* 柔性数组，存放实际内容 */
+};
+
+// 与上面的变化只有len和alloc， 就是长度不同而已
+struct __attribute__ ((__packed__)) sdshdr16 {
+    uint16_t len; /* used */
+    uint16_t alloc; /* excluding the header and null terminator */
+    unsigned char flags; /* 3 lsb of type, 5 unused bits */
+    char buf[];
+};
+
+// 与上面的变化只有len和alloc， 就是长度不同而已
+struct __attribute__ ((__packed__)) sdshdr32 {
+    uint32_t len; /* used */
+    uint32_t alloc; /* excluding the header and null terminator */
+    unsigned char flags; /* 3 lsb of type, 5 unused bits */
+    char buf[];
+};
+
+// 与上面的变化只有len和alloc， 就是长度不同而已
+struct __attribute__ ((__packed__)) sdshdr64 {
+    uint64_t len; /* used */
+    uint64_t alloc; /* excluding the header and null terminator */
+    unsigned char flags; /* 3 lsb of type, 5 unused bits */
+    char buf[];
+};
+</code></pre>
+<!-- more -->
+<h2 id="a-name类型简述实践a"><a name="类型简述">实践</a></h2>
+
                 </div>
             </article>
         </div>
-        <br>
+
+        
+
         
 
         
 
+        
 
         <div class="site-footer gt-c-content-color-first">
     <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>

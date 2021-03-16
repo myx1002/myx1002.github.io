@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://myx1002.github.io</id>
     <title>鸡毛蒜皮事(●&apos;◡&apos;●)</title>
-    <updated>2021-03-11T13:33:53.829Z</updated>
+    <updated>2021-03-16T09:14:19.068Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://myx1002.github.io"/>
     <link rel="self" href="https://myx1002.github.io/atom.xml"/>
@@ -11,9 +11,22 @@
     <icon>https://myx1002.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, 鸡毛蒜皮事(●&apos;◡&apos;●)</rights>
     <entry>
-        <title type="html"><![CDATA[硬啃设计模式(二)：工厂模式之抽象工厂模式]]></title>
-        <id>https://myx1002.github.io/post/ying-ken-she-ji-mo-shi-er-gong-han-mo-shi-zhi-chou-xiang-gong-han-mo-shi/</id>
-        <link href="https://myx1002.github.io/post/ying-ken-she-ji-mo-shi-er-gong-han-mo-shi-zhi-chou-xiang-gong-han-mo-shi/">
+        <title type="html"><![CDATA[硬啃设计模式(四)：原型模式]]></title>
+        <id>https://myx1002.github.io/post/design_patterns_04/</id>
+        <link href="https://myx1002.github.io/post/design_patterns_04/">
+        </link>
+        <updated>2021-03-11T13:34:11.000Z</updated>
+        <summary type="html"><![CDATA[<p>👴👴 害，年后工作繁忙呀，都没事学习了，又得做新的项目了，只能硬挤一点时间出来整理😭</p>
+<p>行吧😤 废话不多数，今天整理的是创建型模式中的第四种：原型模式👏👏👏</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>👴👴 害，年后工作繁忙呀，都没事学习了，又得做新的项目了，只能硬挤一点时间出来整理😭</p>
+<p>行吧😤 废话不多数，今天整理的是创建型模式中的第四种：原型模式👏👏👏</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[硬啃设计模式(三)：工厂模式之抽象工厂模式]]></title>
+        <id>https://myx1002.github.io/post/design_patterns_03/</id>
+        <link href="https://myx1002.github.io/post/design_patterns_03/">
         </link>
         <updated>2021-03-05T13:53:52.000Z</updated>
         <summary type="html"><![CDATA[<p>🕺💃 哇~几天没见，甚是思念，又到了晚上学习的时候了哈哈哈😭哈。。哈😭😭</p>
