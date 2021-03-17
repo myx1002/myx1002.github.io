@@ -6,7 +6,7 @@
 
 <title>Redis学习之路(一)：5大基础数据类型之String | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
 
-<link rel="shortcut icon" href="https://myx1002.github.io/favicon.ico?v=1615906590828">
+<link rel="shortcut icon" href="https://myx1002.github.io/favicon.ico?v=1615994901304">
 
 <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://myx1002.github.io/styles/main.css">
@@ -179,7 +179,7 @@
             
         </div>
         <div style="text-align: center">
-            <form id="gridea-search-form" style="position: relative" data-update="1615906590828"
+            <form id="gridea-search-form" style="position: relative" data-update="1615994901304"
                 action="/search/index.html">
                 <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
                 <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
@@ -228,13 +228,19 @@
 <li><a href="#类型简述">类型简述</a></li>
 <li><a href="#常用场景">常用场景</a></li>
 <li><a href="#基本命令">基本命令</a></li>
-<li><a href="#底层原理">底层原理</a></li>
-<li><a href="#实践">实践</a></li>
+<li><a href="#底层原理">底层原理</a>
+<ul>
+<li><a href="#简单动态字符串SDS">简单动态字符串SDS</a></li>
+<li><a href="#数据结构">数据结构</a></li>
+<li><a href="#两大特点">两大特点</a></li>
+</ul>
+</li>
+<li><a href="#总结">总结</a></li>
 </ul>
 <!-- more -->
 <p>Redis自身是一个<code>Map</code>，其中所有数据都是采用<code>key-value</code>的形式存储</p>
 <p>而<code>数据类型</code>指的是存储数据的类型，也就是value的部分，key部分永远都是字符串</p>
-<figure data-type="image" tabindex="1"><img src="https://myx1002.github.io/post-images/1615818561700.png" alt="" width="400" height="400" loading="lazy"></figure>
+<figure data-type="image" tabindex="1"><img src="https://myx1002.github.io/post-images/1615992757352.png" alt="" width="600" height="400" loading="lazy"></figure>
 <h2 id="a-name类型简述类型简述a"><a name="类型简述">类型简述</a>👇👇</h2>
 <ul>
 <li>存储的数据：单个数据，最贱的数据存储类型，也是我们最常用到的类型</li>
@@ -243,7 +249,7 @@
 </ul>
 <!-- more -->
 <br>
-<h2 id="a-name类型简述常用场景a"><a name="类型简述">常用场景</a>👇👇</h2>
+<h2 id="a-name常用场景常用场景a"><a name="常用场景">常用场景</a>👇👇</h2>
 <ul>
 <li>计数器（如：粉丝数）</li>
 <li>查询频繁且处理逻辑复杂，但不必实时更新的数据（如：月活量、转码排队数）</li>
@@ -256,8 +262,8 @@
 <p>自己上网看去！！！！👋👋</p>
 <!-- more -->
 <br>
-<h2 id="a-name类型简述底层原理a"><a name="类型简述">底层原理</a>👇👇</h2>
-<h3 id="简单动态字符串sds">简单动态字符串SDS</h3>
+<h2 id="a-name底层原理底层原理a"><a name="底层原理">底层原理</a>👇👇</h2>
+<h3 id="a-name简单动态字符串sds简单动态字符串sdsa"><a name="简单动态字符串SDS">简单动态字符串SDS</a></h3>
 <pre><code>Redis底层使用的是C语言实现的，对于字符串String类型的，Redis的实现方法并没用采用传统的C语言中的字符串表示，
 
 而是通过改进后自己定义了一种叫做简单动态字符串（simple dynamic string, 简称SDS）的抽象类型。
@@ -265,9 +271,9 @@
 此外SDS在兼容C语言标准字符串极其处理函数外，还在此基础上保证了`二进制安全`，下面我们将详细的介绍SDS的实现。
 </code></pre>
 <p>PS❗️：二进制安全通俗地讲，C 语言中，用 &quot;\0&quot; 表示字符串的结束， 如果字符串中本身就有 &quot;\0&quot; 字符，字符串就会被截断，即非二进制安全；若通过某种机制，保证读写字符串时不损害其内容，则是二进制安全。</p>
-<h3 id="数据结构">数据结构</h3>
+<h3 id="a-name数据结构数据结构a"><a name="数据结构">数据结构</a></h3>
 <p>在Redis中，SDS根据字符串长短定义了5种数据接口，分别叫 sdshdr5、sdshdr8、sdshdr16、sdshdr32 和 sdshdr64，其结构体如下。</p>
-<pre><code class="language-C++">sds.h
+<pre><code class="language-C">sds.h
 
 //定义了一个char 指针
 typedef char *sds;
@@ -334,13 +340,86 @@ struct __attribute__ ((__packed__)) sdshdr64 {
 <li>SDS 对上层暴露的指针是直接指向柔性数组 buf 的，兼容 C 语言处理字符串的各种函数</li>
 <li>由于有长度统计变量 len 的存在，读写字符串时不依赖 &quot;\0&quot; 终止符，保证了二进制安全</li>
 </ul>
+<figure data-type="image" tabindex="2"><img src="https://myx1002.github.io/post-images/1615988723570.jpg" alt="" width="200" height="200" loading="lazy"></figure>
+<p>下面来详细看一下这几种 sdshdr 的结构，sdshdr8、sdshdr16、sdshdr32 和 sdshdr64 的结构相同<br>
+<code>sdshdr16</code>结构如下所示：<br>
+<img src="https://myx1002.github.io/post-images/1615989486654.png" alt="" loading="lazy"></p>
+<p><code>sdshdr5</code>与上述的不同，做了进一步的压缩，用 flags 中预留的 5 位存长度，把 len 和 alloc 也省掉了，其结构如下所示：<br>
+<img src="https://myx1002.github.io/post-images/1615989538232.png" alt="" loading="lazy"></p>
+<p>在 Redis 的源代码中，对类型的宏定义如下：</p>
+<pre><code class="language-C">#define SDS_TYPE_5  0
+#define SDS_TYPE_8  1
+#define SDS_TYPE_16 2
+#define SDS_TYPE_32 3
+#define SDS_TYPE_64 4
+</code></pre>
+<p>源码中的 <strong>attribute</strong>((<strong>packed</strong>)) 需要重点关注。一般情况下，结构体会按其所有变量大小的最小公倍数做字节对齐，而用 packed 修饰后，结构体则变为按 1 字节对齐。</p>
+<p>以 sdshdr32 为例，修饰前按 4 字节对齐，大小为 12 字节；修饰后按 1 字节对齐，注意 buf 是个 char 类型的柔性数组，地址连续，始终在 flags 之后。packed 修饰前后示意图如下所示：<br>
+<img src="https://myx1002.github.io/post-images/1615990422176.png" alt="" loading="lazy"></p>
+<p>这样的好处有两个：<br>
+1️⃣节省内存，例如 sdshdr32 可节省 3 个字节；</p>
+<p>2️⃣SDS 返回给上层的，不是结构体首地址，而是指向内容的 buf 指针 s。修饰后，无论是 sdshdr8、sdshdr16 还是 sdshdr32，都能通过 s[-1] 快速找到 flags，因为此时按 1 字节对齐。若没有 packed 的修饰，还需要对不同结构做处理，实现更复杂。</p>
+<h3 id="a-name两大特点两大特点a"><a name="两大特点">两大特点</a></h3>
+<h4 id="空间预分配">空间预分配</h4>
+<p>字符串拼接是字符串中最常用的操作，在SDS中具体的函数是<code>sdscatsds</code>：</p>
+<pre><code class="language-C">sds sdscatsds(sds s, const sds t) {
+    return sdscatlen(s, t, sdslen(t));
+}
+</code></pre>
+<p>但是<code>sdscatsds</code>只是暴露给上层的方法，其最终调用的函数是<code>sdscatlen</code>：</p>
+<pre><code class="language-C">/* 将指针 t 的内容和指针 s 的内容拼在一起，该操作是二进制安全的 */
+sds sdscatlen(sds s, const void *t, size_t len) {
+    size_t curlen = sdslen(s);
+
+    s = sdsMakeRoomFor(s,len);  // 扩容检查，如需扩容则返回扩容好的新的字符串
+    if (s == NULL) return NULL;
+    memcpy(s+curlen, t, len);  // 直接拼接，保证了二进制安全
+    sdssetlen(s, curlen+len);
+    s[curlen+len] = '\0';  // 加上结束符以保持兼容
+    return s;
+}
+</code></pre>
+<p>由于其中可能涉及 SDS 的扩容，sdscatlen 中调用 sdsMakeRoomFor 对待拼接的字符串 s 容量做了检查，若无须扩容则直接返回 s；若需要扩容，返回的则是扩容好的新字符串。</p>
+<pre><code>容量计算规则
+▪️ 扩容后长度小于 1MB：按新长度的 2 倍扩容；
+▪️ 扩容后长度超过 1MB：按新长度加上 1MB 扩容。
+
+扩容对象的选择
+▪️ SDS 类型未改变：通过 realloc 扩大柔性数组；
+▪️ SDS 类型发生变化：开辟新内存，拼接完内容后，释放旧指针。
+</code></pre>
+<p>❗️❗️通过空间预分配策略， Redis 可以减少连续执行字符串增长操作所需的内存重分配次数。</p>
+<br>
+<h4 id="惰性空间释放">惰性空间释放</h4>
+<p>Redis 通过 sdsfree 函数释放字符串占的内存，该方法通过对 s 的偏移，可定位到 SDS 结构的首部，取出长度 len，然后调用 s_free 进行内存的释放：</p>
+<pre><code class="language-C">void sdsfree(sds s) {
+    if (s == NULL) return;
+    s_free((char*)s-sdsHdrSize(s[-1]));  // 定位到 SDS 首部，直接释放内存
+}
+</code></pre>
+<p>❗️❗️为了优化性能（减少申请内存的开销），SDS 提供了不直接释放内存，而是通过重置统计值达到清空目的方法：sdsclear：</p>
+<pre><code class="language-C">void sdsclear(sds s) {
+    sdssetlen(s, 0);  // 统计值 len 清零
+    s[0] = '\0';  // 清空 buf
+}
+</code></pre>
+<p>该方法仅将 SDS 的 len 归零，此处已存在的 buf 并没有真正被清除，新的数据可以覆盖写，而不用重新申请内存。</p>
 <!-- more -->
-<h2 id="a-name类型简述实践a"><a name="类型简述">实践</a></h2>
+<h2 id="a-name总结总结a"><a name="总结">总结</a></h2>
+<p>好了，这篇文章优点长了，特别是<code>底层原理</code>，想了解更加透彻的朋友可以多看几遍，多上网看看资料噢😏</p>
+<p>毕竟面试造飞机，底层原理的知识点还是得学透彻呀，后面的几章也会为不同数据类型带来不同的实践例子，让大家更熟悉应用。👋👋</p>
 
                 </div>
             </article>
         </div>
 
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="https://myx1002.github.io/post/design_patterns_03/" class="post-title gt-a-link">
+                    硬啃设计模式(三)：原型模式
+                </a>
+            </div>
         
 
         

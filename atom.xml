@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://myx1002.github.io</id>
     <title>鸡毛蒜皮事(●&apos;◡&apos;●)</title>
-    <updated>2021-03-16T14:58:21.330Z</updated>
+    <updated>2021-03-17T15:31:43.560Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://myx1002.github.io"/>
     <link rel="self" href="https://myx1002.github.io/atom.xml"/>
@@ -10,6 +10,21 @@
     <logo>https://myx1002.github.io/images/avatar.png</logo>
     <icon>https://myx1002.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, 鸡毛蒜皮事(●&apos;◡&apos;●)</rights>
+    <entry>
+        <title type="html"><![CDATA[Redis学习之路(一)：5大基础数据类型之String]]></title>
+        <id>https://myx1002.github.io/post/redis-01/</id>
+        <link href="https://myx1002.github.io/post/redis-01/">
+        </link>
+        <updated>2021-03-15T09:27:22.000Z</updated>
+        <summary type="html"><![CDATA[<p>🤺来，今天开始整理的是Redis的相关知识点，当然<code>设计模式</code>的也会继续同步更新</p>
+<p>🗣🗣 所以，要抓紧时间巩固啦！虽然这些知识点以前已经整理过一遍，但是因为数据丢了，所以只能重新整理了😤</p>
+<p>❗️❗️ 但是这里会整理的更加详细，而且还会有对应示例和底层原理的分析，所以大家不要走开噢😀</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>🤺来，今天开始整理的是Redis的相关知识点，当然<code>设计模式</code>的也会继续同步更新</p>
+<p>🗣🗣 所以，要抓紧时间巩固啦！虽然这些知识点以前已经整理过一遍，但是因为数据丢了，所以只能重新整理了😤</p>
+<p>❗️❗️ 但是这里会整理的更加详细，而且还会有对应示例和底层原理的分析，所以大家不要走开噢😀</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[硬啃设计模式(三)：原型模式]]></title>
         <id>https://myx1002.github.io/post/design_patterns_03/</id>
