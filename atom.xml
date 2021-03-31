@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://myx1002.github.io</id>
     <title>鸡毛蒜皮事(●&apos;◡&apos;●)</title>
-    <updated>2021-03-22T14:04:48.483Z</updated>
+    <updated>2021-03-31T15:27:11.636Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://myx1002.github.io"/>
     <link rel="self" href="https://myx1002.github.io/atom.xml"/>
@@ -10,6 +10,45 @@
     <logo>https://myx1002.github.io/images/avatar.png</logo>
     <icon>https://myx1002.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, 鸡毛蒜皮事(●&apos;◡&apos;●)</rights>
+    <entry>
+        <title type="html"><![CDATA[数据结构：简单动态字符串SDS]]></title>
+        <id>https://myx1002.github.io/post/data_structure_02/</id>
+        <link href="https://myx1002.github.io/post/data_structure_02/">
+        </link>
+        <updated>2021-03-31T15:22:37.000Z</updated>
+        <summary type="html"><![CDATA[<p>👉简单动态字符串SDS是Redis中String类型的底层数据结构</p>
+<p>👉Redis的实现方法并没用采用传统的C语言中的字符串表示，而是通过改进后自己定义了一种叫做简单动态字符串（simple dynamic string, 简称SDS）的抽象类型。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>👉简单动态字符串SDS是Redis中String类型的底层数据结构</p>
+<p>👉Redis的实现方法并没用采用传统的C语言中的字符串表示，而是通过改进后自己定义了一种叫做简单动态字符串（simple dynamic string, 简称SDS）的抽象类型。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[数据结构：ZipList压缩链表]]></title>
+        <id>https://myx1002.github.io/post/data_structure_01/</id>
+        <link href="https://myx1002.github.io/post/data_structure_01/">
+        </link>
+        <updated>2021-03-31T13:52:00.000Z</updated>
+        <summary type="html"><![CDATA[<p>😵本来这篇是写在《Redis学习之路(一)：5大基础数据类型之Hash》里面的，但是因为篇幅可能过长，</p>
+<p>而且关于数据结构的想单独拧出来整理，所以就抽出来写，那么下面就继续学习ZipList😗</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>😵本来这篇是写在《Redis学习之路(一)：5大基础数据类型之Hash》里面的，但是因为篇幅可能过长，</p>
+<p>而且关于数据结构的想单独拧出来整理，所以就抽出来写，那么下面就继续学习ZipList😗</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Redis学习之路(一)：5大基础数据类型之Hash]]></title>
+        <id>https://myx1002.github.io/post/redis_01/</id>
+        <link href="https://myx1002.github.io/post/redis_01/">
+        </link>
+        <updated>2021-03-22T13:30:31.000Z</updated>
+        <summary type="html"><![CDATA[<p>🤺上一章<code>String</code>类型就基本介绍完成了，今天我们继续学习5大基础数据类型中的<code>Hash</code>类型</p>
+<p>🙌🙌 跟上一章一样，也会从常用场景、基本命令和底层原理等知识点来进行总结，所以，快点跟着小弟我一下学习吧！</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>🤺上一章<code>String</code>类型就基本介绍完成了，今天我们继续学习5大基础数据类型中的<code>Hash</code>类型</p>
+<p>🙌🙌 跟上一章一样，也会从常用场景、基本命令和底层原理等知识点来进行总结，所以，快点跟着小弟我一下学习吧！</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Redis学习之路(一)：5大基础数据类型之String]]></title>
         <id>https://myx1002.github.io/post/redis-01/</id>

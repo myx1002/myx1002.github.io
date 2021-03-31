@@ -4,7 +4,7 @@
 <meta name="description" content="" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<title>硬啃设计模式(三)：原型模式 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+<title>数据结构：ZipList压缩链表 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
 
 <link rel="shortcut icon" href="https://myx1002.github.io/favicon.ico?v=1617204419975">
 
@@ -202,192 +202,99 @@
         <div class="post-detail gt-bg-theme-color-second">
             <article class="gt-post-content">
                 <h2 class="post-title">
-                    硬啃设计模式(三)：原型模式
+                    数据结构：ZipList压缩链表
                 </h2>
                 <div class="post-info">
                     <time class="post-time gt-c-content-color-first">
-                        · 2021-03-11 ·
+                        · 2021-03-31 ·
                     </time>
                     
-                        <a href="https://myx1002.github.io/tag/KmXvMvDsm/" class="post-tags">
-                            # 设计模式
-                        </a>
-                    
-                        <a href="https://myx1002.github.io/tag/jmxx7i2hw/" class="post-tags">
-                            # 面试知识点
+                        <a href="https://myx1002.github.io/tag/J4LLJ1xJr/" class="post-tags">
+                            # 数据结构
                         </a>
                     
                 </div>
                 <div class="post-content">
-                    <p>👴👴 害，年后工作繁忙呀，都没事学习了，又得做新的项目了，只能硬挤一点时间出来整理😭</p>
-<p>行吧😤 废话不多数，今天整理的是创建型模式中的第四种：原型模式👏👏👏</p>
+                    <p>😵本来这篇是写在《Redis学习之路(一)：5大基础数据类型之Hash》里面的，但是因为篇幅可能过长，</p>
+<p>而且关于数据结构的想单独拧出来整理，所以就抽出来写，那么下面就继续学习ZipList😗</p>
 <!-- more -->
-<h2 id="概念">概念👇👇</h2>
-<pre><code>原始模式属于`创建型模式`，是从一个对象，通过复制来创建一个相同或者类似的可定制的新对象，而不需要知道任何的创建细节。
-
-值得注意的是，通过克隆方式拷贝出来的对象是一个新的对象，对其修改不会影响原型对象的属性。
+<h2 id="基本概念">基本概念</h2>
+<p><code>ZipList</code>是一个经过特殊编码的双向链表，它不存储指向上一个链表节点和指向下一个链表节点的指针，</p>
+<p>而是存储上一个节点长度和当前节点长度，通过牺牲部分读写性能来缓存高效的内存空间利用率，是一种<strong>时间换空间</strong>的思想😄</p>
+<p>具体来说，就是ZipList不像❌普通双向链表一样，用地址指针把每一项链接起来，而是通过把表中每一项存放在前后连续的地址空间内，一个ziplist整体占用一大块内存。</p>
+<p>另外，ZipList为了在细节上节省内存，对于值的存储采用了变长的编码方式，即大的整数是就用多一些字节存储，小的整数就用少一些字节来存储，接下来我们会就此讨论其细节😣</p>
+<!-- more -->
+<h2 id="数据结构">数据结构</h2>
+<p>好的，我们继续，从宏观上看，<code>ZipList</code>的内存结构如下：</p>
+<pre><code>&lt;zlbytes&gt;&lt;zltail&gt;&lt;zllen&gt;&lt;entry&gt;...&lt;entry&gt;&lt;zlend&gt;
 </code></pre>
+<p>对其各个部分在内存上是前后相邻的，它们分别的含义如下</p>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>长度</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>zlbytes</td>
+<td>32bit</td>
+<td>表示ziplist占用的字节总数（也包括&lt;<code>zlbytes</code>&gt;本身占用的4个字节）</td>
+</tr>
+<tr>
+<td>zltail</td>
+<td>32bit</td>
+<td>表示ziplist表中最后一项（entry）在<code>ZipList</code>中的偏移字节数。&lt;<code>zltail</code>&gt;的存在，使得我们可以很方便地找到最后一项（不用遍历整个<code>ZipList</code>），从而可以在<code>ZipList</code>尾端快速地执行push或pop操作。</td>
+</tr>
+<tr>
+<td>zllen</td>
+<td>16bit</td>
+<td>表示ziplist中数据项（entry）的个数。zllen字段因为只有16bit，所以可以表达的最大值为 2^16 - 1。 这里需要特别注意的是，如果ziplist中数据项个数超过了16bit能表达的最大值，ziplist仍然可以来表示。那怎么表示呢？这里做了这样的规定：如果&lt;<code>zllen</code>&gt;小于等于2^16 - 2（也就是不等于2^16 - 1），那么&lt;<code>zllen</code>&gt;就表示ziplist中数据项的个数；否则，也就是&lt;<code>zllen</code>&gt;等于16bit全为1的情况，那么&lt;<code>zllen</code>&gt;就不表示数据项个数了，这时候要想知道ziplist中数据项总数，那么必须对ziplist从头到尾遍历各个数据项，才能计数出来。</td>
+</tr>
+<tr>
+<td>entry</td>
+<td>不定</td>
+<td>表示真正存放数据的数据项，长度不定。一个数据项（entry）也有它自己的内部结构，这个稍后再解释。</td>
+</tr>
+<tr>
+<td>zlend</td>
+<td>8bit</td>
+<td>ziplist最后1个字节，是一个结束标记，值固定等于255。</td>
+</tr>
+</tbody>
+</table>
 <!-- more -->
-<h2 id="使用场景">使用场景👇👇</h2>
-<pre><code>其实原型模式的原理就类似我们程序员中的`复制`和`粘贴`，有时候需要写重复代码，但是有部分要改动的时候，就会复制粘贴，然后改动。
-
-例如下面简历的例子，通过深拷贝，在原本奖励的基础上重新修改工作经历，而不用重新填写用户的基本资料。
-</code></pre>
-<!-- more -->
-<h2 id="主要角色">主要角色👇👇</h2>
-<pre><code>🙈Prototype（抽象原型类）：它是声明克隆方法的接口，是所有具体原型类的公共父类，可以是抽象类、接口或者是具体实现类。
-
-🙉ConcretePrototype（具体原型类）：它实现在抽象原型类中声明的克隆方法，在克隆方法中返回自己的一个克隆对象。
-
-🙊Client（客户类）：使用原型对象的客户程序。
-</code></pre>
-<!-- more -->
-<h2 id="优缺点">优缺点👇👇</h2>
-<pre><code>优点⭕️：
-
-    1️⃣性能提高，规避了构造函数的约束
-
-    2️⃣辅助实现撤销操作
-
-    3️⃣简化对象的创建
-
-
-缺点❌：
-
-    1️⃣要为每一个类都配置一个 clone 方法
-
-    2️⃣clone 方法位于类的内部，当对已有类进行改造的时候，需要修改代码，违背了开闭原则
-
-    3️⃣当代码复杂，对象嵌套较多时，要实现深克隆较为复杂
-</code></pre>
-<!-- more -->
-<h2 id="原型模式uml图">“原型模式”UML图👇👇</h2>
-<!-- more -->
-<h2 id="抽象工厂模式代码实例">“抽象工厂模式”代码实例</h2>
-<pre><code class="language-php">&lt;?php
-
-/**
- * 简历接口抽象类(抽象原型类)
- * Class CloneResume
- */
-abstract Class CloneResume
-{
-    public   $name;
-    public   $sex;
-    public   $age;
-    public   $work;
-
-    abstract function __clone();
-}
-
-/**
- * 简历类(具体原型类)
- * Class Resume
- */
-class Resume extends CloneResume
-{
-    public function __construct($name)
-    {
-        $this-&gt;name = $name;
-        $this-&gt;work = new WorkExperience();
-    }
-
-    /**
-     * 设置个人信息
-     * @param string $sex
-     * @param string $age
-     */
-    public function setPersonalInfo($sex, $age)
-    {
-        $this-&gt;sex = $sex;
-        $this-&gt;age = $age;
-    }
-
-    /**
-     * 设置工作经历
-     * @param string $workData
-     * @param string $company
-     */
-    public function setWorkExperience($workData, $company)
-    {
-        $this-&gt;work-&gt;setCompany($company);
-        $this-&gt;work-&gt;setWorkDate($workData);
-    }
-
-    public function display()
-    {
-        echo $this-&gt;name . '-' . $this-&gt;sex . '-' . $this-&gt;age . PHP_EOL;
-        echo '工作经历：' . $this-&gt;work-&gt;getCompany() . '-' . $this-&gt;work-&gt;getWorkDate() . PHP_EOL;
-    }
-
-    /**
-     * 重新clone方法，实现深拷贝
-     */
-    public function __clone()
-    {
-        $this-&gt;work = clone $this-&gt;work;
-    }
-}
-
-/**
- * 工作经历：一份简历可能包含多段工作经理
- * Class WorkExperience
- */
-class WorkExperience
-{
-    private  $workDate;  // 工作时间
-    private  $company;   // 公司名称
-
-    /**
-     * 设置工作时间
-     */
-    public function setWorkDate($workDate)
-    {
-        return $this-&gt;workDate = $workDate;
-    }
-
-    /**
-     * 设置公司名称
-     */
-    public function setCompany($company)
-    {
-        return $this-&gt;company = $company;
-    }
-
-    /**
-     * 获取工作时间
-     */
-    public function getWorkDate()
-    {
-        return $this-&gt;workDate;
-    }
-
-    /**
-     * 获取公司名称
-     */
-    public function getCompany()
-    {
-        return $this-&gt;company;
-    }
-}
-
-$resumeA = new Resume(&quot;小明&quot;);
-$resumeA-&gt;setPersonalInfo('男', '18');
-$resumeA-&gt;setWorkExperience('2019-7-1至2020-7-1', '牛皮科技有限公司');
-
-$resumeB = clone $resumeA;
-$resumeB-&gt;setWorkExperience('2020-8-1至2021-2-1', '瓜皮科技有限公司');
-
-$resumeA-&gt;display();
-$resumeB-&gt;display();
-</code></pre>
-<figure data-type="image" tabindex="1"><img src="https://myx1002.github.io/post-images/1615885613653.png" alt="" loading="lazy"></figure>
-<center>图二：执行结果☝️☝️</center>
-<!-- more -->
-<h2 id="总结">总结👇👇</h2>
-<pre><code>👌至此，`原型模式`就介绍完毕啦，其实我们也可以把`原型模式`成为`克隆模式`，这样字面上的意思就更容易理解了，鸣人的`影分身`术都熟悉了吧😏
-</code></pre>
-<figure data-type="image" tabindex="2"><img src="https://myx1002.github.io/post-images/1615885976776.jpg" alt="" width="400" height="300" loading="lazy"></figure>
+<h2 id="entry">entry</h2>
+<p>ZipList为了支持双向遍历，所以才会有&lt;<code>zltail</code>&gt;这个字段用来快速定位最后一个元素，然后进行反向遍历。</p>
+<p>但是我们知道ZipList是一块连续的内存，&lt;<code>entry</code>&gt;的大小是不确定的，那么我们要反向遍历的话得整么找到上一个节目开始的位置呢？</p>
+<p>下面我们来看一下&lt;<code>entry</code>&gt;的结构：</p>
+<p><prevlen><encoding><data></p>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>prevlen</td>
+<td>表示前<code>entry</code>的字节长度。这个字段的用处是为了让ziplist能够从后向前遍历（从后一项的位置，只需向前偏移prevlen个字节，就找到了前一项）。这个字段采用变长编码。</td>
+</tr>
+<tr>
+<td>encoding</td>
+<td>元素类型编码</td>
+</tr>
+<tr>
+<td>data</td>
+<td>元素内容</td>
+</tr>
+</tbody>
+</table>
+<h3 id="prevlen">prevlen</h3>
+<h3 id="encoding">encoding</h3>
 
                 </div>
             </article>
@@ -396,8 +303,8 @@ $resumeB-&gt;display();
         
             <div class="next-post">
                 <div class="next gt-c-content-color-first">下一篇</div>
-                <a href="https://myx1002.github.io/post/design_patterns_02_03/" class="post-title gt-a-link">
-                    硬啃设计模式(二)：工厂模式之抽象工厂模式
+                <a href="https://myx1002.github.io/post/redis_01/" class="post-title gt-a-link">
+                    Redis学习之路(一)：5大基础数据类型之Hash
                 </a>
             </div>
         
