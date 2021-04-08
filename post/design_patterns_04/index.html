@@ -6,7 +6,7 @@
 
 <title>硬啃设计模式(四)：建造者(生成器)模式 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
 
-<link rel="shortcut icon" href="https://myx1002.github.io/favicon.ico?v=1617851575427">
+<link rel="shortcut icon" href="https://myx1002.github.io/favicon.ico?v=1617851638843">
 
 <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://myx1002.github.io/styles/main.css">
@@ -179,7 +179,7 @@
             
         </div>
         <div style="text-align: center">
-            <form id="gridea-search-form" style="position: relative" data-update="1617851575427"
+            <form id="gridea-search-form" style="position: relative" data-update="1617851638843"
                 action="/search/index.html">
                 <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
                 <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
@@ -243,7 +243,8 @@
 
 它将变与不变相分离，即产品的组成部分是不变的，但每一部分是可以灵活选择的。
 </code></pre>
-<figure data-type="image" tabindex="2"><img src="https://myx1002.github.io/post-images/1617846327160.png" alt="" width="1800" height="50" loading="lazy"></figure>
+<br>
+<!-- more -->
 <h2 id="主要角色">主要角色👇👇</h2>
 <pre><code>🤵产品角色(Product)：它是包含多个组成部件的复杂对象，由具体建造者来创建其各个零部件。
 
@@ -253,7 +254,8 @@
 
 💂指挥者(Director)：它调用建造者对象中的部件构造与装配方法完成复杂对象的创建，在指挥者中不涉及具体产品的信息。
 </code></pre>
-<figure data-type="image" tabindex="3"><img src="https://myx1002.github.io/post-images/1617846327160.png" alt="" width="1800" height="50" loading="lazy"></figure>
+<br>
+<!-- more -->
 <h2 id="优缺点">优缺点</h2>
 <pre><code>优点⭕️：
 
@@ -269,10 +271,10 @@
     
     2️⃣如果产品的内部变化复杂，如果产品内部发生变化，则建造者也要同步修改，后期维护成本较大
 </code></pre>
-<figure data-type="image" tabindex="4"><img src="https://myx1002.github.io/post-images/1617846327160.png" alt="" width="1800" height="50" loading="lazy"></figure>
+<figure data-type="image" tabindex="2"><img src="https://myx1002.github.io/post-images/1617846327160.png" alt="" width="1800" height="50" loading="lazy"></figure>
 <h2 id="建造者生成器模式uml图"><code>建造者(生成器)</code>模式UML图👇👇</h2>
-<figure data-type="image" tabindex="5"><img src="https://myx1002.github.io/post-images/1617849564485.png" alt="" loading="lazy"></figure>
-<figure data-type="image" tabindex="6"><img src="https://myx1002.github.io/post-images/1617846327160.png" alt="" width="1800" height="50" loading="lazy"></figure>
+<figure data-type="image" tabindex="3"><img src="https://myx1002.github.io/post-images/1617849564485.png" alt="" loading="lazy"></figure>
+<br>
 <!-- more -->
 <h2 id="建造者生成器模式代码示例"><code>建造者(生成器)</code>模式代码示例👇👇</h2>
 <p>实现类<br>
@@ -404,8 +406,8 @@ class XueyuHamburgerBuilder implements HamburgerBuilder
 &gt; 用面包把`板烧鸡腿`夹住，加点生菜和沙拉酱
 &gt; `板烧鸡腿`堡好了
 </code></pre>
+<br>
 <!-- more -->
-<figure data-type="image" tabindex="7"><img src="https://myx1002.github.io/post-images/1617846327160.png" alt="" width="1800" height="50" loading="lazy"></figure>
 <h2 id="与工厂模式的区别">与<code>工厂模式</code>的区别❓❓</h2>
 <pre><code>⚪️建造者模式更加注重方法的调用顺序，工厂模式更注重创建对象
 
@@ -415,7 +417,8 @@ class XueyuHamburgerBuilder implements HamburgerBuilder
 
 🔴建造者模式根据建造过程中的顺序不一样，最终对象部件组成也不一样。
 </code></pre>
-<figure data-type="image" tabindex="8"><img src="https://myx1002.github.io/post-images/1617846327160.png" alt="" width="1800" height="50" loading="lazy"></figure>
+<br>
+<!-- more -->
 <h2 id="总结">总结</h2>
 <p>So，经过上面的介绍，大家都已经基本了解<code>建造者模式</code>了，其实很多设计模式我们在平时工作的时候也会不自觉的用到，只是自己没发现。</p>
 <p>但是当你接触了，学习了之后，下次遇到代码设计的问题时，就能够用更好的设计模式来处理，使得代码更加简洁易懂啦。</p>
