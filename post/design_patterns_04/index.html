@@ -4,7 +4,7 @@
 <meta name="description" content="" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<title>硬啃设计模式(三)：原型模式 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+<title>硬啃设计模式(四)：建造者(生成器)模式 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
 
 <link rel="shortcut icon" href="https://myx1002.github.io/favicon.ico?v=1617851575427">
 
@@ -202,11 +202,11 @@
         <div class="post-detail gt-bg-theme-color-second">
             <article class="gt-post-content">
                 <h2 class="post-title">
-                    硬啃设计模式(三)：原型模式
+                    硬啃设计模式(四)：建造者(生成器)模式
                 </h2>
                 <div class="post-info">
                     <time class="post-time gt-c-content-color-first">
-                        · 2021-03-11 ·
+                        · 2021-04-08 ·
                     </time>
                     
                         <a href="https://myx1002.github.io/tag/KmXvMvDsm/" class="post-tags">
@@ -219,175 +219,207 @@
                     
                 </div>
                 <div class="post-content">
-                    <p>👴👴 害，年后工作繁忙呀，都没事学习了，又得做新的项目了，只能硬挤一点时间出来整理😭</p>
-<p>行吧😤 废话不多数，今天整理的是创建型模式中的第四种：原型模式👏👏👏</p>
+                    <p>😭 已经好久没更新了，懒惰的我，不可原谅👻<br>
+😤 其实最近在备考事业单位的考试，但是呢，感觉一个月的时间还是不够的，明年再战吧<br>
+👉👉 所以后续就会继续更新设计模式的学习啦，学习还是不能停的👏</p>
+<!-- more -->
+<h2 id="简述">简述👇👇</h2>
+<pre><code>经过了前面几章的学习，今天我们带来的是`建造者`模式，又叫`生成器`模式，是最后一个要学习创建型模式😁
+
+在平时我们的程序设计中，一些复杂的对象可能是由许多子部件，按照一定的步骤组合而成的，而现实中也有许多这样的例子，
+
+如游戏中的不同角色，其性别、个性、体型、种族、样貌等等都有所差别，但是组成方式却大同小异，
+
+又如现实中的房子，其装修的材料、家具、格局、设计风格都有所差别，但是建造方式却类似，
+
+针对这些由多个不见构成的对象，各个部件可以灵活选择，但是创建步骤大同小异的情况线下，可以选择`建造者`模式。
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://myx1002.github.io/post-images/1617845260752.jfif" alt="" width="200" height="200" loading="lazy"></figure>
 <!-- more -->
 <h2 id="概念">概念👇👇</h2>
-<pre><code>原始模式属于`创建型模式`，是从一个对象，通过复制来创建一个相同或者类似的可定制的新对象，而不需要知道任何的创建细节。
+<pre><code>指将一个复杂对象的构造与它的表示分离，使同样的构建过程可以创建不同的表示，这样的设计模式被称为建造者模式。
 
-值得注意的是，通过克隆方式拷贝出来的对象是一个新的对象，对其修改不会影响原型对象的属性。
-</code></pre>
-<!-- more -->
-<h2 id="使用场景">使用场景👇👇</h2>
-<pre><code>其实原型模式的原理就类似我们程序员中的`复制`和`粘贴`，有时候需要写重复代码，但是有部分要改动的时候，就会复制粘贴，然后改动。
+它是将一个复杂的对象分解为多个简单的对象，然后一步一步构建而成。
 
-例如下面简历的例子，通过深拷贝，在原本奖励的基础上重新修改工作经历，而不用重新填写用户的基本资料。
+它将变与不变相分离，即产品的组成部分是不变的，但每一部分是可以灵活选择的。
 </code></pre>
-<!-- more -->
+<figure data-type="image" tabindex="2"><img src="https://myx1002.github.io/post-images/1617846327160.png" alt="" width="1800" height="50" loading="lazy"></figure>
 <h2 id="主要角色">主要角色👇👇</h2>
-<pre><code>🙈Prototype（抽象原型类）：它是声明克隆方法的接口，是所有具体原型类的公共父类，可以是抽象类、接口或者是具体实现类。
+<pre><code>🤵产品角色(Product)：它是包含多个组成部件的复杂对象，由具体建造者来创建其各个零部件。
 
-🙉ConcretePrototype（具体原型类）：它实现在抽象原型类中声明的克隆方法，在克隆方法中返回自己的一个克隆对象。
+👶抽象建造者(Builder)：它是一个包含创建产品各个子部件的抽象方法的接口，通常还包含一个返回复杂产品的方法 getResult()。
 
-🙊Client（客户类）：使用原型对象的客户程序。
+👨具体建造者(Concrete Builder)：实现 Builder 接口，完成复杂产品的各个部件的具体创建方法。
+
+💂指挥者(Director)：它调用建造者对象中的部件构造与装配方法完成复杂对象的创建，在指挥者中不涉及具体产品的信息。
 </code></pre>
-<!-- more -->
-<h2 id="优缺点">优缺点👇👇</h2>
+<figure data-type="image" tabindex="3"><img src="https://myx1002.github.io/post-images/1617846327160.png" alt="" width="1800" height="50" loading="lazy"></figure>
+<h2 id="优缺点">优缺点</h2>
 <pre><code>优点⭕️：
 
-    1️⃣性能提高，规避了构造函数的约束
+    1️⃣封装性好，构建和表示分离
 
-    2️⃣辅助实现撤销操作
+    2️⃣扩展性好，各个具体的建造者相互独立，有利于系统的解耦
 
-    3️⃣简化对象的创建
-
+    3️⃣客户端不必知道产品内部组成的细节，建造者可以对创建过程逐步细化，而不对其它模块产生任何影响，便于控制细节风险
 
 缺点❌：
 
-    1️⃣要为每一个类都配置一个 clone 方法
-
-    2️⃣clone 方法位于类的内部，当对已有类进行改造的时候，需要修改代码，违背了开闭原则
-
-    3️⃣当代码复杂，对象嵌套较多时，要实现深克隆较为复杂
+    1️⃣产品的组成部分必须相同，这限制了其使用范围
+    
+    2️⃣如果产品的内部变化复杂，如果产品内部发生变化，则建造者也要同步修改，后期维护成本较大
 </code></pre>
+<figure data-type="image" tabindex="4"><img src="https://myx1002.github.io/post-images/1617846327160.png" alt="" width="1800" height="50" loading="lazy"></figure>
+<h2 id="建造者生成器模式uml图"><code>建造者(生成器)</code>模式UML图👇👇</h2>
+<figure data-type="image" tabindex="5"><img src="https://myx1002.github.io/post-images/1617849564485.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="6"><img src="https://myx1002.github.io/post-images/1617846327160.png" alt="" width="1800" height="50" loading="lazy"></figure>
 <!-- more -->
-<h2 id="原型模式uml图">“原型模式”UML图👇👇</h2>
-<!-- more -->
-<h2 id="抽象工厂模式代码实例">“抽象工厂模式”代码实例</h2>
+<h2 id="建造者生成器模式代码示例"><code>建造者(生成器)</code>模式代码示例👇👇</h2>
+<p>实现类<br>
+Hamburger.php</p>
+<pre><code class="language-php">&lt;?php
+include_once &quot;./Builder.php&quot;;
+
+/**
+ * 产品角色
+ * Class Product
+ */
+class Product
+{
+    public $steps;
+
+    public function add($step)
+    {
+        $this-&gt;steps[] = $step;
+    }
+
+    public function show()
+    {
+        foreach ($this-&gt;steps as $step) {
+            echo $step . PHP_EOL;
+        }
+    }
+}
+
+/**
+ * 指挥者
+ * Class Director
+ */
+class Director
+{
+    public function build(HamburgerBuilder $builder)
+    {
+        $builder-&gt;buildStepA();
+        $builder-&gt;buildStepB();
+        return $builder-&gt;getResult();
+    }
+}
+
+
+$builder  = new BanshaoHamburgerBuilder();
+$director = (new Director())-&gt;build($builder);
+$director-&gt;show();
+</code></pre>
+<br>
+<p>建造者类<br>
+Builder.php</p>
 <pre><code class="language-php">&lt;?php
 
-/**
- * 简历接口抽象类(抽象原型类)
- * Class CloneResume
- */
-abstract Class CloneResume
-{
-    public   $name;
-    public   $sex;
-    public   $age;
-    public   $work;
+include_once &quot;./Hamburger.php&quot;;
 
-    abstract function __clone();
+/**
+ * 汉堡包抽象建造者
+ * Interface HamburgerBuilder
+ */
+interface  HamburgerBuilder
+{
+    public function buildStepA();
+    public function buildStepB();
+    public function getResult();
 }
 
 /**
- * 简历类(具体原型类)
- * Class Resume
+ * 板烧鸡腿堡建造者
+ * Class BanshaoHamburgerBuilder
  */
-class Resume extends CloneResume
+class BanshaoHamburgerBuilder implements HamburgerBuilder
 {
-    public function __construct($name)
+    public $product;
+
+    public function __construct()
     {
-        $this-&gt;name = $name;
-        $this-&gt;work = new WorkExperience();
+        $this-&gt;product = new Product();
     }
 
-    /**
-     * 设置个人信息
-     * @param string $sex
-     * @param string $age
-     */
-    public function setPersonalInfo($sex, $age)
+    public function buildStepA()
     {
-        $this-&gt;sex = $sex;
-        $this-&gt;age = $age;
+        $this-&gt;product-&gt;add('准备一块`板烧鸡腿`');
     }
 
-    /**
-     * 设置工作经历
-     * @param string $workData
-     * @param string $company
-     */
-    public function setWorkExperience($workData, $company)
+    public function buildStepB()
     {
-        $this-&gt;work-&gt;setCompany($company);
-        $this-&gt;work-&gt;setWorkDate($workData);
+        $this-&gt;product-&gt;add('用面包把`板烧鸡腿`夹住，加点生菜和沙拉酱');
     }
 
-    public function display()
+    public function getResult()
     {
-        echo $this-&gt;name . '-' . $this-&gt;sex . '-' . $this-&gt;age . PHP_EOL;
-        echo '工作经历：' . $this-&gt;work-&gt;getCompany() . '-' . $this-&gt;work-&gt;getWorkDate() . PHP_EOL;
-    }
-
-    /**
-     * 重新clone方法，实现深拷贝
-     */
-    public function __clone()
-    {
-        $this-&gt;work = clone $this-&gt;work;
+        $this-&gt;product-&gt;add('`板烧鸡腿`堡好了');
+        return $this-&gt;product;
     }
 }
 
 /**
- * 工作经历：一份简历可能包含多段工作经理
- * Class WorkExperience
+ * 鳕鱼煲建造者
+ * Class XueyuHamburgerBuilder
  */
-class WorkExperience
+class XueyuHamburgerBuilder implements HamburgerBuilder
 {
-    private  $workDate;  // 工作时间
-    private  $company;   // 公司名称
+    public $product;
 
-    /**
-     * 设置工作时间
-     */
-    public function setWorkDate($workDate)
+    public function __construct()
     {
-        return $this-&gt;workDate = $workDate;
+        $this-&gt;product = new Product();
     }
 
-    /**
-     * 设置公司名称
-     */
-    public function setCompany($company)
+    public function buildStepA()
     {
-        return $this-&gt;company = $company;
+        $this-&gt;product-&gt;add('准备一块`鳕鱼`');
     }
 
-    /**
-     * 获取工作时间
-     */
-    public function getWorkDate()
+    public function buildStepB()
     {
-        return $this-&gt;workDate;
+        $this-&gt;product-&gt;add('用面包把`鳕鱼`夹住，加点生菜和沙拉酱');
     }
 
-    /**
-     * 获取公司名称
-     */
-    public function getCompany()
+    public function getResult()
     {
-        return $this-&gt;company;
+        $this-&gt;product-&gt;add('`鳕鱼`堡好了');
+        return $this-&gt;product;
     }
 }
-
-$resumeA = new Resume(&quot;小明&quot;);
-$resumeA-&gt;setPersonalInfo('男', '18');
-$resumeA-&gt;setWorkExperience('2019-7-1至2020-7-1', '牛皮科技有限公司');
-
-$resumeB = clone $resumeA;
-$resumeB-&gt;setWorkExperience('2020-8-1至2021-2-1', '瓜皮科技有限公司');
-
-$resumeA-&gt;display();
-$resumeB-&gt;display();
 </code></pre>
-<figure data-type="image" tabindex="1"><img src="https://myx1002.github.io/post-images/1615885613653.png" alt="" loading="lazy"></figure>
-<center>图二：执行结果☝️☝️</center>
+<pre><code>运行结果：
+&gt; php Hamburger.php
+&gt; 准备一块`板烧鸡腿`
+&gt; 用面包把`板烧鸡腿`夹住，加点生菜和沙拉酱
+&gt; `板烧鸡腿`堡好了
+</code></pre>
 <!-- more -->
-<h2 id="总结">总结👇👇</h2>
-<pre><code>👌至此，`原型模式`就介绍完毕啦，其实我们也可以把`原型模式`成为`克隆模式`，这样字面上的意思就更容易理解了，鸣人的`影分身`术都熟悉了吧😏
+<figure data-type="image" tabindex="7"><img src="https://myx1002.github.io/post-images/1617846327160.png" alt="" width="1800" height="50" loading="lazy"></figure>
+<h2 id="与工厂模式的区别">与<code>工厂模式</code>的区别❓❓</h2>
+<pre><code>⚪️建造者模式更加注重方法的调用顺序，工厂模式更注重创建对象
+
+⚫️粒度大小不同，厂方法模式创建的产品一般都是单一性质产品，而建造者模式创建的则是一个复合产品，它由各个部件复合而成，部件不同产品对象当然不同。
+
+🔵关注重点不用，工厂模式只需要把对象创建出来即可，而建造者模式还需要关注该对象由哪些部件组成
+
+🔴建造者模式根据建造过程中的顺序不一样，最终对象部件组成也不一样。
 </code></pre>
-<figure data-type="image" tabindex="2"><img src="https://myx1002.github.io/post-images/1615885976776.jpg" alt="" width="400" height="300" loading="lazy"></figure>
+<figure data-type="image" tabindex="8"><img src="https://myx1002.github.io/post-images/1617846327160.png" alt="" width="1800" height="50" loading="lazy"></figure>
+<h2 id="总结">总结</h2>
+<p>So，经过上面的介绍，大家都已经基本了解<code>建造者模式</code>了，其实很多设计模式我们在平时工作的时候也会不自觉的用到，只是自己没发现。</p>
+<p>但是当你接触了，学习了之后，下次遇到代码设计的问题时，就能够用更好的设计模式来处理，使得代码更加简洁易懂啦。</p>
+<p>那么今天的学习到这里，后面就得开始学习另外的<code>结构型模式</code>和<code>行为型模式</code>咯，拜🖐</p>
 
                 </div>
             </article>
@@ -396,8 +428,8 @@ $resumeB-&gt;display();
         
             <div class="next-post">
                 <div class="next gt-c-content-color-first">下一篇</div>
-                <a href="https://myx1002.github.io/post/design_patterns_02_03/" class="post-title gt-a-link">
-                    硬啃设计模式(二)：工厂模式之抽象工厂模式
+                <a href="https://myx1002.github.io/post/data_structure_02/" class="post-title gt-a-link">
+                    数据结构：简单动态字符串SDS
                 </a>
             </div>
         
