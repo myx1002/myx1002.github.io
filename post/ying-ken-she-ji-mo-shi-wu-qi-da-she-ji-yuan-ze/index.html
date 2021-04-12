@@ -4,7 +4,7 @@
 <meta name="description" content="" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<title>硬啃设计模式(三)：原型模式 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+<title>硬啃设计模式：七大设计原则 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
 
 <link rel="shortcut icon" href="https://myx1002.github.io/favicon.ico?v=1618194743198">
 
@@ -202,204 +202,21 @@
         <div class="post-detail gt-bg-theme-color-second">
             <article class="gt-post-content">
                 <h2 class="post-title">
-                    硬啃设计模式(三)：原型模式
+                    硬啃设计模式：七大设计原则
                 </h2>
                 <div class="post-info">
                     <time class="post-time gt-c-content-color-first">
-                        · 2021-03-11 ·
+                        · 2021-04-08 ·
                     </time>
-                    
-                        <a href="https://myx1002.github.io/tag/KmXvMvDsm/" class="post-tags">
-                            # 设计模式
-                        </a>
-                    
-                        <a href="https://myx1002.github.io/tag/jmxx7i2hw/" class="post-tags">
-                            # 面试知识点
-                        </a>
                     
                 </div>
                 <div class="post-content">
-                    <p>👴👴 害，年后工作繁忙呀，都没事学习了，又得做新的项目了，只能硬挤一点时间出来整理😭</p>
-<p>行吧😤 废话不多数，今天整理的是创建型模式中的第四种：原型模式👏👏👏</p>
-<!-- more -->
-<h2 id="概念">概念👇👇</h2>
-<pre><code>原始模式属于`创建型模式`，是从一个对象，通过复制来创建一个相同或者类似的可定制的新对象，而不需要知道任何的创建细节。
-
-值得注意的是，通过克隆方式拷贝出来的对象是一个新的对象，对其修改不会影响原型对象的属性。
-</code></pre>
-<!-- more -->
-<h2 id="使用场景">使用场景👇👇</h2>
-<pre><code>其实原型模式的原理就类似我们程序员中的`复制`和`粘贴`，有时候需要写重复代码，但是有部分要改动的时候，就会复制粘贴，然后改动。
-
-例如下面简历的例子，通过深拷贝，在原本奖励的基础上重新修改工作经历，而不用重新填写用户的基本资料。
-</code></pre>
-<!-- more -->
-<h2 id="主要角色">主要角色👇👇</h2>
-<pre><code>🙈Prototype（抽象原型类）：它是声明克隆方法的接口，是所有具体原型类的公共父类，可以是抽象类、接口或者是具体实现类。
-
-🙉ConcretePrototype（具体原型类）：它实现在抽象原型类中声明的克隆方法，在克隆方法中返回自己的一个克隆对象。
-
-🙊Client（客户类）：使用原型对象的客户程序。
-</code></pre>
-<!-- more -->
-<h2 id="优缺点">优缺点👇👇</h2>
-<pre><code>优点⭕️：
-
-    1️⃣性能提高，规避了构造函数的约束
-
-    2️⃣辅助实现撤销操作
-
-    3️⃣简化对象的创建
-
-
-缺点❌：
-
-    1️⃣要为每一个类都配置一个 clone 方法
-
-    2️⃣clone 方法位于类的内部，当对已有类进行改造的时候，需要修改代码，违背了开闭原则
-
-    3️⃣当代码复杂，对象嵌套较多时，要实现深克隆较为复杂
-</code></pre>
-<!-- more -->
-<h2 id="原型模式uml图">“原型模式”UML图👇👇</h2>
-<!-- more -->
-<h2 id="抽象工厂模式代码实例">“抽象工厂模式”代码实例</h2>
-<pre><code class="language-php">&lt;?php
-
-/**
- * 简历接口抽象类(抽象原型类)
- * Class CloneResume
- */
-abstract Class CloneResume
-{
-    public   $name;
-    public   $sex;
-    public   $age;
-    public   $work;
-
-    abstract function __clone();
-}
-
-/**
- * 简历类(具体原型类)
- * Class Resume
- */
-class Resume extends CloneResume
-{
-    public function __construct($name)
-    {
-        $this-&gt;name = $name;
-        $this-&gt;work = new WorkExperience();
-    }
-
-    /**
-     * 设置个人信息
-     * @param string $sex
-     * @param string $age
-     */
-    public function setPersonalInfo($sex, $age)
-    {
-        $this-&gt;sex = $sex;
-        $this-&gt;age = $age;
-    }
-
-    /**
-     * 设置工作经历
-     * @param string $workData
-     * @param string $company
-     */
-    public function setWorkExperience($workData, $company)
-    {
-        $this-&gt;work-&gt;setCompany($company);
-        $this-&gt;work-&gt;setWorkDate($workData);
-    }
-
-    public function display()
-    {
-        echo $this-&gt;name . '-' . $this-&gt;sex . '-' . $this-&gt;age . PHP_EOL;
-        echo '工作经历：' . $this-&gt;work-&gt;getCompany() . '-' . $this-&gt;work-&gt;getWorkDate() . PHP_EOL;
-    }
-
-    /**
-     * 重新clone方法，实现深拷贝
-     */
-    public function __clone()
-    {
-        $this-&gt;work = clone $this-&gt;work;
-    }
-}
-
-/**
- * 工作经历：一份简历可能包含多段工作经理
- * Class WorkExperience
- */
-class WorkExperience
-{
-    private  $workDate;  // 工作时间
-    private  $company;   // 公司名称
-
-    /**
-     * 设置工作时间
-     */
-    public function setWorkDate($workDate)
-    {
-        return $this-&gt;workDate = $workDate;
-    }
-
-    /**
-     * 设置公司名称
-     */
-    public function setCompany($company)
-    {
-        return $this-&gt;company = $company;
-    }
-
-    /**
-     * 获取工作时间
-     */
-    public function getWorkDate()
-    {
-        return $this-&gt;workDate;
-    }
-
-    /**
-     * 获取公司名称
-     */
-    public function getCompany()
-    {
-        return $this-&gt;company;
-    }
-}
-
-$resumeA = new Resume(&quot;小明&quot;);
-$resumeA-&gt;setPersonalInfo('男', '18');
-$resumeA-&gt;setWorkExperience('2019-7-1至2020-7-1', '牛皮科技有限公司');
-
-$resumeB = clone $resumeA;
-$resumeB-&gt;setWorkExperience('2020-8-1至2021-2-1', '瓜皮科技有限公司');
-
-$resumeA-&gt;display();
-$resumeB-&gt;display();
-</code></pre>
-<figure data-type="image" tabindex="1"><img src="https://myx1002.github.io/post-images/1615885613653.png" alt="" loading="lazy"></figure>
-<center>图二：执行结果☝️☝️</center>
-<!-- more -->
-<h2 id="总结">总结👇👇</h2>
-<pre><code>👌至此，`原型模式`就介绍完毕啦，其实我们也可以把`原型模式`成为`克隆模式`，这样字面上的意思就更容易理解了，鸣人的`影分身`术都熟悉了吧😏
-</code></pre>
-<figure data-type="image" tabindex="2"><img src="https://myx1002.github.io/post-images/1615885976776.jpg" alt="" width="400" height="300" loading="lazy"></figure>
+                    <p>是</p>
 
                 </div>
             </article>
         </div>
 
-        
-            <div class="next-post">
-                <div class="next gt-c-content-color-first">下一篇</div>
-                <a href="https://myx1002.github.io/post/design_patterns_02_03/" class="post-title gt-a-link">
-                    硬啃设计模式(二)：工厂模式之抽象工厂模式
-                </a>
-            </div>
         
 
         
