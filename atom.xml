@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://myx1002.github.io</id>
     <title>鸡毛蒜皮事(●&apos;◡&apos;●)</title>
-    <updated>2021-04-20T16:40:14.987Z</updated>
+    <updated>2021-04-24T11:01:44.050Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://myx1002.github.io"/>
     <link rel="self" href="https://myx1002.github.io/atom.xml"/>
@@ -10,6 +10,19 @@
     <logo>https://myx1002.github.io/images/avatar.png</logo>
     <icon>https://myx1002.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, 鸡毛蒜皮事(●&apos;◡&apos;●)</rights>
+    <entry>
+        <title type="html"><![CDATA[硬啃设计模式(八)：代理模式]]></title>
+        <id>https://myx1002.github.io/post/design_patterns_08/</id>
+        <link href="https://myx1002.github.io/post/design_patterns_08/">
+        </link>
+        <updated>2021-04-24T10:02:01.000Z</updated>
+        <summary type="html"><![CDATA[<p>🤤 设计模式之后更新的频率可能会放慢一点噢，可能会一个月2篇左右~<br>
+😿 因为打算把更多精力放在整理其它更实用的知识点上，例如redis、elk、mq等等</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>🤤 设计模式之后更新的频率可能会放慢一点噢，可能会一个月2篇左右~<br>
+😿 因为打算把更多精力放在整理其它更实用的知识点上，例如redis、elk、mq等等</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[2021年4月20日唠唠叨叨]]></title>
         <id>https://myx1002.github.io/post/lao-lao-tao-tao-yi-2021-nian-4-yue-20-ri/</id>
@@ -25,8 +38,8 @@
     </entry>
     <entry>
         <title type="html"><![CDATA[硬啃设计模式(七)：装饰器模式]]></title>
-        <id>https://myx1002.github.io/post/ying-ken-she-ji-mo-shi-qi-zhuang-shi-qi-mo-shi/</id>
-        <link href="https://myx1002.github.io/post/ying-ken-she-ji-mo-shi-qi-zhuang-shi-qi-mo-shi/">
+        <id>https://myx1002.github.io/post/design_patterns_07/</id>
+        <link href="https://myx1002.github.io/post/design_patterns_07/">
         </link>
         <updated>2021-04-17T03:00:40.000Z</updated>
         <summary type="html"><![CDATA[<p>😣 5.1快到啦！！！这个月都要补班，所以都是单休，最近工作也完成得比较快，超进度完成了！<br>
@@ -51,8 +64,8 @@
     </entry>
     <entry>
         <title type="html"><![CDATA[硬啃设计模式(六)：适配器模式]]></title>
-        <id>https://myx1002.github.io/post/design_patterns_05/</id>
-        <link href="https://myx1002.github.io/post/design_patterns_05/">
+        <id>https://myx1002.github.io/post/design_patterns_06/</id>
+        <link href="https://myx1002.github.io/post/design_patterns_06/">
         </link>
         <updated>2021-04-09T07:03:53.000Z</updated>
         <summary type="html"><![CDATA[<p>😈 上班摸鱼更新中.........看到了千万不要告诉我领导😭，因为安排的工作都弄完了，而且今天也是周五！<br>
@@ -77,8 +90,8 @@
     </entry>
     <entry>
         <title type="html"><![CDATA[硬啃设计模式(五)：建造者(生成器)模式]]></title>
-        <id>https://myx1002.github.io/post/design_patterns_04/</id>
-        <link href="https://myx1002.github.io/post/design_patterns_04/">
+        <id>https://myx1002.github.io/post/design_patterns_05/</id>
+        <link href="https://myx1002.github.io/post/design_patterns_05/">
         </link>
         <updated>2021-04-08T01:11:10.000Z</updated>
         <summary type="html"><![CDATA[<p>😭 已经好久没更新了，懒惰的我，不可原谅👻<br>
@@ -118,8 +131,8 @@
     </entry>
     <entry>
         <title type="html"><![CDATA[硬啃设计模式(四)：原型模式]]></title>
-        <id>https://myx1002.github.io/post/design_patterns_03/</id>
-        <link href="https://myx1002.github.io/post/design_patterns_03/">
+        <id>https://myx1002.github.io/post/design_patterns_04/</id>
+        <link href="https://myx1002.github.io/post/design_patterns_04/">
         </link>
         <updated>2021-03-11T13:34:11.000Z</updated>
         <summary type="html"><![CDATA[<p>👴👴 害，年后工作繁忙呀，都没事学习了，又得做新的项目了，只能硬挤一点时间出来整理😭</p>
@@ -127,19 +140,6 @@
 ]]></summary>
         <content type="html"><![CDATA[<p>👴👴 害，年后工作繁忙呀，都没事学习了，又得做新的项目了，只能硬挤一点时间出来整理😭</p>
 <p>行吧😤 废话不多数，今天整理的是创建型模式中的第四种：原型模式👏👏👏</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[硬啃设计模式(三)：工厂模式之抽象工厂模式]]></title>
-        <id>https://myx1002.github.io/post/design_patterns_02_03/</id>
-        <link href="https://myx1002.github.io/post/design_patterns_02_03/">
-        </link>
-        <updated>2021-03-05T13:53:52.000Z</updated>
-        <summary type="html"><![CDATA[<p>🕺💃 哇~几天没见，甚是思念，又到了晚上学习的时候了哈哈哈😭哈。。哈😭😭</p>
-<p>🗣🗣 今天为大家带来的时候<code>抽象工厂模式</code>，而且还会有<code>抽象工厂模式</code>的优化版噢🤤</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>🕺💃 哇~几天没见，甚是思念，又到了晚上学习的时候了哈哈哈😭哈。。哈😭😭</p>
-<p>🗣🗣 今天为大家带来的时候<code>抽象工厂模式</code>，而且还会有<code>抽象工厂模式</code>的优化版噢🤤</p>
 ]]></content>
     </entry>
 </feed>
