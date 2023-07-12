@@ -1,0 +1,304 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>Redis学习之路(十二)：惰性删除和内存回收机制 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Redis学习之路(十二)：惰性删除和内存回收机制
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2021-11-08 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tags">
+                            # redis
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>小小知识点，记录一下🤓</p>
+<!-- more -->
+<h2 id="惰性删除">惰性删除</h2>
+<h3 id="为什么要使用惰性删除">为什么要使用惰性删除？</h3>
+<p>删除指令<strong>del</strong>会直接释放对象的内存，大部分情况该指令执行非常快，没有明显延迟，不过如果删除的<strong>key</strong>是一个非常大的对象，那么删除操作就会导致单线程卡顿。</p>
+<p>因此 Redis 为了解决这个卡顿的问题，在4.0版本引入了<strong>unlink</strong>指令，它能对删除操作进行懒处理，丢给后台线程来异步回收内存。</p>
+<pre><code class="language-redis">&gt; unlink key
+&gt; ok
+</code></pre>
+<h3 id="是否有线程安全问题">是否有线程安全问题？</h3>
+<p>不会。当<strong>unlink</strong>指令发出后，它就已经被切断关系，丢到异步线程去处理了，因此在<strong>unlink</strong>的一瞬间，它就再也无法被主线程中的其它指令访问到了。</p>
+<h3 id="flush">flush</h3>
+<p>Redis 提供了<strong>flushdb</strong>和<strong>flushall</strong>指令，用来清空数据库，这也是及其缓慢的操作，同样可能会卡死线程，因此在4.0版本同样给这两个指令带来了异步化，在指令后增加<strong>async</strong>参数即可进行异步处理。</p>
+<pre><code class="language-redis">&gt; flushdb async
+&gt; ok
+</code></pre>
+<h3 id="更多异步删除节点">更多异步删除节点</h3>
+<p>除了<strong>del</strong>指令和<strong>flush</strong>操作之外，Redis在key的过期、LRU淘汰、rename指令过程中，也会实施回收内存。</p>
+<p>此外，还有一种特殊的flush操作，其发生于正在进行全量同步的从节点中，在接受完整的rdb文件后，也需要将当前的内存一次性清空，以加载整个rdb文件的内容到内存。</p>
+<p>Redis 4.0 为这些删除点也带来了异步删除机制，打开这些点需要额外的设置选项。</p>
+<ol>
+<li>slave-lazy flush ：从节点接受完 rdb 文件后的 flush 操作</li>
+<li>lazy ee-1 y-eviction ：内存达到 maxmemo可时进行淘汰。</li>
+<li>lazy ee-lazy-expire key ：过期删除</li>
+<li>la free- lazy-se er-del rename ：指令删除 destKey</li>
+</ol>
+<hr>
+<h2 id="内存回收机制">内存回收机制</h2>
+<p>Redis 并不总是将空闲内存立即归还给操作系统。<br>
+如果当前 Redis 内存有 10GB ，当你删除了1GB key 后，再去观察内存，你会发现内存变化不会太大。</p>
+<p>原因是操作系统是以页为单位来回收内存的，这个页上只要还有一个 key 在使用，那么它就不能被回收。 Redis 虽然删除了1GB key ，但是这些 key 分散到了很多页面中，每个页面都还有其他 key 存在，这就导致了内存不被立即回收。</p>
+<p>不过，如果你执行 flushdb 然后再观察内存，会发现内存确实被回收了 。原因是所有的 key 都被干掉了，大部分之前使用的页面都完全干净了，就会立即被操作系统回收。</p>
+<p>Redis 然无法保证立即回收已经删除的 key 的内存，但是它会重新使用那些尚未回收的空闲内存。这就好比电影院里虽然一拨观众走了，但是座位还在，下一拨观众来了，直接坐上就行，而操作系统回收内存就好比把座位也都给搬走了。</p>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/redis_learning_11/" class="post-title gt-a-link">
+                    Redis学习之路(十一)：过期删除策略和内存淘汰策略
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

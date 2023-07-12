@@ -1,0 +1,772 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>讲解laravel框架中的控制反转（IoC）和依赖注入（DI） | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    讲解laravel框架中的控制反转（IoC）和依赖注入（DI）
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-09-02 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/qo6XPqkl5/" class="post-tags">
+                            # php
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>👏 之前已经讲过了 IoC 和 DI 的概念，这一章节虽然也是讲这两个，但是主要是结合 laravel框架来讲解，看看 laravel 中的 IoC 和 DI 是如何使用的。</p>
+<!-- more -->
+<h1 id="目录">目录</h1>
+<ul>
+<li><a href='#一、什么是IoC 和 DI？'>一、什么是IoC 和 DI？</a></li>
+<li><a href='#二、目的'>二、目的</a></li>
+<li><a href='#三、原生代码实现'>三、原生代码实现</a>
+<ul>
+<li><a href='#3.1 传统写法'>3.1 传统写法</a></li>
+<li><a href='#3.2 采用IoC和DI的思想来实现'>3.2 采用IoC和DI的思想来实现</a></li>
+</ul>
+</li>
+<li><a href='#四、对 IoC 和 DI 的本质分析'>四、对IoC和DI的本质分析</a></li>
+<li><a href='#五、Laravel框架IoC核心源码'>五、Laravel框架IoC核心源码</a>
+<ul>
+<li><a href='#5.1 绑定'>5.1 绑定</a></li>
+<li><a href='#5.2 解析'>5.2 解析</a></li>
+</ul>
+</li>
+</ul>
+<hr>
+<h1 id="a-name一-什么是ioc-和-di一-什么是ioc-和-dia"><a name='一、什么是IoC 和 DI？'>一、什么是IoC 和 DI？</a></h1>
+<h2 id="iocinversion-of-control控制反转">IoC（Inversion of Control）控制反转</h2>
+<p>IoC 是一个理论，一个指导思想。指导开发人员如何使用对象去管理对象。把对象的创建、属性赋值、对象的生命周期都交给代码之外的容器管理。</p>
+<p>IoC分为<code>控制</code>和<code>反转</code>：</p>
+<ul>
+<li>
+<p>控制：对象创建、属性赋值、对象生命周期的管理。</p>
+</li>
+<li>
+<p>正转：开发人员在代码中，使用new构造方法创建对象，开发人员掌握了对象的创建、属性赋值、对象从开始到销毁的全部过程，开发人员对对象全部控制。</p>
+</li>
+<li>
+<p>反转：把开发人员管理对象的权限转移给代码之外的容器来实现，由容器来完成对对象的管理。</p>
+</li>
+</ul>
+<blockquote>
+<p>简单的说，就是在使用对象时，由主动 new 产生对象转换成从外部提供对象，在这个过程中，对象的创建控制权由程序转移道外部。</p>
+</blockquote>
+<br>
+<h2 id="didependency-injection依赖注入">DI（Dependency Injection）依赖注入</h2>
+<p>DI 是 IoC 的一种技术实现。程序只需要提供要使用的对象名称即可，对象如何创建，如何从容器中查找、获取都由容器内部自己实现。</p>
+<br>
+<h2 id="通俗解释">通俗解释</h2>
+<p>小明有钱了，想自己建个房子，但是自己建的话又很麻烦很乱，于是就找到房产中介（IoC容器）买了房子（DI依赖注入），因此小明不用自己建，直接找中介就得到了想要的房子。</p>
+<p>小明<code>依赖</code>房子，但是他从自己盖房子（自己<code>控制</code>房子）到找中介买房子（让中介<code>控制</code>房子），这就叫做<code>控制反转</code>，而中介根据小明的要求，直接把房子提供给小明，这就叫做<code>依赖注入</code>。</p>
+<p>当然，这个房子不是中介建设的，而是开发商建设的，这个开发商就是<code>服务提供者</code>，中介只是负责把房子挂牌出售，便于提供给需要的人。</p>
+<hr>
+<h1 id="a-name二-目的二-目的a"><a name='二、目的'>二、目的</a></h1>
+<p>采用IOC思想和DI设计模式，主要目的是：解耦，简化代码、便于管理。</p>
+<p>不用每个方法里面都 new new new 那样子，要修改的时候就需要到处搜索修改，不仅麻烦，还容易改漏。</p>
+<hr>
+<h1 id="a-name三-原生代码实现三-原生代码实现a"><a name='三、原生代码实现'>三、原生代码实现</a></h1>
+<h2 id="a-name31-传统写法31-传统写法a"><a name='3.1 传统写法'>3.1 传统写法</a></h2>
+<pre><code class="language-php">&lt;?php
+
+/**
+  * 购房者
+  */
+class User
+{
+    private $userName;
+
+    public function  __construct($userName)
+    {
+        $this-&gt;userName = $userName;
+    }
+
+    public function buyHouse()
+    {
+        $house = new House('0001', '三室一厅', '120平方米');
+        echo '我是'.$this-&gt;userName.&quot;\r\n&quot;;
+        echo '我买了'. $house-&gt;getHouseType(). '的房子了'.&quot;\r\n&quot;;
+        echo '我买了'. $house-&gt;getHouseArea(). '的房子了'.&quot;\r\n&quot;;
+    }
+}
+
+/**
+  * 商品房
+  */
+class House
+{
+    private $houseNo;
+    private $houseType;
+    private $houseArea;
+
+    public function __construct($houseNo, $houseType, $houseArea)
+    {
+        $this-&gt;houseNo = $houseNo;
+        $this-&gt;houseType = $houseType;
+        $this-&gt;houseArea = $houseArea;
+    }
+
+    public function getHouseType()
+    {
+        return $this-&gt;houseType;
+    }
+
+    public function getHouseArea()
+    {
+        return $this-&gt;houseArea;
+    }
+}
+
+$user = new User('小明');
+$user-&gt;buyHouse();
+&gt;
+</code></pre>
+<p>以上代码输出结果为：</p>
+<pre><code>我是小明
+我买了三室一厅的房子了
+我买了120平方米的房子了
+</code></pre>
+<br>
+<h2 id="a-name32-采用ioc和di的思想来实现32采用ioc和di的思想来实现a"><a name='3.2 采用IoC和DI的思想来实现'>3.2采用IoC和DI的思想来实现</a></h2>
+<pre><code class="language-php">/**
+ * Class 购房者
+ */
+class User
+{
+    private $userName;
+
+    public function __construct($userName)
+    {
+        $this-&gt;userName = $userName;
+    }
+
+    public function buyHouse(House $house)
+    {
+        echo '我是'.$this-&gt;userName.&quot;\r\n&quot;;
+        echo '我买了'. $house-&gt;getHouseType(). '的房子了'.&quot;\r\n&quot;;
+        echo '我买了'. $house-&gt;getHouseArea(). '的房子了'.&quot;\r\n&quot;;
+    }
+
+}
+
+
+/**
+  * 商品房
+  */
+class House
+{
+    private $houseNo;
+    private $houseType;
+    private $houseArea;
+
+    public function __construct($houseNo, $houseType, $houseArea)
+    {
+        $this-&gt;houseNo = $houseNo;
+        $this-&gt;houseType = $houseType;
+        $this-&gt;houseArea = $houseArea;
+    }
+
+    public function getHouseType()
+    {
+        return $this-&gt;houseType;
+    }
+
+    public function getHouseArea()
+    {
+        return $this-&gt;houseArea;
+    }
+}
+
+
+/**
+ * 房产中介，就是我们讲的ioc
+ * Class 房产中介
+ */
+class 房产中介
+{
+    private $在售房源 = [];//这个类似于laravel的Container对象中的$bindings
+    private $认筹房源 = [];//类似于laravel的Container对象中的$resolved
+    private $公租房 = [];//类似于laravel的Container对象中的$instances
+    private $网红房源 = [];//类似于laravel的Container对象中的$aliases / $abstractAliases
+    private $意向购房群体 = [];
+
+    public function 预售登记($户型, $详细信息)
+    {
+        $this-&gt;在售房源[$户型] = $详细信息;
+    }
+
+    public function 获取在售房源($户型)
+    {
+        return ($this-&gt;在售房源[$户型])();//因为是闭包，所以，要增加()来执行闭包函数
+    }
+
+    public function 意向登记($意向人, $个人信息)
+    {
+        $this-&gt;意向购房群体[$意向人] = $个人信息;
+    }
+
+    public function 获取意向人信息($意向人)
+    {
+        return ($this-&gt;意向购房群体[$意向人])();//因为是闭包，所以，要增加()来执行闭包函数
+    }
+}
+
+$app = new 房产中介();
+$app-&gt;预售登记('三室一厅', function(){
+    return new House('1001', '三室一厅', '100平方米');
+});
+$app-&gt;预售登记('四室两厅', function(){
+    return new House('1002', '四室两厅', '150平方米');
+});
+
+$app-&gt;意向登记('小明', function(){
+    return new User('小明');
+});
+
+$app-&gt;意向登记('张三', function(){
+    return new User('张三');
+});
+
+//echo $app-&gt;获取意向人信息('小明')-&gt;买房($app-&gt;获取在售房源('四室两厅'));
+
+$user = $app-&gt;获取意向人信息('小明');
+$house = $app-&gt;获取在售房源('四室两厅');
+$user-&gt;buyHouse($house);
+</code></pre>
+<p>以上代码输出结果为：</p>
+<pre><code>我是小明
+我买了三室一厅的房子了
+我买了120平方米的房子了
+</code></pre>
+<hr>
+<h1 id="a-name四-对-ioc-和-di-的本质分析四-对ioc和di的本质分析a"><a name='四、对 IoC 和 DI 的本质分析'>四、对IoC和DI的本质分析</a></h1>
+<p>从上面的代码我们可以看到，房产中介作为IoC，其实本质就是一个数组（一维或者多维）。</p>
+<p>其实，在laravel框架中，<code>Container</code>对象中的属性<code>$bindings</code> 、<code>$resolved</code> 、<code>$instances</code> 、<code>$aliases</code>、<code>$abstractAliases</code> 其实也是从不同维度来管理注册到容器中的对象的。</p>
+<p>上面的例子中，如果从业务逻辑角度来讲，无非就是购房者买房，主要的类有：购房者、商品房。如果按照传统代码来实现的话，那么购房者对象对商品房对象的依赖是<strong>强依赖</strong>，因为在购房者类中需要new 商品房类()。</p>
+<p>而如果采用 IoC和DI 的思想来实现的话，增加了房产中介这个<code> IoC 容器</code>，<strong>商品房</strong>首先在<strong>房产中介</strong>那边进行一下<strong>预售登记</strong>，<strong>购房者</strong>也在<strong>房产中介</strong>那边进行一下<strong>意向登记</strong>，购房者对象需要依赖商品房对象，采用<code>依赖注入</code>。</p>
+<p>即：让房产中介直接把实例化后到商品房对象注入到购房者对象，购房者对象无需关注怎么实例化，只管拿过来用就行。</p>
+<hr>
+<h1 id="a-name五-laravel框架ioc核心源码五-laravel框架ioc核心源码a"><a name='五、Laravel框架IoC核心源码'>五、Laravel框架IoC核心源码</a></h1>
+<h2 id="a-name51-绑定51-绑定a"><a name='5.1 绑定'>5.1 绑定</a></h2>
+<p>我们来简单看下laravel框架的核心容器的绑定是怎么实现的，以及三种绑定模式的区别。</p>
+<p>以下代码都是在Illuminate\Container\Container类中</p>
+<h2 id="bind绑定">bind绑定</h2>
+<pre><code class="language-php">      /**
+       * Register a binding with the container.
+       *
+       * @param  string  $abstract
+       * @param  \Closure|string|null  $concrete
+       * @param  bool  $shared
+       * @return void
+       */
+      public function bind($abstract, $concrete = null, $shared = false)
+      {
+          //移除旧的实例
+          $this-&gt;dropStaleInstances($abstract);
+  
+          // If no concrete type was given, we will simply set the concrete type to the
+          // abstract type. After that, the concrete type to be registered as shared
+          // without being forced to state their classes in both of the parameters.
+          if (is_null($concrete)) {
+              $concrete = $abstract;
+          }
+  
+          // If the factory is not a Closure, it means it is just a class name which is
+          // bound into this container to the abstract type and we will just wrap it
+          // up inside its own Closure to give us more convenience when extending.
+          if (! $concrete instanceof Closure) {
+              $concrete = $this-&gt;getClosure($abstract, $concrete);
+          }
+  
+        // 创建一个包含变量与其值的数组。
+        //对每个参数，compact() 在当前的符号表中查找该变量名并将它添加到输出的数组中，变量名成为键名而变量的内容成为该键的值。简单说，它做的事和 extract() 正好相反。返回将所有变量添加进去后的数组。
+          $this-&gt;bindings[$abstract] = compact('concrete', 'shared');
+  
+          // If the abstract type was already resolved in this container we'll fire the
+          // rebound listener so that any objects which have already gotten resolved
+          // can have their copy of the object updated via the listener callbacks.
+          //检查是否解析过 或则 已经存在所要绑定对象对应的实例
+          if ($this-&gt;resolved($abstract)) {
+              $this-&gt;rebound($abstract);
+          }
+      }
+</code></pre>
+<p>如何使用bind方法来将对象注册绑定到容器中呢？如下，bind方法是将闭包绑定到容器当中</p>
+<pre><code class="language-php">$this-&gt;app-&gt;bind('User\API', function ($app) {
+  		return new User\API($app-&gt;make('UserLogin'));
+  });
+</code></pre>
+<blockquote>
+<p>同样，bind方法会先删除旧的实例，然后再新的实例放入闭包中，再绑定到容器中。如果第二个参数不是闭包，会通过getClosure方法将类名封装到闭包中，然后在闭包中通过make方法或build方法解析绑定的类。绑定时会将闭包和是否是shared放入$this-&gt;bind[]数组中，解析时调用。</p>
+</blockquote>
+<br>
+<h3 id="singleton绑定">singleton绑定</h3>
+<pre><code class="language-php">/**
+ * Register a shared binding in the container.
+ *  绑定到容器的对象只会被解析一次，之后的调用都返回相同的实例：
+ * @param  string|array  $abstract
+ * @param  \Closure|string|null  $concrete
+ * @return void
+ */
+public function singleton($abstract, $concrete = null)
+{
+    $this-&gt;bind($abstract, $concrete, true);
+}
+</code></pre>
+<blockquote>
+<p>从官方的代码可以看出，singleton方法，最终还是调用了$this-&gt;bind()方法，只是通过singleton()方法绑定到容器的对象只会被解析一次，之后的调用都返回相同的实例，这就是所谓的单例。</p>
+</blockquote>
+<br>
+<h3 id="instance绑定">instance绑定</h3>
+<pre><code class="language-php">       /**
+        * Register an existing instance as shared in the container.
+        *
+        * @param  string  $abstract
+        * @param  mixed   $instance
+        * @return mixed
+        */
+       public function instance($abstract, $instance)
+       {
+           //移除已经存在的抽象的别名
+           $this-&gt;removeAbstractAlias($abstract);
+   
+           //检查是否已经存在该别名的绑定的对象
+           $isBound = $this-&gt;bound($abstract);
+   
+           unset($this-&gt;aliases[$abstract]);
+   
+           // We'll check to determine if this type has been bound before, and if it has
+           // we will fire the rebound callbacks registered with the container and it
+           // can be updated with consuming classes that have gotten resolved here.
+           $this-&gt;instances[$abstract] = $instance;
+   
+           // 判断是否已经绑定
+           if ($isBound) {
+               $this-&gt;rebound($abstract);
+           }
+   
+           return $instance;
+       }
+</code></pre>
+<blockquote>
+<p>可以看到在instance方法中，首先移除已经存在的相同的别名，然后将对象存入$this-&gt;instance 数组中。然后完成了绑定。</p>
+<p>使用该方法注册绑定到容器中的对象实例是共享的。</p>
+</blockquote>
+<br>
+<h3 id="结论">结论</h3>
+<blockquote>
+<p>bind：不提前占用内存, 待到调用的时候调用才会进行实例化, 每次都new一个新实例。</p>
+<p>singletion：需要提前占用内存, 也就是需要先提前实例化出一个对象, 之后的每次调用都是调用这个实例。</p>
+<p>instance：不提前占用内存, 待到调用的时候, 待到调用的时候调用才会进行实例化, 每次返回的都是同一个实例。</p>
+</blockquote>
+<br>
+<h2 id="a-name52-解析52-解析a"><a name='5.2 解析'>5.2 解析</a></h2>
+<pre><code class="language-php">    /**
+     * Resolve the given type from the container.
+     *
+     * @param  string  $abstract
+     * @param  array  $parameters
+     * @return mixed
+     *
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     */
+    public function make($abstract, array $parameters = [])
+    {
+        return $this-&gt;resolve($abstract, $parameters);
+    }
+
+
+    /**
+     * Resolve the given type from the container.
+     *
+     * @param  string  $abstract
+     * @param  array  $parameters
+     * @param  bool   $raiseEvents
+     * @return mixed
+     *
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     */
+    protected function resolve($abstract, $parameters = [], $raiseEvents = true)
+    {
+        $abstract = $this-&gt;getAlias($abstract);
+
+        $needsContextualBuild = ! empty($parameters) || ! is_null(
+            $this-&gt;getContextualConcrete($abstract)
+        );
+
+        // If an instance of the type is currently being managed as a singleton we'll
+        // just return an existing instance instead of instantiating new instances
+        // so the developer can keep using the same objects instance every time.
+        if (isset($this-&gt;instances[$abstract]) &amp;&amp; ! $needsContextualBuild) {
+            return $this-&gt;instances[$abstract];
+        }
+
+        $this-&gt;with[] = $parameters;
+
+        $concrete = $this-&gt;getConcrete($abstract);
+
+        // We're ready to instantiate an instance of the concrete type registered for
+        // the binding. This will instantiate the types, as well as resolve any of
+        // its &quot;nested&quot; dependencies recursively until all have gotten resolved.
+        if ($this-&gt;isBuildable($concrete, $abstract)) {
+            $object = $this-&gt;build($concrete);
+        } else {
+            $object = $this-&gt;make($concrete);
+        }
+
+        // If we defined any extenders for this type, we'll need to spin through them
+        // and apply them to the object being built. This allows for the extension
+        // of services, such as changing configuration or decorating the object.
+        foreach ($this-&gt;getExtenders($abstract) as $extender) {
+            $object = $extender($object, $this);
+        }
+
+        // If the requested type is registered as a singleton we'll want to cache off
+        // the instances in &quot;memory&quot; so we can return it later without creating an
+        // entirely new instance of an object on each subsequent request for it.
+        if ($this-&gt;isShared($abstract) &amp;&amp; ! $needsContextualBuild) {
+            $this-&gt;instances[$abstract] = $object;
+        }
+
+        if ($raiseEvents) {
+            $this-&gt;fireResolvingCallbacks($abstract, $object);
+        }
+
+        // Before returning, we will also set the resolved flag to &quot;true&quot; and pop off
+        // the parameter overrides for this build. After those two things are done
+        // we will be ready to return back the fully constructed class instance.
+        $this-&gt;resolved[$abstract] = true;
+
+        array_pop($this-&gt;with);
+
+        return $object;
+    }
+
+
+    /**
+     * Instantiate a concrete instance of the given type.
+     *
+     * @param  string  $concrete
+     * @return mixed
+     *
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     */
+    public function build($concrete)
+    {
+        // If the concrete type is actually a Closure, we will just execute it and
+        // hand back the results of the functions, which allows functions to be
+        // used as resolvers for more fine-tuned resolution of these objects.
+        if ($concrete instanceof Closure) {
+            return $concrete($this, $this-&gt;getLastParameterOverride());
+        }
+
+        try {
+            $reflector = new ReflectionClass($concrete);
+        } catch (ReflectionException $e) {
+            throw new BindingResolutionException(&quot;Target class [$concrete] does not exist.&quot;, 0, $e);
+        }
+
+        // If the type is not instantiable, the developer is attempting to resolve
+        // an abstract type such as an Interface or Abstract Class and there is
+        // no binding registered for the abstractions so we need to bail out.
+        if (! $reflector-&gt;isInstantiable()) {
+            return $this-&gt;notInstantiable($concrete);
+        }
+
+        $this-&gt;buildStack[] = $concrete;
+
+        $constructor = $reflector-&gt;getConstructor();
+
+        // If there are no constructors, that means there are no dependencies then
+        // we can just resolve the instances of the objects right away, without
+        // resolving any other types or dependencies out of these containers.
+        if (is_null($constructor)) {
+            array_pop($this-&gt;buildStack);
+
+            return new $concrete;
+        }
+
+        $dependencies = $constructor-&gt;getParameters();
+
+        // Once we have all the constructor's parameters we can create each of the
+        // dependency instances and then use the reflection instances to make a
+        // new instance of this class, injecting the created dependencies in.
+        try {
+            $instances = $this-&gt;resolveDependencies($dependencies);
+        } catch (BindingResolutionException $e) {
+            array_pop($this-&gt;buildStack);
+
+            throw $e;
+        }
+
+        array_pop($this-&gt;buildStack);
+
+        return $reflector-&gt;newInstanceArgs($instances);
+    }
+</code></pre>
+<p>从上面的第三段代码build()方法中可以看出，解析时，如果绑定注册的是闭包函数，那么就是直接返回闭包函数的执行，关键代码如下</p>
+<pre><code class="language-php">if ($concrete instanceof Closure) {
+            return $concrete($this, $this-&gt;getLastParameterOverride());
+}
+</code></pre>
+<p>如果绑定注册的是类名，那么就利用php的反射（ReflectionClass）来实例化对象，并返回给调用者。bind()方法剩下的代码干的就是这个工作。</p>
+<p>最后，在resolve()方法中的</p>
+<pre><code class="language-php">$this-&gt;resolved[$abstract] = true;
+</code></pre>
+<p>代表已经解析成功了。</p>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/jiang-jiang-aop-yu-oop-you-shi-me-qu-bie/" class="post-title gt-a-link">
+                    讲讲AOP与OOP有什么区别？（已迁移）
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

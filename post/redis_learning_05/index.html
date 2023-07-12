@@ -1,0 +1,450 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>Redis学习之路(五)：事务和PubSub | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Redis学习之路(五)：事务和PubSub
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2021-08-13 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tags">
+                            # redis
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>😀由于这两个实际用的比较少，这里我们整理一下常见的问题即可，all right？</p>
+<!-- more -->
+<h2 id="一-事务">一、事务</h2>
+<h3 id="什么是事务">什么是事务？</h3>
+<p>事务是一个单独的隔离操作：事务中的所有命令都会序列化、按顺序地执行。事务在执行的过程中，不会被其他客户端发送来的命令请求所打断。</p>
+<p>事务是一个原子操作：事务中的命令要么全部被执行，要么全部都不执行。</p>
+<h3 id="redis事务的概念">Redis事务的概念</h3>
+<p>Redis事务功能是通过MULTI、EXEC、DISCARD和WATCH 四个原语实现的，它会将一个事务中的所有命令序列化，然后按顺序执行。</p>
+<p>总的来说redis事务就是一次性、顺序性、排他性的执行一个队列中的一系列命令。</p>
+<h3 id="redis事务的三个阶段">Redis事务的三个阶段</h3>
+<ul>
+<li>事务开始 MULTI</li>
+<li>命令入队</li>
+<li>事务执行EXEC</li>
+</ul>
+<p>事务执行过程中，如果服务端收到有EXEC、DISCARD、WATCH、MULTI之外的请求，将会把请求放入队列中。</p>
+<h3 id="事务管理acid概述">事务管理（ACID）概述</h3>
+<ul>
+<li>
+<p>原子性（Atomicity）<br>
+原子性是指事务是一个不可分割的工作单位，事务中的操作要么都发生，要么都不发生。</p>
+</li>
+<li>
+<p>一致性（Consistency）<br>
+事务前后数据的完整性必须保持一致</p>
+</li>
+<li>
+<p>隔离性（Isolation）<br>
+多事务并发执行时，一个事务的执行不应影响其它事务的执行</p>
+</li>
+<li>
+<p>持久性（Durability）<br>
+持久性是指一个事务一旦被提交，它对数据库中数据的改变就是永久性的，接下来即使数据库发生故障也不应该对其有任何影响</p>
+</li>
+</ul>
+<blockquote>
+<p>Ps：Redis事务总是具有ACID中的一致性和隔离性，另外当其运行再AOF持久化模式下，并且appendsync选项的值为always时，事务也是具有持久性的。</p>
+</blockquote>
+<h3 id="redis事务保证原子性吗支持回滚吗">Redis事务保证原子性吗，支持回滚吗？</h3>
+<ul>
+<li>当事务中存在一个格式、语法错误的命令入队时，会报错，事务会被取消，所有命令都不会被执行</li>
+</ul>
+<pre><code class="language-shell">127.0.0.1:6379&gt; MULTI
+OK
+127.0.0.1:6379&gt; set age 18
+QUEUED
+127.0.0.1:6379&gt; get
+(error) ERR wrong number of arguments for 'get' command
+127.0.0.1:6379&gt; exec
+(error) EXECABORT Transaction discarded because of previous errors.
+127.0.0.1:6379&gt; get age
+(nil)
+</code></pre>
+<ul>
+<li>当事务中某个命令语法没有问题，但是执行失败了，并不会影响其它命令的执行，即不具备原子性，不会进行回滚</li>
+</ul>
+<pre><code class="language-shell">127.0.0.1:6379&gt; MULTI
+OK
+127.0.0.1:6379&gt; set sex man
+QUEUED
+127.0.0.1:6379&gt; INCR sex
+QUEUED
+127.0.0.1:6379&gt; exec
+1) OK
+2) (error) ERR value is not an integer or out of range
+127.0.0.1:6379&gt; get sex
+&quot;man&quot;
+</code></pre>
+<h3 id="redis-中的事务为什么不会滚">Redis 中的事务为什么不会滚？</h3>
+<p>官网给出的解释有三个原因：</p>
+<ul>
+<li>
+<p>作者认为发生事务回滚的原因大部分是程序错误导致的，这种情况一般发生再开发和测试阶段，生产环境很少出现</p>
+</li>
+<li>
+<p>对于逻辑性错误，比如本来应该自增1的，但是程序却写成自增2，那么这种错误也是无法通过事务回滚的</p>
+</li>
+<li>
+<p>Redis追求的是简单高效，而传统事务的实现相对比较复杂，这和Redis的设计思想相违背。</p>
+</li>
+</ul>
+</br>
+<h2 id="二-pubsub发布订阅">二、PubSub(发布/订阅)</h2>
+<h3 id="基本介绍">基本介绍</h3>
+<p>前面我们有讲过<a href="/post/redis_learning_04">Redis消息队列</a>的使用方法，但是没有提到Redis消息队列的不足之处，那就是它不支持消息的多播机制。</p>
+<p>那什么是消息多播呢？</p>
+<p>消息多播就是允许生产者只生产一次消息，又中间件负责将消息复制到多个消息队列，每个消息队列又相应的消费组进行消费。</p>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1629703280685.png" alt="" loading="lazy"></figure>
+<p>如果是普通的消息队列，就得将多个不同的消费组逻辑串联起来放在一个子系统中，进行连续消费。</p>
+<figure data-type="image" tabindex="2"><img src="http://mofish.pily.life/post-images/1629703419833.png" alt="" loading="lazy"></figure>
+<h3 id="pubsub">PubSub</h3>
+<p>为了支持消息多播，Redis不能再依赖那5中基本数据类型了，它单独使用了一个模块来支持消息多播，这个模块的名字叫作PubSub，也就是发布者/订阅者模式。</p>
+<p>下面我们有代码来简单演示一下：</p>
+<pre><code class="language-php">&lt;?php
+//设置php脚本执行时间
+set_time_limit(0);
+//设置socket连接超时时间
+ini_set('default_socket_timeout', -1);
+
+/**
+ * 消费(订阅)者
+ * 消费者需要创建redis长连接，并且设置set_time_limit和default_socket_timeout，以确保阻塞获取消息过程php不超时，socket连接不超时
+ * Class Sub
+ */
+class Sub
+{
+    /**
+     * 连接Redis
+     * DelayQueue constructor.
+     */
+    public function __construct()
+    {
+        $this-&gt;redis = new Redis();
+        $this-&gt;redis-&gt;pconnect('127.0.0.1', 6379);
+        $this-&gt;redis-&gt;auth('111111');
+    }
+
+    /**
+     * 订阅消息
+     */
+    public function subJob()
+    {
+        // 通过回调处理接收的信息，可同时订阅多个频道
+        $this-&gt;redis-&gt;psubscribe(['codehole'], function ($instance, $channelName, $message){
+            echo $channelName . '----&gt;' . $message;
+        });
+    }
+}
+
+$sub = new Sub();
+$sub-&gt;subJob();
+</code></pre>
+</br>
+<pre><code class="language-php">&lt;?php
+
+/**
+ * 生产（发布）者
+ * Class Pub
+ */
+class Pub
+{
+    /**
+     * 连接Redis
+     * DelayQueue constructor.
+     */
+    public function __construct()
+    {
+        $this-&gt;redis = new Redis();
+        $this-&gt;redis-&gt;connect('127.0.0.1', 6379);
+        $this-&gt;redis-&gt;auth('111111');
+    }
+
+    /**
+     * 发布消息
+     * @return int
+     */
+    public function publish()
+    {
+        return $this-&gt;redis-&gt;publish('codehole', 'hello world');
+    }
+}
+
+$pub = new Pub();
+$pub-&gt;publish();
+</code></pre>
+<pre><code>注意：
+1. 必须先启动消费者，然后再执行生产者
+2. 消费者可以启动多个，同时接收同一个频道的消息，可用于不用的业务逻辑处理
+</code></pre>
+</br>
+<h3 id="pubsub的缺点">PubSub的缺点</h3>
+<p>PubSub 的生产者传递过来一个消息， Redis 会直接找到相应的消费者传递过去。如果一个消费者都没有，那么消息会被直接丢弃。</p>
+<p>如果开始有三个消费者，一个消费者突然挂掉了，生产者会继续发送消息，另外两个消费者可以持续收到消息，但是当挂掉的消费者重新连上的时候，在断连期间生产者发送的消息，对于这个消费者来说就是彻底丢失了。</p>
+<p>如果Redis停机重启，PubSub的消息是不会持久化的，毕竟Redis宕机时就相当于一个消费者都没有了，所有的消息都会被直接丢弃。</p>
+<p>正是因为这些缺点，所以在消息队列的领域基本找不到合适的使用场景。</p>
+</br>
+<blockquote>
+<p>注意：但是再Redis5.0的版本，Redis新增了一个叫Stream的数据结构，这个功能给Redis带来了持久化的消息队列功能，下一章节我们再来详细学习一下。</p>
+</blockquote>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/redis_learning_04/" class="post-title gt-a-link">
+                    Redis学习之路(四)：简单异步队列
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

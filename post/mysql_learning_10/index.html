@@ -1,0 +1,573 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>MySql学习之路(十)：各种锁详解 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    MySql学习之路(十)：各种锁详解
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-04-15 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/YVLEbqd3K/" class="post-tags">
+                            # mysql
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>😻 MySql在服务器层或存储引擎层实现了各种各样的锁，用于并发访问同一共享资源时的同步机制，保证了数据访问的一致性与有效性，本章节就记录一下MySql中各种锁的功能和原理。</p>
+<!-- more -->
+<h1 id="前言">前言</h1>
+<p>这么多锁，头都看晕了，现在分门别类一下，然后按照类别一一整理吧。<br>
+<img src="http://mofish.pily.life/post-images/1650353332803.png" alt="" loading="lazy"></p>
+<h1 id="目录">目录</h1>
+<ul>
+<li><a href="#一、全局锁">一、全局锁</a></li>
+<li><a href="#二、表级锁">二、表级锁</a>
+<ul>
+<li><a href="#表锁">表锁</a></li>
+<li><a href="#元数据锁">元数据锁</a></li>
+<li><a href="#意向锁">意向锁</a></li>
+</ul>
+</li>
+<li><a href="#三、页级锁">三、页级锁</a></li>
+<li><a href="#四、行级锁">四、行级锁</a>
+<ul>
+<li><a href="#4.1 按属性分类">4.1 按属性分类</a>
+<ul>
+<li><a href="#共享锁（S锁、读锁）">共享锁（S锁、读锁）</a></li>
+<li><a href="#排它锁（X锁、写锁）">排它锁（X锁、写锁）</a></li>
+</ul>
+</li>
+<li><a href="#4.2 按模式分类">4.2 按模式分类</a>
+<ul>
+<li><a href="#乐观锁">乐观锁</a></li>
+<li><a href="#悲观锁">悲观锁</a></li>
+</ul>
+</li>
+<li><a href="#4.3 按算法分类">4.3 按算法分类</a>
+<ul>
+<li><a href="#记录锁">记录锁</a></li>
+<li><a href="#间隙锁">间隙锁</a></li>
+<li><a href="#临键锁">临键锁</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<!-- more -->
+<h1 id="a-name一-全局锁一-全局锁a"><a name="一、全局锁">一、全局锁</a></h1>
+<p>全局锁就是对整个数据库实例加锁，加锁后整个实例就处于只读的状态，后续的DML写的语句，DDL语句，已经更新的事务提交语句都将被阻塞。</p>
+<p>其典型的使用场景是做全库的备份，对所用表进行锁定，从而获取一致性的视图，保证数据的完整性。</p>
+<h2 id="应用场景">应用场景</h2>
+<p>全库逻辑备份（mysqldump）</p>
+<h2 id="实现方式">实现方式</h2>
+<p>MySql提供了一个加全局读锁的方法，命令如下：</p>
+<pre><code class="language-sql">#加锁
+flush tables with read lock;
+
+#做备份
+mysqldump -uroot -p密码 数据库名&gt;备份到的文件;
+mysqldump -uroot -p1234 itcast&gt;itcast.sql
+
+#解锁
+unlock tables;
+</code></pre>
+<p>当你需要让整个库处于只读状态的时候，可以使用这个命令，之后其他线程的以下语句会被阻塞：</p>
+<ul>
+<li>数据的增删改</li>
+<li>数据定义语句（建表，修改表结构等）</li>
+<li>更新类事务的提交语句</li>
+</ul>
+<blockquote>
+<p>全库逻辑备份风险点：</p>
+<ol>
+<li>如果在主库上备份，备份期间都不能执行更新，那么业务基本处理停止状态，只能读了；</li>
+<li>如果在从库上备份，那么备份期间从库不能执行主库同步过来的binlog文件，导致主从延迟。</li>
+</ol>
+<p>解决方案：<br>
+执行mysqldump时增加 --single-transaction，启动一个事务，确保拿到一致性视图，由于MVCC的支持，这个过程中数据是可以正常更新。</p>
+</blockquote>
+<hr>
+<!-- more -->
+<h1 id="a-name二-表级锁二-表级锁a"><a name="二、表级锁">二、表级锁</a></h1>
+<p>表级锁，每次操作锁住整张表。锁定粒度大，发生锁冲突的概率最高，并发度最低。应用在MyISAM、InnoDB、BDB等存储引擎中。</p>
+<p>其中包含：</p>
+<ul>
+<li>表锁：表共享读锁、表排它写锁；</li>
+<li>元数据锁（meta data lock，MDL）；</li>
+<li>意向锁：意向共享锁、意向排它锁。</li>
+</ul>
+<h2 id="21-a-name表锁表锁a">2.1 <a name="表锁">表锁</a></h2>
+<pre><code class="language-sql"># 当加了读锁之后客户端都可以读，但是都不可以改。
+lock tables table_name read;
+
+# 当加了写锁之后，加锁的那个客户端既可以读也可以写，但是其他客户端都不能进行读写。
+lock tables table_name write;
+
+#释放锁
+unlock tables
+</code></pre>
+<br>
+<h2 id="a-name元数据锁22-元数据锁meta-data-lockmdla"><a name="元数据锁">2.2 元数据锁（meta data lock，MDL）</a></h2>
+<p>MDL加锁的过程是系统自动控制，无需显式使用，在访问一张表的时候会自动加上。MDL锁的主要作用是维护表元数据的数据一致性，在表上有活动事务的时候，不可以对元数据进行写入操作。</p>
+<p>为了避免DML和DDL冲突，保证数据读写的正确性。</p>
+<p>在MySQL5.5中引入MDL，当对一张表进行增删改查的时候，加MDL读锁（共享）；当对表结构进行变更操作的时候，加MDL写锁（排他）。</p>
+<blockquote>
+<p>所谓元数据，就是表示数据的数据。只要不是我们存储到数据库里的数据，大多数可以理解为元数据。因此，列名、数据库名、用户名、版本名以及从show,information_schema数据库中的表内容都是元数据。</p>
+</blockquote>
+<br>
+<h2 id="a-name意向锁23-意向锁a"><a name="意向锁">2.3 意向锁</a></h2>
+<p>意向共享锁和意向排它锁总称为意向锁，属于表锁的一种。意向锁的出现是为了支持Innodb，协调行锁和表锁的关系，支持多粒度（表锁与行锁）的锁并存。</p>
+<h3 id="作用">作用</h3>
+<p>当有事务A有行锁时，MySQL会自动为该表添加意向锁，事务B如果想申请整个表的写锁，那么不需要遍历每一行判断是否存在行锁，而直接判断是否存在意向锁，增强性能。</p>
+<h3 id="实现方式-2">实现方式</h3>
+<ul>
+<li>意向共享锁（IS）</li>
+</ul>
+<blockquote>
+<p>事务想要在获得表中某些记录的<code>共享锁(行锁)</code>，需要在表上先加<code>意向共享锁</code>， 因此执行<code>select…lock in share mode</code>时，会给表加上<code>意向共享锁</code>。</p>
+<p>意向共享锁与表共享读锁兼容，表排它锁互斥。</p>
+<p>即改客户端加了<code>意向共享锁</code>后，别的客户端可以加<code>表共享锁</code>，但是不能加<code>表排它锁</code>。</p>
+</blockquote>
+<ul>
+<li>意向排它锁（IX）</li>
+</ul>
+<blockquote>
+<p>事务想要在获得表中某些记录的<code>排它锁(行锁)</code>，需要在表上先加<code>意向排它锁</code>，因此执行<code>insert、update、delete、select…for update</code>时，会给表加上<code>意向排它锁</code>。</p>
+<p>意向排它锁与表共享读锁和排它锁都互斥。</p>
+<p>即改客户端加了<code>意向排它锁</code>后，别的客户端可以不能加<code>表共享锁</code>，也不能加<code>表排它锁</code>。</p>
+</blockquote>
+<hr>
+<!-- more -->
+<h1 id="a-name三-页级锁三-页级锁a"><a name="三、页级锁">三、页级锁</a></h1>
+<p>页级锁是 MySql 中比较独特的一种锁定级别，在其他数据库管理软件中并不常见。</p>
+<p>页级锁的颗粒度<code>介于行级锁与表级锁之间</code>，所以获取锁定所需要的资源开销，以及所能提供的并发处理能力同样也是介于上面二者之间。另外，页级锁和行级锁一样，会发生死锁。</p>
+<p>页级锁主要应用于<code> BDB 存储引擎</code>，用的比较少。</p>
+<hr>
+<!-- more -->
+<h1 id="a-name四-行级锁四-行级锁a"><a name="四、行级锁">四、行级锁</a></h1>
+<p>行级锁是粒度最低的锁，发生锁冲突的概率也最低、并发度最高。但是加锁慢、开销大，容易发生死锁现象。</p>
+<p>随着锁定资源颗粒度的减小，应用程序的访问请求遇到锁等待的可能性也会随之降低，系统整体并发度也会随之提升，从而提高需要高并发应用系统的整体性能。</p>
+<p>但是也因为由于锁定资源的颗粒度很小，所以每次获取锁和释放锁需要做的事情也就更多，带来的消耗自然也就更大。此外，行级锁也最容易发生死锁。所以说行级锁最大程度地支持并发处理的同时，也带来了最大的锁开销。</p>
+<blockquote>
+<p>MySql中只有InnoDB支持行级锁，基本分为共享锁和排它锁两种，其它什么悲观锁、间隙锁都是通过不用的使用方式演变而来的。</p>
+</blockquote>
+<ul>
+<li>按属性分类：共享锁(S锁)、排它锁(X锁)</li>
+<li>按模式分类：乐观锁(业务实现)、悲观锁(即排它锁)</li>
+<li>按算法分类：记录锁、间隙锁、临键锁</li>
+</ul>
+<blockquote>
+<p>行级锁并不是直接锁记录，而是锁索引。索引分为主键索引和非主键索引两种，如果一条sql语句操作了主键索引，MySQL就会锁定这条主键索引；如果一条语句操作了非主键索引，MySQL会先锁定该非主键索引，再锁定相关的主键索引。在UPDATE、DELETE操作时，MySQL不仅锁定WHERE条件扫描过的所有索引记录，而且会锁定相邻的键值，即所谓的间隙锁（next-key locking）。</p>
+</blockquote>
+<hr>
+<h2 id="a-name41-按属性分类41-按属性分类a"><a name="4.1 按属性分类">4.1 按属性分类</a></h2>
+<h3 id="a-name共享锁s锁-读锁共享锁s锁-读锁a"><a name="共享锁（S锁、读锁）">共享锁（S锁、读锁）</a></h3>
+<p><code>共享锁，也称读锁、S锁</code>，当事务A对数据加上读锁后，其它事务只能对该数据加读锁，并不能做任何修改操作，只有当事务A的读锁被释放后，其它事务才能修改数据或者添加写锁。</p>
+<br>
+<p><strong>应用场景：</strong><br>
+共享锁主要是为了支持并发的读取数据而出现的，读取数据时，不允许其他事务对当前数据进行修改操作，从而避免”不可重读”的问题的出现。</p>
+<br>
+<p><strong>实现方式：</strong></p>
+<pre><code class="language-sql">select ... lock in share mode;
+# 或
+select ... for share; # 8.0新增语法
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1650361052626.png" alt="" loading="lazy"></figure>
+<p>事务A持有共享锁，事务B可以正常读数据，也可以加共享锁，但是 update 操作会一直被阻塞，知道超时或者事务A释放锁。</p>
+<blockquote>
+<p>共享锁也属于悲观锁的一种，即也会对外界的修改持保守态度，因此会将数据处于锁定状态，只允许外界读，但是不允许修改。</p>
+</blockquote>
+<br>
+<h3 id="a-name排它锁x锁-写锁排它锁x锁-写锁a"><a name="排它锁（X锁、写锁）">排它锁（X锁、写锁）</a></h3>
+<p><code>排它锁，也称写锁、X锁</code>，当事务A对数据加上排它锁后，其它事务对该数据即不能修改，也不能对该数据进行加锁，因为排它锁与其它锁是互斥的，只有当锁被释放后，其它事务才能修改数据或者添加锁。</p>
+<br>
+<p><strong>应用场景：</strong><br>
+写锁主要是为了解决在修改数据时，不允许其他事务对当前数据进行修改和加锁操作，从而可以有效避免”脏读”问题的产生。</p>
+<br>
+<p><strong>实现方式：</strong><br>
+InnoDB引擎默认<code>update、delete、insert</code>都会自动给涉及到的数据加上排它锁，<code>select</code>语句<code>默认不会</code>加任何锁类型，但是可以通过添加<code>for update</code>来加锁。</p>
+<pre><code class="language-sql">select ... for update;
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="http://mofish.pily.life/post-images/1650360627415.png" alt="" loading="lazy"></figure>
+<p>事务A对数据加上排它锁后，事务B不可以修改该数据，操作会一直阻塞直至超时或者那行数据锁被释放。</p>
+<figure data-type="image" tabindex="3"><img src="http://mofish.pily.life/post-images/1650360630853.png" alt="" loading="lazy"></figure>
+<p>事务A对数据加上排它锁后，事务B可以正常读取该行数据，但是不能再次通过加排它锁的方式来读取，因为排它锁是互斥的。</p>
+<blockquote>
+<p>MySql8.0 新特性：<br>
+在5.7及之前的版本，<code>SELECT ... FOR UPDATE</code>，如果获取不到锁，会一直等待，直到<code>innodb_lock_wait_timeout</code>超时。</p>
+<p>在8.0版本中，<code>SELECT ... FOR UPDATE</code>，<code>SELECT ... FOR SHARE</code>添加<code>NOWAIT</code>、<code>SKIP LOCKED</code>语法，跳过锁等待，或者跳过锁定。</p>
+<ul>
+<li>NORMAL：立即返回报错</li>
+<li>SKIP LOCKED：立即返回，只是返回结果不包含被锁定的行<br>
+<img src="http://mofish.pily.life/post-images/1674980551684.png" alt="" loading="lazy"></li>
+</ul>
+</blockquote>
+<hr>
+<h2 id="a-name42-按模式分类42-按模式分类a"><a name="4.2 按模式分类">4.2 按模式分类</a></h2>
+<h3 id="a-name乐观锁乐观锁a"><a name="乐观锁">乐观锁</a></h3>
+<p>乐观锁<code>不是数据库自带的锁</code>，是需要我们根据业务逻辑去实现的。</p>
+<p>乐观锁是假设数据一般情况下不会造成冲突，是乐观的，只有当数据进行提交时才会对数据的冲突进行检测，如果发现有冲突，则返回错误信息，交由用户去决定如何进行下一步。</p>
+<br>
+<p><strong>应用场景：</strong><br>
+适用于读多写少，因为如果出现大量的写操作，写冲突的可能性就会增大，业务层需要不断重试，会大大降低系统性能。</p>
+<br>
+<p><strong>实现方式：</strong><br>
+一般我们采用在数据表中添加<code>version</code>字段，每操作一次就给该行数据的版本号<code>version</code>进行加1，然后在操作更新数据时，先查询数据及其<code>version</code>，更新数据时再判断此刻数据的<code>verison</code>是否和刚刚查询出来的是一致的，如果是则更新，不是则说明这段时间有其它程序更新了该数据，则不进行更新操作。</p>
+<pre><code class="language-sql">-- 先获取数据，假设现在获取到的version = 1
+select * from student where id = 1;
+
+-- 更新数据时判断version是否一致
+-- 如果是一致，则更新成功
+-- 如果不一致，则更新失败
+update student set name = '小光', version = 2 where id = 1 and version = 1;
+</code></pre>
+<br>
+<h3 id="a-name悲观锁悲观锁a"><a name="悲观锁">悲观锁</a></h3>
+<p>悲观锁，具有强烈的独占和排它性，每次获取或修改数据时，都认为别人会修改，因此在整个数据处理过程中都会将数据处于一个锁定的状态。</p>
+<br>
+<p><strong>应用场景：</strong><br>
+适用于并发量不大、写入操作比较频繁、数据一致性比较高的场景。</p>
+<br>
+<p><strong>实现方式：</strong></p>
+<p>在MySQL中使用悲观锁，必须关闭MySQL的自动提交，set autocommit=0。</p>
+<blockquote>
+<p>共享锁和排它锁是悲观锁的不同的实现，它俩都属于悲观锁的范畴。</p>
+</blockquote>
+<pre><code class="language-sql">-- 开启事务并关闭自动提交
+setautocommit=0;
+
+-- 查询学生信息
+select * from student where id=1 for update;
+
+-- 修改学生信息
+update student set age = 27 where id = 1;
+
+-- 提交事务
+commit;
+</code></pre>
+<p><code>select...for update</code> 是 MySql 提供的实现悲观锁的方式，属于排它锁。在上述事务中，id为1的数据会被锁定，其它事务要操作该条数据时必须等待本次事务提交之后才能执行，这样我们就可以<code>保证当前数据不会被其它事务修改</code>。</p>
+<blockquote>
+<p>此时MySQL InnoDB默认行级锁。行级锁都是基于索引的，如果一条sql语句用不到索引则会把所有数据住。</p>
+</blockquote>
+<figure data-type="image" tabindex="4"><img src="http://mofish.pily.life/post-images/1650465963026.png" alt="" loading="lazy"></figure>
+<hr>
+<h2 id="a-name43-按算法分类43-按算法分类a"><a name="4.3 按算法分类">4.3 按算法分类</a></h2>
+<p>记录锁、间隙锁、临键锁都是排它锁，而记录锁的使用方法跟排它锁介绍一致。</p>
+<h3 id="a-name记录锁记录锁a"><a name="记录锁">记录锁</a></h3>
+<p>记录锁，即某行记录加锁，所以也可以叫行锁，其使用方式和排它锁一致。</p>
+<pre><code class="language-sql">-- 通过for update 获取数据
+select * from student where id = 1 for update;
+
+-- 更新和删除数据
+update student set age = 99 where id = 1;
+</code></pre>
+<p>id 为 1的记录行会被锁住，其它事务不允许对该行数据进行操作或加锁。</p>
+<blockquote>
+<p>需要注意的是：<br>
+<code>id</code>列必须是<code>主键列(primary key)</code>或<code>唯一索引列(unique key)</code>，否则上述语句加的锁就会变成<code>临键锁</code>。</p>
+<p>同时查询语句必须为<code>精确匹配：=</code>，不能是<code>&gt;</code>、<code>&lt;</code>、<code>like</code>、<code>between</code>等，否则也会退化成<code>临键锁</code>。</p>
+</blockquote>
+<br>
+<h3 id="a-name间隙锁间隙锁gap-locks-gap锁a"><a name="间隙锁">间隙锁（Gap Locks、gap锁）</a></h3>
+<p>间隙锁 是 InnoDB 在 RR(可重复读) 隔离级别下为了解决幻读问题时引入的锁机制，而间隙锁也是 InnoDB 中行锁的一种。</p>
+<blockquote>
+<p>间隙锁是基于非唯一索引的，使用间隙锁锁住的是一个区间，而不仅仅是这个区间中的每一条数据。</p>
+</blockquote>
+<pre><code class="language-sql">SELECT * FROM table WHERE sort BETWEN 1 AND 10 FOR UPDATE;
+</code></pre>
+<p>即所有在（1，10）区间内的记录行都会被锁住，所有 sort 为 2、3、4、5、6、7、8、9 的数据行的插入会被阻塞，但是 1 和 10 两条记录行并不会被锁住。</p>
+<p>除了手动加锁外，在执行完某些 SQL 后，InnoDB 也会自动加间隙锁，这个我们在下面会提到。</p>
+<br>
+<h3 id="a-name临键锁临键锁next-key-locksa"><a name="临键锁">临键锁（Next-Key Locks）</a></h3>
+<p>临键锁，是记录锁与间隙锁的组合，它的封锁范围，既包含索引记录，又包含索引区间，其主要目的，也是为了避免幻读(Phantom Read)。</p>
+<p>每个非唯一索引列都会有一个临键锁，当唯一索引进行范围查找时也会退化为临键锁。</p>
+<p>简单的话，间隙锁锁住的是所选数据区间范围，临键锁锁住的是所选数据及<code>相邻</code>数据之间的范围。</p>
+<blockquote>
+<p>RC级别没有临键锁和间隙锁。</p>
+</blockquote>
+<figure data-type="image" tabindex="5"><img src="http://mofish.pily.life/post-images/1650551239002.png" alt="" loading="lazy"></figure>
+<pre><code class="language-sql">-- 主键：id
+-- 唯一索引：student_no 
+-- 普通索引：sort
+
+-- 情况1：主键或唯一索引的等值查询
+-- 锁情况：只会锁住当前记录行，即只有一个记录锁
+select * from student where id = 4 for update；
+select * from student where student_no = 2022042123 for update；
+
+-- 情况2：普通索引等值查询、唯一索引和普通索引的范围查询
+-- 锁情况：临建锁，锁定的是范围区间
+select * from student where sort = 9 for update；
+select * from student where id between 5 and 14 for update；
+
+-- 这里为什么update sort = 25 的时候也会失败？因为sort = 25的数据id = 14，而sort = 12 的数据有一条 id = 16，所以可能落到了范围区间内，导致锁等待。
+select * from student where sort between 9 and 12  for update；
+
+update student set sex = 1 where sort = 25;
+
+-- 这里1-6的数据sort索引排序正常，唯一索引id和student_no也是排序正常的，所以锁住的范围也是(-∞，9)这个区间。
+select sort from student where sort between 1 and 6  for update;
+</code></pre>
+<blockquote>
+<p>重点：<br>
+很多时候发现锁住的范围跟预想的范围不是特别一样，比如锁住了1-9这个索引区间，这是一个实际的范围，那么插入一条 1 的索引时候，可能插入到区间内（被阻塞），也可能插入到区间外（插入成功）！</p>
+<p>这个是会收到一些其它索引排序策略的影响的，所以到底是谁开谁闭，实际上是会收到排列顺序的影响的。</p>
+</blockquote>
+<hr>
+<!-- more -->
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/mysql_learning_08_02/" class="post-title gt-a-link">
+                    MySql学习之路(九)：事务及其四个隔离级别之MVCC
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

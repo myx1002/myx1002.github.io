@@ -1,0 +1,428 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>硬啃设计模式(三)：工厂模式之抽象工厂模式 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    硬啃设计模式(三)：工厂模式之抽象工厂模式
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2021-03-05 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/KmXvMvDsm/" class="post-tags">
+                            # 设计模式
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>🕺💃 哇~几天没见，甚是思念，又到了晚上学习的时候了哈哈哈😭哈。。哈😭😭</p>
+<p>🗣🗣 今天为大家带来的时候<code>抽象工厂模式</code>，而且还会有<code>抽象工厂模式</code>的优化版噢🤤</p>
+<!-- more -->
+<h2 id="概念">概念👇👇</h2>
+<pre><code>抽象工厂模式（Abstract Factory Pattern）隶属于设计模式中的创建型模式，
+
+指当有多个抽象角色时使用的一种工厂模式，用于产品族的构建。
+
+因此抽象工厂模式是工厂方法模式的升级版本，
+
+工厂方法模式只生产一个等级的产品，而抽象工厂模式可生产多个等级的产品。
+</code></pre>
+<h2 id="使用场景">使用场景👇👇</h2>
+<pre><code>1️⃣系统中有多个产品族，每个具体工厂创建同一族但是不同等级结构的产品
+
+    👉如：代码示例中有麦当劳和肯德基两个工厂，每个工厂包含了汉堡包和鸡块两个不同等级接口的产品组成的产品族
+
+2️⃣系统一次只能消费其中某一族产品，即同族产品一起使用
+
+    👉如：调用示例中，实例化了McDonaldAbstractRestaurantFactory麦当劳餐厅工厂的话，只能使用麦当劳的产品
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1614956394399.png" alt="产品等级和产品族" loading="lazy"></figure>
+<center>图一：产品等级和产品族☝️☝️</center>
+</br>
+<h2 id="主要角色">主要角色👇👇</h2>
+<pre><code>🏭抽象工厂（Abstract Factory）：
+    提供了创建产品的接口，它包含多个创建产品的方法， 如getHamburger()、getChickenNugget()，可以创建多个不同等级的产品。
+
+🏭具体工厂（Concrete Factory）：
+    主要是实现抽象工厂中的多个抽象方法，完成具体产品的创建。
+
+🍔抽象产品（Product）：
+    定义了产品的规范，描述了产品的主要特性和功能，抽象工厂模式有多个抽象产品，如Hamburger、ChickenNugget。
+
+🍔具体产品（Concrete Product）：
+    实现了抽象产品角色所定义的接口，由具体工厂来创建，它同具体工厂之间是多对一的关系。
+</code></pre>
+<h2 id="优缺点">优缺点👇👇</h2>
+<pre><code>优点⭕️：
+
+    1️⃣可以在类的内部对产品族中相关联的多等级产品共同管理，而不必专门引入多个新的类来进行管理
+
+    2️⃣当需要产品族时，抽象工厂可以保证客户端始终只使用同一个产品的产品组
+
+    3️⃣抽象工厂增强了程序的可扩展性，当增加一个新的产品族时，不需要修改原代码，满足开闭原则。
+
+缺点❌：
+
+    1️⃣当产品族中需要增加一个新的产品时，所有的工厂类都需要进行修改，此时不满足开闭原则
+        例如增加一个薯条产品时，所有的工厂类都要加一个获取薯条产品的方法，增加了系统的抽象性和理解难度。
+
+Ps❗️❗️❗️❗️：
+
+    1️⃣根据优缺点来看，抽象工厂模式的扩展有一定的“开闭原则”倾斜性
+
+    2️⃣当系统中只存在一个等级结构的产品时，抽象工厂模式将退化到工厂方法模式
+</code></pre>
+<!-- more -->
+<h2 id="抽象工厂模式uml图">“抽象工厂模式”UML图👇👇</h2>
+<figure data-type="image" tabindex="2"><img src="http://mofish.pily.life/post-images/1614958625362.png" alt="" loading="lazy"></figure>
+</br>
+<h2 id="抽象工厂模式代码实例">“抽象工厂模式”代码实例</h2>
+<pre><code class="language-php">AbstractFactory.php
+&lt;?php
+
+// 引入两个产品类
+require_once &quot;../ChickenNugget.php&quot;;
+require_once &quot;../Hamburger.php&quot;;
+
+/**
+ * 抽象工厂模式
+ *
+ * 抽象餐厅工厂
+ * Interface AbstractRestaurantFactory
+ */
+interface AbstractRestaurantFactory
+{
+    /** 汉堡包 */
+    public function getHamburger();
+
+    /** 鸡块 */
+    public function getChickenNugget();
+}
+
+/**
+ * 麦当劳餐厅
+ * Class McDonaldAbstractRestaurantFactory
+ */
+class McDonaldAbstractRestaurantFactory implements AbstractRestaurantFactory
+{
+
+    /** 汉堡包 */
+    public function getHamburger()
+    {
+        return new McDonaldHamburger();
+    }
+
+    /** 鸡块 */
+    public function getChickenNugget()
+    {
+        return new McDonaldChickenNugget();
+    }
+}
+
+/**
+ * 肯德基餐厅
+ * Class KFCAbstractRestaurantFactory
+ */
+class KFCAbstractRestaurantFactory implements AbstractRestaurantFactory
+{
+
+    /** 汉堡包 */
+    public function getHamburger()
+    {
+        return new KFCHamburger();
+    }
+
+    /** 鸡块 */
+    public function getChickenNugget()
+    {
+        return new KFCChickenNugget();
+    }
+}
+
+// 麦当劳餐厅
+$mcDonald      = new McDonaldAbstractRestaurantFactory();
+$mcDonaldHamburger     = $mcDonald-&gt;getHamburger();
+$mcDonaldChickenNugget = $mcDonald-&gt;getChickenNugget();
+$mcDonaldHamburger-&gt;getName();
+$mcDonaldChickenNugget-&gt;getName();
+
+// 肯德基餐厅
+$kfc      = new KFCAbstractRestaurantFactory();
+$kfcHamburger     = $kfc-&gt;getHamburger();
+$kfcChickenNugget = $kfc-&gt;getChickenNugget();
+$kfcHamburger-&gt;getName();
+$kfcChickenNugget-&gt;getName();
+</code></pre>
+<figure data-type="image" tabindex="3"><img src="http://mofish.pily.life/post-images/1614959782443.png" alt="" loading="lazy"></figure>
+<center>图二：执行结果☝️☝️</center>
+</br>
+<h2 id="总结">总结👇👇</h2>
+<pre><code>👌至此，抽象工厂模式就介绍完毕，但是上面我们提到了，抽象工厂模式有一个缺点，
+
+假如当我需要新增一个“薯条”产品时，那么我们处理要新增一个`抽象产品类`和两个`具体产品类`之外，
+
+我们还需要修改所有的`工厂类`，为其提供一个获取“薯条”产品的方法，这样改动也太不友好了😭
+
+👉另外还有一个问题，如果程序中有多个使用getHamburger()的地方，
+
+那么如果每个使用的地方都需要new McDonaldAbstractRestaurantFactory()的话，
+
+后续如果要改成new KFCAbstractRestaurantFactory()那不得找出每个地方都改掉？？想想就心痛💩💩
+</code></pre>
+<h3 id="ps">PS👇👇</h3>
+<p>想知道优化方法的话可以看看“大话设计模式-第15章 就不能不换DB吗？——抽象工厂模式“</p>
+<p>或者可以看看我的<a href="https://github.com/myx1002/php.design.patterns">git代码示例</a>噢😆</p>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/design_patterns_02_02/" class="post-title gt-a-link">
+                    硬啃设计模式(二)：工厂模式之工厂方法模式
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

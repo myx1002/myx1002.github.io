@@ -1,0 +1,671 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>MySql学习之路(十四)：性能分析工作的使用 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    MySql学习之路(十四)：性能分析工作的使用
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-12-28 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/YVLEbqd3K/" class="post-tags">
+                            # mysql
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>在数据库调优中，我们的目标是 <code>响应时间更快, 吞吐量更大</code> 。利用宏观的监控工具和微观的日志分析可以帮我们快速找到调优的思路和方式。</p>
+<!-- more -->
+<h1 id="目录">目录</h1>
+<ul>
+<li><a href='#一、数据库服务器的优化步骤'>一、数据库服务器的优化步骤</a></li>
+<li><a href='#二、查看系统性能参数'>二、查看系统性能参数</a></li>
+<li><a href='#三、统计SQL的查询成本：last_query_cost'>三、统计SQL的查询成本：last_query_cost</a></li>
+<li><a href='#四、定位查询慢的SQL：慢查询日志'>四、定位查询慢的SQL：慢查询日志</a></li>
+<li><a href='#五、分析查询语句：EXPLAIN'>五、分析查询语句：EXPLAIN</a></li>
+<li><a href='#六、分析优化器执行计划：trace'>六、分析优化器执行计划：trace</a></li>
+<li><a href='#七、MySql监控分析视图-sys schema'>七、MySql监控分析视图-sys schema</a></li>
+<li><a href='#小结'>小结</a></li>
+</ul>
+<hr>
+<h1 id="a-name一-数据库服务器的优化步骤一-数据库服务器的优化步骤a"><a name='一、数据库服务器的优化步骤'>一、数据库服务器的优化步骤</a></h1>
+<p>整个流程划分成了<code>观察（Show status）</code>和<code>行动（Action）</code>两个部分。字母S的部分代表观察<code>（会使用对应的分析工具）</code>，字母A的部分代表行动<code>（对应分析可以采取的行动）</code>。<br>
+<img src="http://mofish.pily.life/post-images/1672211010372.png" alt="" loading="lazy"></p>
+<p>S1：我们需要观察服务器的状态是否存在周期性波动，如果<code>存在周期性波动</code>，有可能是周期性节点的原因，比如双十一、促销活动等。这样的话，我们可以通过A1这一步解决，就是加缓存或更改缓存失效策略。</p>
+<p>S2：如果不是上述原因，那我们就需要进一步<code>分析延迟和卡顿的原因</code>，在S2这一步，我们需要<code>开启慢查询</code>。慢查询可以帮我们定位执行慢的SQL语句。我们可以通过设置<code>long_query_time</code>参数定义“慢”的阈值，当收集上来这些慢查询之后，我们就可以通过分析工作对慢查询日志进行分析。</p>
+<p>S3：当我们知道了执行慢的SQL后，就可以使用<code>EXPLAIN</code>查看对应的SQL语句的执行计划，或者使用<code>show profile</code>查询SQL中每一个步骤的时间成本，这样我们就可以了解SQL查询慢是因为<code>执行时间长</code>还是<code>等待时间长</code>了。</p>
+<p>A2：如果是SQL等待时间长，我们可以调优服务器的参数，比如适当增加数据库缓冲池等。</p>
+<p>A3：如果是SQL执行时间长，首先考虑的是索引设计的问题，然后看看是否联表过多或者是表结构设计有缺陷等等。</p>
+<p>A4：如果A2和A3都不能解决问题，我们需要考虑数据自身的性能是否已经达到了瓶颈，如果确认没有到达瓶颈那么久需要重新检查一下。如果已经到达了性能瓶颈，那么就需要考虑增加服务器，采用读写分离的架构，或者考虑对数据进行分库分表等操作了。</p>
+<blockquote>
+<p>以上就是数据库调优的流程思路，我们可以通过观察了解数据库整体的运行状态，通过性能分析工具可以让我们了解执行慢的SQL都有哪些，查看具体的SQL执行计划，甚至是SQL执行中的每一步的成本代价，这样才能定位问题所在，找到了问题，再采取相应的行动。</p>
+<p>这三种分析工具可以理解是SQL调优的三个步骤：<code>慢查询</code>、<code>EXPLAIN</code>和<code>SHOW PROFILING</code>。</p>
+</blockquote>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1672215457472.png" alt="" loading="lazy"></figure>
+<hr>
+<h1 id="a-name二-查看系统性能参数二-查看系统性能参数a"><a name='二、查看系统性能参数'>二、查看系统性能参数</a></h1>
+<p>在MySql中，可以使用SHOW STATUS语句查询一些MySql数据库服务器的性能参数、执行频率。</p>
+<pre><code class="language-sql">SHOW [GLOBAL] STATUS LIKE '参数';
+</code></pre>
+<p>一些性能参数如下：</p>
+<ul>
+<li>Connections：连接MySQL服务器的次数。</li>
+<li>Uptime：MySQL服务器的上线时间。</li>
+<li>Slow_queries：慢查询的次数。</li>
+<li>Innodb_rows_read：Select查询返回的行数</li>
+<li>Innodb_rows_inserted：执行INSERT操作插入的行数</li>
+<li>Innodb_rows_updated：执行UPDATE操作更新的 行数</li>
+<li>Innodb_rows_deleted：执行DELETE操作删除的行数</li>
+<li>Com_select：查询操作的次数。</li>
+<li>Com_insert：插入操作的次数。对于批量插入的 INSERT 操作，只累加一次。</li>
+<li>Com_update：更新操作 的次数。</li>
+<li>Com_delete：删除操作的次数。</li>
+</ul>
+<hr>
+<h1 id="a-name三-统计sql的查询成本last_query_cost三-统计sql的查询成本last_query_costa"><a name='三、统计SQL的查询成本：last_query_cost'>三、统计SQL的查询成本：last_query_cost</a></h1>
+<p>一条SQL查询语句在执行前需要查询执行计划，如果存在多种执行计划的话，MySql回计算每个执行计划所需的成本，从中选择<code>成本最小</code>的一个作为最终执行的执行计划。</p>
+<p>如果我们想要查看某条SQL语句的查询成本，可以在<code>执行完这条SQL语句之后</code>，通过查看当前会话中的<code>last_query_cost</code>变量值来得到当前查询的成本。它通常也是我们<code>评价一个查询执行效率常用指标</code>。这个查询成本对应的是<code>SQL语句所需要读取的页的数量</code>。</p>
+<pre><code class="language-sql">-- 构建数据表
+CREATE TABLE `student_info` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `student_id` INT NOT NULL ,
+    `name` VARCHAR(20) DEFAULT NULL,
+    `course_id` INT NOT NULL ,
+    `class_id` INT(11) DEFAULT NULL,
+    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+) ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+-- 查询一条记录
+SELECT student_id, class_id, NAME, create_time FROM student_info WHERE id = 900001;
+
+SHOW STATUS LIKE 'last_query_cost';
++-----------------+----------+
+| Variable_name   |   Value  |
++-----------------+----------+
+| Last_query_cost | 1.000000 |
++-----------------+----------+
+
+-- 查询多条记录
+SELECT student_id, class_id, NAME, create_time FROM student_info WHERE id BETWEEN 900001 AND 900100;
+
+SHOW STATUS LIKE 'last_query_cost';
++-----------------+-----------+
+| Variable_name   |   Value   |
++-----------------+-----------+
+| Last_query_cost | 21.134453 |
++-----------------+-----------+
+</code></pre>
+<p>虽然看到页的数量是第一次查询的20倍，但是查询的效率并没有明显的变化，实际上这两个SQL的查询时间基本是一样的，就是因为采取了顺序读取得方式，讲页面一次性加载到缓冲池，然后再进行查找。虽然页的数量增加了，但是通过缓冲池的机制，并没有增加多少查询时间。</p>
+<blockquote>
+<p>SQL查询时一个动态的过程，从页加载的角度来看，我们可以得到以下两点结论：</p>
+<ol>
+<li>
+<p><code>位置决定效率</code>。如果页就在数据库的<code>缓冲池</code>中，那么效率最高，否则还需要从磁盘中读取数据并加载到内存中。</p>
+</li>
+<li>
+<p><code>批量决定效率</code>。如果我们从磁盘对单一页进行随机读，那么效率是低下的，而采用顺序读取的方式，批量对页进行读取，那么平均一页的读取效率就会提升很多，甚至快于单个页面在内存中的随机读取。</p>
+</li>
+</ol>
+</blockquote>
+<hr>
+<h1 id="a-name四-定位查询慢的sql慢查询日志四-定位查询慢的sql慢查询日志a"><a name='四、定位查询慢的SQL：慢查询日志'>四、定位查询慢的SQL：慢查询日志</a></h1>
+<p>look this👉👉👉👉<a href='/post/mysql_learning_15'>《MySql学习之路(十五)：慢查询日志》</a></p>
+<hr>
+<h1 id="a-name五-分析查询语句explain五-分析查询语句explaina"><a name='五、分析查询语句：EXPLAIN'>五、分析查询语句：EXPLAIN</a></h1>
+<p>look this👉👉👉👉<a href='/post/mysql_learning_06'>《Mysql学习之路(六)：explain执行计划详解》</a></p>
+<hr>
+<h1 id="a-name六-分析优化器执行计划trace六-分析优化器执行计划tracea"><a name='六、分析优化器执行计划：trace'>六、分析优化器执行计划：trace</a></h1>
+<p><code>OPTIMIZER_TRACE</code>是MySql5.6引入的一项跟踪功能，它可以跟踪优化器做出的各种决策（比如访问表的方法、各种开销计算、各种转换等），并将跟踪记录结果记录到<code>INFORMATION_SCHEMA.OPTIMIZER_TRACE</code>表中。</p>
+<p>此功能<code>默认关闭</code>。开启trace，并设置格式未JSON，同事设置trace最大能够使用的内存大小，避免解析过程中因默认内存过小而不能够完整展示。</p>
+<pre><code class="language-sql">SET optimizer_trace=&quot;enabled=on&quot;,end_markers_in_json=on;
+SET optimizer_trace_max_mem_size=1000000;
+</code></pre>
+<p>开启后，可分析如下语句：</p>
+<ul>
+<li>SELECT</li>
+<li>INSERT</li>
+<li>REPLACE</li>
+<li>UPDATE</li>
+<li>DELETE</li>
+<li>EXPLAIN</li>
+<li>SET</li>
+<li>DECLARE</li>
+<li>CASE</li>
+<li>IF</li>
+<li>RETURN</li>
+<li>CALL</li>
+</ul>
+<pre><code class="language-sql">-- 测试语句
+select * from student where id &lt; 10;
+
+-- 查询 information_schema.optimizer_trace
+select * from information_schema.optimizer_trace\G
+
+*************************** 1. row ***************************
+//第1部分：查询语句
+QUERY: select * from student where id &lt; 10
+//第2部分：QUERY字段对应语句的跟踪信息
+TRACE: {
+&quot;steps&quot;: [
+{
+    &quot;join_preparation&quot;: { //预备工作
+        &quot;select#&quot;: 1,
+        &quot;steps&quot;: [
+            {
+            &quot;expanded_query&quot;: &quot;/* select#1 */ select `student`.`id` AS
+            `id`,`student`.`stuno` AS `stuno`,`student`.`name` AS `name`,`student`.`age` AS
+            `age`,`student`.`classId` AS `classId` from `student` where (`student`.`id` &lt; 10)&quot;
+            }
+        ] /* steps */
+    } /* join_preparation */
+},
+{
+    &quot;join_optimization&quot;: { //进行优化
+    &quot;select#&quot;: 1,
+    &quot;steps&quot;: [
+        {
+        &quot;condition_processing&quot;: { //条件处理
+        &quot;condition&quot;: &quot;WHERE&quot;,
+        &quot;original_condition&quot;: &quot;(`student`.`id` &lt; 10)&quot;,
+        &quot;steps&quot;: [
+        {
+            &quot;transformation&quot;: &quot;equality_propagation&quot;,
+            &quot;resulting_condition&quot;: &quot;(`student`.`id` &lt; 10)&quot;
+        },
+        {
+            &quot;transformation&quot;: &quot;constant_propagation&quot;,
+            &quot;resulting_condition&quot;: &quot;(`student`.`id` &lt; 10)&quot;
+        },
+        {
+            &quot;transformation&quot;: &quot;trivial_condition_removal&quot;,
+            &quot;resulting_condition&quot;: &quot;(`student`.`id` &lt; 10)&quot;
+        }
+        ] /* steps */
+    } /* condition_processing */
+    },
+    {
+        &quot;substitute_generated_columns&quot;: { //替换生成的列
+        } /* substitute_generated_columns */
+    },
+    {
+        &quot;table_dependencies&quot;: [ //表的依赖关系
+        {
+            &quot;table&quot;: &quot;`student`&quot;,
+            &quot;row_may_be_null&quot;: false,
+            &quot;map_bit&quot;: 0,
+            &quot;depends_on_map_bits&quot;: [
+            ] /* depends_on_map_bits */
+        }
+    ] /* table_dependencies */
+    },
+    {
+    &quot;ref_optimizer_key_uses&quot;: [ //使用键
+        ] /* ref_optimizer_key_uses */
+        },
+    {
+        &quot;rows_estimation&quot;: [ //行判断
+        {
+            &quot;table&quot;: &quot;`student`&quot;,
+            &quot;range_analysis&quot;: {
+                &quot;table_scan&quot;: {
+                    &quot;rows&quot;: 3973767,
+                    &quot;cost&quot;: 408558
+            } /* table_scan */, //扫描表
+            &quot;potential_range_indexes&quot;: [ //潜在的范围索引
+                {
+                    &quot;index&quot;: &quot;PRIMARY&quot;,
+                    &quot;usable&quot;: true,
+                    &quot;key_parts&quot;: [
+                    &quot;id&quot;
+                    ] /* key_parts */
+                }
+            ] /* potential_range_indexes */,
+        &quot;setup_range_conditions&quot;: [ //设置范围条件
+        ] /* setup_range_conditions */,
+        &quot;group_index_range&quot;: {
+            &quot;chosen&quot;: false,
+            &quot;cause&quot;: &quot;not_group_by_or_distinct&quot;
+        } /* group_index_range */,
+            &quot;skip_scan_range&quot;: {
+                &quot;potential_skip_scan_indexes&quot;: [
+                    {
+                        &quot;index&quot;: &quot;PRIMARY&quot;,
+                        &quot;usable&quot;: false,
+                        &quot;cause&quot;: &quot;query_references_nonkey_column&quot;
+                    }
+                ] /* potential_skip_scan_indexes */
+            } /* skip_scan_range */,
+        &quot;analyzing_range_alternatives&quot;: { //分析范围选项
+            &quot;range_scan_alternatives&quot;: [
+                {
+                &quot;index&quot;: &quot;PRIMARY&quot;,
+                    &quot;ranges&quot;: [
+                        &quot;id &lt; 10&quot;
+                    ] /* ranges */,
+                &quot;index_dives_for_eq_ranges&quot;: true,
+                &quot;rowid_ordered&quot;: true,
+                &quot;using_mrr&quot;: false,
+                &quot;index_only&quot;: false,
+                &quot;rows&quot;: 9,
+                &quot;cost&quot;: 1.91986,
+                &quot;chosen&quot;: true
+                }
+            ] /* range_scan_alternatives */,
+        &quot;analyzing_roworder_intersect&quot;: {
+            &quot;usable&quot;: false,
+            &quot;cause&quot;: &quot;too_few_roworder_scans&quot;
+            } /* analyzing_roworder_intersect */
+        } /* analyzing_range_alternatives */,
+        &quot;chosen_range_access_summary&quot;: { //选择范围访问摘要
+            &quot;range_access_plan&quot;: {
+                &quot;type&quot;: &quot;range_scan&quot;,
+                &quot;index&quot;: &quot;PRIMARY&quot;,
+                &quot;rows&quot;: 9,
+                &quot;ranges&quot;: [
+                &quot;id &lt; 10&quot;
+                ] /* ranges */
+                } /* range_access_plan */,
+                &quot;rows_for_plan&quot;: 9,
+                &quot;cost_for_plan&quot;: 1.91986,
+                &quot;chosen&quot;: true
+                } /* chosen_range_access_summary */
+                } /* range_analysis */
+            }
+        ] /* rows_estimation */
+    },
+    {
+    &quot;considered_execution_plans&quot;: [ //考虑执行计划
+    {
+    &quot;plan_prefix&quot;: [
+    ] /* plan_prefix */,
+        &quot;table&quot;: &quot;`student`&quot;,
+        &quot;best_access_path&quot;: { //最佳访问路径
+        &quot;considered_access_paths&quot;: [
+        {
+            &quot;rows_to_scan&quot;: 9,
+            &quot;access_type&quot;: &quot;range&quot;,
+            &quot;range_details&quot;: {
+            &quot;used_index&quot;: &quot;PRIMARY&quot;
+        } /* range_details */,
+        &quot;resulting_rows&quot;: 9,
+        &quot;cost&quot;: 2.81986,
+        &quot;chosen&quot;: true
+    }
+    ] /* considered_access_paths */
+    } /* best_access_path */,
+        &quot;condition_filtering_pct&quot;: 100, //行过滤百分比
+        &quot;rows_for_plan&quot;: 9,
+        &quot;cost_for_plan&quot;: 2.81986,
+        &quot;chosen&quot;: true
+    }
+    ] /* considered_execution_plans */
+    },
+    {
+        &quot;attaching_conditions_to_tables&quot;: { //将条件附加到表上
+        &quot;original_condition&quot;: &quot;(`student`.`id` &lt; 10)&quot;,
+        &quot;attached_conditions_computation&quot;: [
+        ] /* attached_conditions_computation */,
+        &quot;attached_conditions_summary&quot;: [ //附加条件概要
+    {
+        &quot;table&quot;: &quot;`student`&quot;,
+        &quot;attached&quot;: &quot;(`student`.`id` &lt; 10)&quot;
+    }
+    ] /* attached_conditions_summary */
+    } /* attaching_conditions_to_tables */
+    },
+    {
+    &quot;finalizing_table_conditions&quot;: [
+    {
+        &quot;table&quot;: &quot;`student`&quot;,
+        &quot;original_table_condition&quot;: &quot;(`student`.`id` &lt; 10)&quot;,
+        &quot;final_table_condition &quot;: &quot;(`student`.`id` &lt; 10)&quot;
+    }
+    ] /* finalizing_table_conditions */
+    },
+    {
+    &quot;refine_plan&quot;: [ //精简计划
+    {
+        &quot;table&quot;: &quot;`student`&quot;
+    }
+    ] /* refine_plan */
+    }
+    ] /* steps */
+    } /* join_optimization */
+},
+    {
+        &quot;join_execution&quot;: { //执行
+            &quot;select#&quot;: 1,
+            &quot;steps&quot;: [
+            ] /* steps */
+            } /* join_execution */
+        }
+    ] /* steps */
+}
+//第3部分：跟踪信息过长时，被截断的跟踪信息的字节数。
+MISSING_BYTES_BEYOND_MAX_MEM_SIZE: 0 //丢失的超出最大容量的字节
+//第4部分：执行跟踪语句的用户是否有查看对象的权限。当不具有权限时，该列信息为1且TRACE字段为空，一般在
+调用带有SQL SECURITY DEFINER的视图或者是存储过程的情况下，会出现此问题。
+INSUFFICIENT_PRIVILEGES: 0 //缺失权限
+1 row in set (0.00 sec)
+</code></pre>
+<hr>
+<h1 id="a-name七-mysql监控分析视图-sys-schema七-mysql监控分析视图-sys-schemaa"><a name='七、MySql监控分析视图-sys schema'>七、MySql监控分析视图-sys schema</a></h1>
+<p>关于MySql的性能监控和问题诊断，我们一般都从performance_schema中去获取想要的数据，在MySql5.7版本中新增sys schema，它讲performance_schema和information_schema中的数据以更容易理解的方式总结归纳为“视图”，其目的就是为了降低查询performation_schema的复杂度，让DBA能够快速的定位问题。</p>
+<p><strong>Sys schema视图摘要：</strong></p>
+<ul>
+<li><strong>主机相关</strong>：以host_summary开头，主要汇总了IO延迟的信息。</li>
+<li><strong>Innodb相关</strong>：以innodb开头，汇总了innodb buffer信息和事务等待innodb锁的信息。</li>
+<li><strong>I/o相关</strong>：以io开头，汇总了等待I/O、I/O使用量情况。</li>
+<li><strong>内存使用情况</strong>：以memory开头，从主机、线程、事件等角度展示内存的使用情况</li>
+<li><strong>连接与会话信息</strong>：processlist和session相关视图，总结了会话相关信息。</li>
+<li><strong>表相关</strong>：以schema_table开头的视图，展示了表的统计信息。</li>
+<li><strong>索引信息</strong>：统计了索引的使用情况，包含冗余索引和未使用的索引情况。</li>
+<li><strong>语句相关</strong>：以statement开头，包含执行全表扫描、使用临时表、排序等的语句信息。</li>
+<li><strong>用户相关</strong>：以user开头的视图，统计了用户使用的文件I/O、执行语句统计信息。</li>
+<li><strong>等待事件相关信息</strong>：以wait开头，展示等待事件的延迟情况。</li>
+</ul>
+<br>
+<p><strong>Sys schema视图摘要：</strong></p>
+<pre><code class="language-sql">-- 索引情况
+#1. 查询冗余索引
+select * from sys.schema_redundant_indexes;
+#2. 查询未使用过的索引
+select * from sys.schema_unused_indexes;
+#3. 查询索引的使用情况
+select index_name,rows_selected,rows_inserted,rows_updated,rows_deleted
+from sys.schema_index_statistics where table_schema='dbname';
+
+-- 表相关
+# 1. 查询表的访问量
+select table_schema,table_name,sum(io_read_requests+io_write_requests) as io from
+sys.schema_table_statistics group by table_schema,table_name order by io desc;
+# 2. 查询占用bufferpool较多的表
+select object_schema,object_name,allocated,data
+from sys.innodb_buffer_stats_by_table order by allocated limit 10;
+# 3. 查看表的全表扫描情况
+select * from sys.statements_with_full_table_scans where db='dbname';
+
+-- 语句相关
+#1. 监控SQL执行的频率
+select db,exec_count,query from sys.statement_analysis
+order by exec_count desc;
+#2. 监控使用了排序的SQL
+select db,exec_count,first_seen,last_seen,query
+from sys.statements_with_sorting limit 1;
+#3. 监控使用了临时表或者磁盘临时表的SQL
+select db,exec_count,tmp_tables,tmp_disk_tables,query
+from sys.statement_analysis where tmp_tables&gt;0 or tmp_disk_tables &gt;0
+order by (tmp_tables+tmp_disk_tables) desc;
+
+-- IO相关
+#1. 查看消耗磁盘IO的文件
+select file,avg_read,avg_write,avg_read+avg_write as avg_io
+from sys.io_global_by_file_by_bytes order by avg_read limit 10;
+
+-- Innodb 相关
+#1. 行锁阻塞情况
+select * from sys.innodb_lock_waits;
+</code></pre>
+<blockquote>
+<p><strong>风险提示：</strong></p>
+<p>通过sys库去查询时，MySql会<code>消耗大量资源</code>区收集相关信息，严重的可能会导致业务请求被阻塞，从而引起故障。建议生产上<code>不要频繁</code>的区查询sys或者performance_schema、information_schema来完成监控、巡检等工作。</p>
+</blockquote>
+<hr>
+<h1 id="a-name小结小结a"><a name='小结'>小结</a></h1>
+<p>查询是数据库中最频繁的操作，提高查询速度可以有效地提高MySql数据库的性能。通过对查询语句的分析可以了解查询语句的执行情况，找出查询语句执行的瓶颈，从而优化查询语句。</p>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/mysql_learning_13/" class="post-title gt-a-link">
+                    MySql学习之路(十三)：InnoDB数据存储结构
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

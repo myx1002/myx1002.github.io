@@ -1,0 +1,574 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>硬啃设计模式：七大设计原则 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    硬啃设计模式：七大设计原则
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2021-04-08 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/KmXvMvDsm/" class="post-tags">
+                            # 设计模式
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>🙌这一章我们放松一下，先不学新的设计模式，我们来学一下简单的设计原则，</p>
+<p>👉所以接下来我会给大家带来7️⃣中设计原则的相关知识概念，也是学习设计模式前需要重点理解的。</p>
+<!-- more -->
+<h2 id="目录">目录</h2>
+<ul>
+<li><a href="#简述">简述</a></li>
+<li><a href="#开闭原则">开闭原则</a></li>
+<li><a href="#依赖倒置原则">依赖倒置原则	</a></li>
+<li><a href="#单一职责原则">单一职责原则	</a></li>
+<li><a href="#接口隔离原则">接口隔离原则	</a></li>
+<li><a href="#迪米特法则">迪米特法则	</a></li>
+<li><a href="#里氏替换原则">里氏替换原则	</a></li>
+<li><a href="#合成复用原则">合成复用原则	</a></li>
+</ul>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1618208473362.jpg" alt="" width="200" height="200" loading="lazy"></figure>
+<!-- more -->
+<h2 id="a-name简述简述a"><a name="简述">简述</a>🗣🗣</h2>
+<p>这7中设计原则是软件设计模式中必须尽量遵循的原则，是设计模式的基础，</p>
+<p>在实际的开发过程中，并不是一定要求所有代码都遵循设计原则，</p>
+<p>而是要综合人力、时间、成本、质量等实际情况，在适当的场合遵循适当的设计原则，是一种平衡取舍。</p>
+<p>各种原则要求的侧重点不同，我们先用一句话来归纳阔过，让大家有个印象之后再深入理解：</p>
+<table>
+<thead>
+<tr>
+<th>设计原则</th>
+<th>一句话归纳</th>
+<th>目的</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>开闭原则</td>
+<td>对扩展开放，对修改关闭</td>
+<td>降低维护带来的新风险</td>
+</tr>
+<tr>
+<td>依赖倒置原则</td>
+<td>高层不应该依赖低层，要面向接口编程</td>
+<td>更利于代码结构的升级扩展</td>
+</tr>
+<tr>
+<td>单一职责原则</td>
+<td>一个类只干一件事，实现类要单一</td>
+<td>便于理解，提高代码的可读性</td>
+</tr>
+<tr>
+<td>接口隔离原则</td>
+<td>一个接口只干一件事，接口要精简单一</td>
+<td>功能解耦，高聚合、低耦合</td>
+</tr>
+<tr>
+<td>迪米特法则</td>
+<td>不该知道的不要知道，一个类应该保持对其它对象最少的了解，降低耦合度</td>
+<td>只和朋友交流，不和陌生人说话，减少代码臃肿</td>
+</tr>
+<tr>
+<td>里氏替换原则</td>
+<td>不要破坏继承体系，子类重写方法功能发生改变，不应该影响父类方法的含义</td>
+<td>防止继承泛滥</td>
+</tr>
+<tr>
+<td>合成复用原则</td>
+<td>尽量使用组合或者聚合关系实现代码复用，少使用继承</td>
+<td>降低代码耦合</td>
+</tr>
+</tbody>
+</table>
+<p>实际上，这些原则的目的只有一个：降低对象之间的耦合，增加程序的可复用性、可扩展性和可维护性。</p>
+<blockquote>
+<p>记忆口诀：访问加限制，函数要节俭，依赖不允许，动态加接口，父类要抽象，扩展不更改。</p>
+</blockquote>
+<p>在程序设计时，我们应该将程序功能最小化，每个类只干一件事。若有类似功能基础之上添加新功能，则要合理使用继承。对于多方法的调用，要会运用接口，同时合理设置接口功能与数量。最后类与类之间做到低耦合高内聚。</p>
+<!-- more -->
+<br>
+<h2 id="1️⃣a-name开闭原则开闭原则a">1️⃣<a name="开闭原则">开闭原则</a>👇👇</h2>
+<h3 id="定义">定义🥇</h3>
+<p>软件实体对扩展开放，对修改关闭，这就是开闭原则的经典定义🤓</p>
+<p>这里的软件实体包括以下几个部分：</p>
+<ul>
+<li>项目中划分出的模块</li>
+<li>类与接口</li>
+<li>方法</li>
+</ul>
+<h3 id="作用">作用🥈</h3>
+<p>开闭原则是面向对象程序设计的终极目标，它使软件实体拥有一定的<code>适应性</code>和<code>灵活性</code>的同时具备<code>稳定性</code>和<code>延续性</code>。</p>
+<p>具体来说，其作用如下：</p>
+<ul>
+<li>
+<p>提高代码稳定性<br>
+新增功能时不修改现在代码，而且在原有基础上进行扩展，测试时也只需要对扩展代码继续测试即可</p>
+</li>
+<li>
+<p>提高代码可复用性<br>
+粒度越小，被复用的可能性就越大；在面向对象的程序设计中，根据原子和抽象编程可以提高代码的可复用性。</p>
+</li>
+<li>
+<p>提高软件的可维护性<br>
+遵守开闭原则的软件，其稳定性高和延续性强，从而易于扩展和维护。</p>
+</li>
+</ul>
+<h3 id="实现方法">实现方法🥉</h3>
+<p>可以通过“抽象约束、封装变化”来实现开闭原则，即通过接口或者抽象类为软件实体定义一个相对稳定的抽象层，而将相同的可变因素封装在相同的具体实现类中。</p>
+<p>因为抽象灵活性好，适应性广，只要抽象的合理，可以基本保持软件架构的稳定。而软件中易变的细节可以从抽象派生来的实现类来进行扩展，当软件需要发生变化时，只需要根据需求重新派生一个实现类来扩展就可以了。</p>
+<br>
+<!-- more -->
+<h2 id="2️⃣a-name依赖倒置原则依赖倒置原则a">2️⃣<a name="依赖倒置原则">依赖倒置原则</a>👇👇</h2>
+<h3 id="定义-2">定义🥇</h3>
+<p>高层模块不应该依赖低层模块，两者都应该依赖其抽象；抽象不应该依赖细节，细节应该依赖抽象。</p>
+<blockquote>
+<p>其核心思想是：要面向接口编程，不要面向实现编程。<br>
+依赖倒置原则是实现开闭原则的重要途径之一，它降低了客户与实现模块之间的耦合。</p>
+</blockquote>
+<p>由于在软件设计中，细节具有多变性，而抽象层则相对稳定，因此以抽象为基础搭建起来的架构要比以细节为基础搭建起来的架构要稳定得多。这里的抽象指的是接口或者抽象类，而细节是指具体的实现类。</p>
+<p>使用接口或者抽象类的目的是制定好规范和契约，而不去涉及任何具体的操作，把展现细节的任务交给它们的实现类去完成。</p>
+<h3 id="作用-2">作用🥈</h3>
+<ul>
+<li>
+<p>可以降低类间的耦合性</p>
+</li>
+<li>
+<p>可以提高系统的稳定性</p>
+</li>
+<li>
+<p>可以减少并行开发引起的风险</p>
+</li>
+<li>
+<p>可以提高代码的可读性和可维护性</p>
+</li>
+</ul>
+<h3 id="实现方法-2">实现方法🥉</h3>
+<p>依赖倒置原则的目的是通过要面向接口的编程来降低类间的耦合性，所以我们在实际编程中只要遵循以下4点，就能在项目中满足这个规则。</p>
+<ol>
+<li>
+<p>每个类尽量提供接口或者是抽象类，或者两者都具备</p>
+</li>
+<li>
+<p>变量的声明尽量是接口或者是抽象类</p>
+</li>
+<li>
+<p>任何类都不应该直从具体类派生</p>
+</li>
+<li>
+<p>使用类的继承时尽量遵循<code>里氏替换原则</code></p>
+</li>
+</ol>
+<br>
+<!-- more -->
+<h2 id="3️⃣a-name单一职责原则单一职责原则a">3️⃣<a name="单一职责原则">单一职责原则</a>👇👇</h2>
+<h3 id="定义-3">定义🥇</h3>
+<p>单一职责原则规定一个类应该有且仅有一个引起它变化的原因，否则类应该被拆分</p>
+<p>该原则提出对象不应该承担太多职责，如果一个对象承担了太多的职责，至少存在以下两个缺点：</p>
+<ol>
+<li>
+<p>一个职责的变化可能会削弱或者抑制这个类实现其他职责的能力；</p>
+</li>
+<li>
+<p>当客户端需要该对象的某一个职责时，不得不将其他不需要的职责全都包含进来，从而造成冗余代码或代码的浪费。</p>
+</li>
+</ol>
+<h3 id="作用-3">作用🥈</h3>
+<p>单一职责原则的核心就是控制类的粒度大小、将对象解耦、提高其内聚性。如果遵循单一职责原则将有以下优点:</p>
+<ul>
+<li>
+<p>降低类的复杂度。一个类只负责一项职责，其逻辑肯定要比负责多项职责简单得多。</p>
+</li>
+<li>
+<p>提高类的可读性。复杂性降低，自然其可读性会提高。</p>
+</li>
+<li>
+<p>提高系统的可维护性。可读性提高，那自然更容易维护了。</p>
+</li>
+<li>
+<p>变更引起的风险降低。变更是必然的，如果单一职责原则遵守得好，当修改一个功能时，可以显著降低对其他功能的影响。</p>
+</li>
+</ul>
+<h3 id="实现方法-3">实现方法🥉</h3>
+<p>单一职责原则是最简单但又最难运用的原则，需要设计人员发现类的不同职责并将其分离，再封装到不同的类或模块中。</p>
+<br>
+<!-- more -->
+<h2 id="4️⃣a-name接口隔离原则接口隔离原则a">4️⃣<a name="接口隔离原则">接口隔离原则</a>👇👇</h2>
+<h3 id="定义-4">定义🥇</h3>
+<p>接口隔离原则（Interface Segregation Principle，ISP）要求程序员尽量将臃肿庞大的接口拆分成更小的和更具体的接口，让接口中只包含客户感兴趣的方法。</p>
+<p>客户端不应该被迫依赖于它不使用的方法。</p>
+<p>一个类对另一个类的依赖应该建立在最小的接口上。</p>
+<p>以上两个类的含义是：要为各个类简历他们需要的专用接口，而不要试图去建立一个很庞大的接口供所有依赖它的类去调用。</p>
+<blockquote>
+<p>接口隔离原则和单一职责都是为了提高类的内聚性、降低它们之间的耦合性，体现了封装的思想，但两者是不同的<br>
+单一职责原则注重的是职责，而接口隔离原则注重的是对接口依赖的隔离。<br>
+单一职责原则主要是约束类，它针对的是程序中的实现和细节；接口隔离原则主要约束接口，主要针对抽象和程序整体框架的构建。</p>
+</blockquote>
+<h3 id="作用-4">作用🥈</h3>
+<p>接口隔离原则是为了约束接口、降低类对接口的依赖性，遵循接口隔离原则有以下 5 个优点:</p>
+<ul>
+<li>
+<p>将臃肿庞大的接口分解为多个粒度小的接口，可以预防外来变更的扩散，提高系统的灵活性和可维护性。</p>
+</li>
+<li>
+<p>接口隔离提高了系统的内聚性，减少了对外交互，降低了系统的耦合性。</p>
+</li>
+<li>
+<p>接口的粒度大小定义合理，能够保证系统的稳定性。</p>
+</li>
+<li>
+<p>变更引起的风险降低。变更是必然的，如果单一职责原则遵守得好，当修改一个功能时，可以显著降低对其他功能的影响。</p>
+</li>
+</ul>
+<h3 id="实现方法-4">实现方法🥉</h3>
+<p>在具体应用接口隔离原则时，应该根据以下几个规则来衡量：</p>
+<ul>
+<li>
+<p>接口尽量小，但是要有限度。一个接口只服务于一个子模块或业务逻辑。</p>
+</li>
+<li>
+<p>为依赖接口的类定制服务。只提供调用者需要的方法，屏蔽不需要的方法。</p>
+</li>
+<li>
+<p>了解环境，拒绝盲从。每个项目或产品都有选定的环境因素，环境不同，接口拆分的标准就不同深入了解业务逻辑</p>
+</li>
+<li>
+<p>提高内聚，减少对外交互。使接口用最少的方法去完成最多的事情。</p>
+</li>
+</ul>
+<br>
+<!-- more -->
+<h2 id="5️⃣a-name迪米特法则迪米特法则a">5️⃣<a name="迪米特法则">迪米特法则</a>👇👇</h2>
+<h3 id="定义-5">定义🥇</h3>
+<p><code>迪米特法则</code>又叫做<code>最少知识原则</code>，其定义的通俗说法就是：只与你的直接朋友交谈，不跟<strong>陌生人</strong>说话。</p>
+<p>其含义是：如果两个软件实体无需直接通信，那么就不应当发生直接的相互调用，可与i通过第三方转发改调用，其目的是降低类之间的耦合度，提高模块的相对独立性。</p>
+<p>迪米特法则种的“朋友”指的是当前对象本身、当前对象的成员对象、当前对象所创建的对象、当前对象的方法参数等，这些对象和当前对象存在关联、聚合或者组合的关系，可以直接访问这些对象的方法。</p>
+<h3 id="作用-5">作用🥈</h3>
+<p><code>迪米特法则</code>要求限制软件实体之间通信的宽度和深度，正确的使用<code>迪米特法则</code>有以下两个有点：</p>
+<ol>
+<li>降低类之间的耦合度，提高了模块的相对独立性</li>
+<li>由于亲合度降低，从而提高了类的可复用率和系统的扩展性</li>
+</ol>
+<p>但是，过度的使用<code>迪米特法则</code>会使系统产生大量的中介类，从而增加了系统的复杂性，使得模块之间的通信效率降低，所以使用时需要反复权衡，在确保高内聚和低耦合的同时，保证系统的结构清晰。</p>
+<h3 id="实现方法-5">实现方法🥉</h3>
+<p>从<code>迪米特法则</code>的定义和特点可知，它强调以下两点：</p>
+<ol>
+<li>从依赖者的角度来说，只依赖应该依赖的对象。</li>
+<li>从被依赖者的角度说，只暴露应该暴露的方法。</li>
+</ol>
+<p>所以，在运用迪米特法则时要注意以下 6 点：</p>
+<ol>
+<li>在类的划分上，应该创建弱耦合的类。类与类之间的耦合越弱，越有利于复用。</li>
+<li>在类的结构设计上，尽量降低类成员的访问权限</li>
+<li>在类的设计上，优先考虑将一个类设置成不变类</li>
+<li>在对其它类的引用上，讲引用其它对象的次数讲到最低</li>
+<li>不暴露类的属性成员，而应该提供相应的访问器(set和get)</li>
+<li>谨慎使用序列化功能</li>
+</ol>
+<br>
+<!-- more -->
+<h2 id="6️⃣a-name里氏替换原则里氏替换原则a">6️⃣<a name="里氏替换原则">里氏替换原则</a>👇👇</h2>
+<h3 id="定义-6">定义🥇</h3>
+<p>继承必须确保超类所拥有的性质在子类种仍然成立。</p>
+<p><code>里氏替换原则</code>主要阐述了有关继承的一些原则，而且其原始继承复用的基础，它反映了基类与子类之间的关系，时对开闭原则的补充，是对实现抽象化的具体步骤的规范。</p>
+<h3 id="作用-6">作用🥈</h3>
+<p><code>里氏替换原则</code>的主要作用如下：</p>
+<ol>
+<li>它是实现<code>开闭原则</code>的重要方式之一</li>
+<li>它克服了继承中重写父类造成的可复用性变差的缺点</li>
+<li>它是动作正确性的保证。即类的扩展不会给已有的系统引入新的错误，降低了代码出错的可能性</li>
+<li>加强程序的健壮性，同时变更时可以做到非常耗的兼容性，提高程序的维护性、可扩展性，降低需求变更时引入的风险</li>
+</ol>
+<h3 id="实现方法-6">实现方法🥉</h3>
+<p><code>里氏替换原则</code>通俗来讲就是：子类可以扩展父类的功能，但不能改变父类原有的功能。</p>
+<blockquote>
+<p>也就是说：子类继承父类时，除添加新的方法完成新增功能外，尽量不要重写父类的方法。</p>
+</blockquote>
+<p>根据上述理解，对里氏替换原则的定义可以总结如下：</p>
+<ol>
+<li>子类可以实现父类的抽象方法 ，但不能覆盖父类的非抽象方法</li>
+<li>子类中可以增加自己特有的方法</li>
+<li>当子类的方法重载父类的方法时，方法的前置条件(即方法的输入参数)要比父类的方法更加宽松</li>
+<li>当子类的方法实现父类的方法时（重写/重载或实现抽象方法），方法的后置条件（即方法的的输出/返回值）要比父类的方法更严格或相等</li>
+</ol>
+<blockquote>
+<p>通过重写父类的方法来完成新的功能写起来虽然简单，但是整个继承体系的可复用性会比较差，特别是运用多态比较频繁时，程序运行出错的概率会非常大。</p>
+<p>如果程序违背了里氏替换原则，则继承类的对象在基类出现的地方会出现运行错误。这时其修正方法是：取消原来的继承关系，重新设计它们之间的关系。</p>
+</blockquote>
+<p>关于里氏替换原则的例子，最有名的是“正方形不是长方形”。当然，生活中也有很多类似的例子，例如，企鹅、鸵鸟和几维鸟从生物学的角度来划分，它们属于鸟类；但从类的继承关系来看，由于它们不能继承“鸟”会飞的功能，所以它们不能定义成“鸟”的子类。同样，由于“气球鱼”不会游泳，所以不能定义成“鱼”的子类；“玩具炮”炸不了敌人，所以不能定义成“炮”的子类等。</p>
+<br>
+<!-- more -->
+<h2 id="6️⃣a-name合成复用原则合成复用原则a">6️⃣<a name="合成复用原则">合成复用原则</a>👇👇</h2>
+<h3 id="定义-7">定义🥇</h3>
+<p><code>合成复用原则</code>又叫<code>组合/聚合复用原则</code>，它要求在软件复用时，要尽量先使用组合或者聚合等关联关系来实现，其次才考虑使用继承关系来实现。</p>
+<p>如果要使用继承关系，则必须验证遵守<code>里氏替换原则</code>。<code>合成复用原则</code>和<code>里氏替换原则</code>相辅相成，两者都是<code>开闭原则</code>的具体实现规范。</p>
+<h3 id="作用-7">作用🥈</h3>
+<p>通常类的复用分为继承复用和合成复用两种，继承复用虽然有简单和易实现的优点，但它也存在以下缺点:</p>
+<ol>
+<li>继承复用破坏了类的封装性。因为继承会将父类的实现细节暴露给子类，父类对子类是透明的，所以这种复用又称为“白箱”复用。</li>
+<li>子类与父类的耦合度高。父类的实现的任何改变都会导致子类的实现发生变化，这不利于类的扩展与维护。</li>
+<li>它限制了复用的灵活性。从父类继承而来的实现是静态的，在编译时已经定义，所以在运行时不可能发生变化。</li>
+</ol>
+<p>采用组合或聚合复用时，可以将已有对象纳入新对象中，使之成为新对象的一部分，新对象可以调用已有对象的功能，它有以下优点:</p>
+<ol>
+<li>它维持了类的封装性。因为成分对象的内部细节是新对象看不见的，所以这种复用又称为“黑箱”复用。</li>
+<li>新旧类之间的耦合度低。这种复用所需的依赖较少，新对象存取成分对象的唯一方法是通过成分对象的接口。</li>
+<li>复用的灵活性高。这种复用可以在运行时动态进行，新对象可以动态地引用与成分对象类型相同的对象。</li>
+</ol>
+<h3 id="实现方法-7">实现方法🥉</h3>
+<p>合成复用原则是通过将已有的对象纳入新对象中，作为新对象的成员对象来实现的，新对象可以调用已有对象的功能，从而达到复用。</p>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/design_patterns_05/" class="post-title gt-a-link">
+                    硬啃设计模式(五)：建造者(生成器)模式
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

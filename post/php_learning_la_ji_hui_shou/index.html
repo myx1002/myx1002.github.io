@@ -1,0 +1,503 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>一文搞懂PHP的垃圾回收机制（已迁移） | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    一文搞懂PHP的垃圾回收机制（已迁移）
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-08-16 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/pxZyx0z8N/" class="post-tags">
+                            # 垃圾回收
+                        </a>
+                    
+                        <a href="http://mofish.pily.life/tag/qo6XPqkl5/" class="post-tags">
+                            # php
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>垃圾回收是一个多数编程语言中都带有的内存管理机制。与非托管性语言相反：C, C++ 和 Objective C，用户需要手动收集内存，带有 GC 机制的语言：Java, javaScript 和 PHP 可以自动管理内存。</p>
+<!-- more -->
+<h1 id="一-概念">一、概念</h1>
+<p>垃圾回收机制，即我们常说得<code>gc</code>，就是废物利用的意思，是一种动态存储分配的方案。它会自动释放程序不再需要的已分配的内存块。</p>
+<p>垃圾回收机制可以让程序员不必过分关心程序的内存分配，从而将更多的精力投入到业务逻辑中。</p>
+<p>在现在的流行各种语言当中，垃圾回收机制是新一代语言所共有的特征，如Python、PHP、C#、Ruby等都使用了垃圾回收机制。</p>
+<hr>
+<h1 id="二-垃圾回收机制的发展">二、垃圾回收机制的发展</h1>
+<p>在PHP5.3版本之前，使用的垃圾回收机制是单纯的“引用计数”，即：</p>
+<ul>
+<li>
+<p>每个内存对象都分配一个计数器，当内存对象被变量引用时，计数器+1；</p>
+</li>
+<li>
+<p>当变量引用撤掉后（执行 unset() 后），计数器-1；</p>
+</li>
+<li>
+<p>当计数器 = 0时，表明内存对象没有被使用，该内存对象则进行销毁，垃圾回收完成。</p>
+</li>
+</ul>
+<blockquote>
+<p>准确的说，5.3版本之前的垃圾回收机制是没有专门的垃圾回收器的，只是简单的判断了一下变量的zval的refcount是否未0，是就释放否则不释放直至进程结束。</p>
+<p>但是当两个或多个对象互相引用形成环状后，内存对象的计数器不会消减为0，这时候，这一组内存对象已经没用了，但是不能回收，从而导致内存泄露的现象。</p>
+</blockquote>
+<p>随着PHP的发展，PHP开发者的增加以及其所承载的业务范围的扩大，在PHP5.3中引入了更加完善的垃圾回收机制，新的垃圾回收机制解决了无法处理循环的引用内存泄漏问题。</p>
+<p>每个PHP的变量都存在于一个叫做zval的容器中，一个zval容器，除了包含变量名和值，还包括两个字节的额外信息：</p>
+<ul>
+<li>
+<p>一个叫做'is_ref'，是个布尔值，用来表示这个变量是否属于引用集合,通过这个字节，我们php才能把普通变量和引用变量区分开来。</p>
+</li>
+<li>
+<p>第二个额外字节就是'refcount'，用来表示指向这个容器的变量的个数。</p>
+</li>
+</ul>
+<hr>
+<h1 id="三-php5和php7的垃圾回收不同点重点">三、PHP5和PHP7的垃圾回收不同点（重点）</h1>
+<blockquote>
+<ul>
+<li>
+<p>PHP5标量数据类型会计数，PHP7标量数据类型不再计数，不需要单独分配内存</p>
+</li>
+<li>
+<p>PHP7的zval 需要的内存不再是单独从堆上分配，不再自己存储引用计数</p>
+</li>
+<li>
+<p>PHP7的复杂数据类型（比如数组和对象）的引用计数由其自身来存储</p>
+</li>
+</ul>
+</blockquote>
+<hr>
+<h1 id="四-变量在zval的变量容器中结构">四、变量在zval的变量容器中结构</h1>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1660635949126.png" alt="" loading="lazy"></figure>
+<blockquote>
+<p>zval中，除了存储变量的类型和值之外，还有is_ref字段和refcount字段<br>
+1、is_ref：是个bool值，用来区分变量是否属于引用集合。<br>
+2、refcount：计数器，表示指向这个zval变量容器的变量个数。</p>
+</blockquote>
+<hr>
+<h1 id="五-标量在zval容器的例子">五、标量在zval容器的例子</h1>
+<h2 id="51-php53标量在zval容器例子">5.1 PHP5.3标量在zval容器例子</h2>
+<p>当将一个变量复制给另外一个变量时，不会立即为新变量分配内存空间，而是在原变量的 zval 中给 refcount 加1。</p>
+<p>只有当原变量或者新变量发生改变时，才会为新变量分配新的内存空间，同时原变量的 refcount 减1，这就是我们常说的<code>引用计数和写时拷贝（copy on write）</code>。</p>
+<p>当然，如果是 unset 原变量的话，新变量会直接使用原变量的 zval ，而不是重新分配。</p>
+<p>对于 &amp; 引用赋值时，原变量的 is_ref 加1，除此之外还有一点要注意的是，如果给一个变量 &amp;赋值，那么之前普通赋值的变量会分配新的空间，避免修改影响。</p>
+<pre><code class="language-php">&lt;?php
+$a = 1;
+xdebug_debug_zval('a');
+echo PHP_EOL;
+$b = $a;
+xdebug_debug_zval('a');
+echo PHP_EOL;
+ 
+$c = &amp;$a;
+xdebug_debug_zval('a');
+echo PHP_EOL;
+ 
+xdebug_debug_zval('b');
+echo PHP_EOL;
+
+结果如下：
+a:(refcount=1, is_ref=0),int 1
+a:(refcount=2, is_ref=0),int 1
+a:(refcount=2, is_ref=1),int 1
+b:(refcount=1, is_ref=0),int 1
+</code></pre>
+<br>
+<h2 id="52-php7x标量在zval容器例子">5.2 PHP7.X标量在zval容器例子</h2>
+<pre><code class="language-php">&lt;?php
+
+$a = 1;
+xdebug_debug_zval('a');
+echo PHP_EOL;
+$b = $a;
+xdebug_debug_zval('a');
+
+结果如下：可以看到标量（布尔，字符串，整形，浮点型）不再计数了
+a:(refcount=0, is_ref=0),int 1
+a:(refcount=0, is_ref=0),int 1
+</code></pre>
+<hr>
+<h1 id="六-复合类型数组和对象在zval容器例子">六、复合类型数组和对象在zval容器例子</h1>
+<h2 id="61-php53复合类型数组和对象在zval容器例子">6.1 PHP5.3复合类型数组和对象在zval容器例子</h2>
+<pre><code class="language-php">&lt;?php
+// 数组类型
+$a = array( 'meaning' =&gt; 'life', 'number' =&gt; 42 );
+xdebug_debug_zval( 'a' );
+
+// 结果如下：数组用了比数组长度多1个zval存储。数组分配了三个zval容器：a   meaning  number
+a:(refcount=1, is_ref=0),
+array
+  'meaning' =&gt; (refcount=1, is_ref=0) string 'life' (length=4)
+  'number' =&gt; (refcount=1, is_ref=0) int 42
+
+// 对象类型
+class Test{
+    public $a = 1;
+    public $b = 2;
+     
+    function handle(){
+        echo 'hehe';
+    }
+}
+
+$test = new Test();
+xdebug_debug_zval('test');
+
+// 结果如下：
+test:(refcount=1, is_ref=0),
+object(Test)[1]
+  public 'a' =&gt; (refcount=2, is_ref=0),
+int
+  public 'b' =&gt; (refcount=2, is_ref=0),
+int
+</code></pre>
+<h2 id="62-php7x复合类型数组和对象在zval容器例子">6.2 PHP7.X复合类型数组和对象在zval容器例子</h2>
+<pre><code class="language-php">&lt;?php
+
+$a = array( 'meaning' =&gt; 'life', 'number' =&gt; 42 );
+xdebug_debug_zval( 'a' );
+
+// 结果如下：可以明显的看到数组a的refcount=2，后经测试发现数组的refcount都是从2开始的
+a:(refcount=2, is_ref=0),
+array
+  'meaning' =&gt; (refcount=1, is_ref=0) string 'life' (length=4)
+  'number' =&gt; (refcount=1, is_ref=0) int 42
+
+// 对象
+class Test{
+    public $a = 1;
+    public $b = 2;
+     
+    function handle(){
+        echo 'hehe';
+    }
+}
+ 
+$test = new Test();
+xdebug_debug_zval('test');
+
+// 结果如下：
+test:(refcount=1, is_ref=0),
+object(Test)[1]
+  public 'a' =&gt; (refcount=0, is_ref=0) int 1
+  public 'b' =&gt; (refcount=0, is_ref=0) int 2
+</code></pre>
+<hr>
+<h1 id="七-循环引用问题">七、循环引用问题</h1>
+<pre><code class="language-php">&lt;?php
+
+$a = array('life');
+xdebug_debug_zval( 'a' );
+echo PHP_EOL;
+$a[] = &amp;$a;
+xdebug_debug_zval('a');
+
+</code></pre>
+<p><strong>说明：</strong><br>
+在5.2及更早版本的PHP中，没有专门的垃圾回收器GC（Garbage Collection），引擎在判断一个变量空间是否能够被释放的时候是依据这个变量的zval的refcount的值。</p>
+<p>如果refcount为0，那么变量的空间可以被释放，否则就不释放，这是一种非常简单的GC实现。</p>
+<p>现在unset ($a),那么array的refcount减1变为1.现在无任何变量指向这个zval，而且这个zval的计数器为1，不会回收。</p>
+<p><strong>结果：</strong><br>
+尽管不再有某个作用域中的任何符号指向这个结构(就是变量容器)，由于子元素“1”仍然指向数组本身，所以这个容器不能被清除。</p>
+<p>因为没有另外的符号指向它，用户没有办法清除这个结构，结果就会导致内存泄漏。</p>
+<p><strong>在php5.3的GC中，针对的垃圾做了如下说明：</strong></p>
+<blockquote>
+<p>1：如果一个zval的refcount增加，那么此zval还在使用，肯定不是垃圾，不会进入缓冲区。</p>
+<p>2：如果一个zval的refcount减少到0， 那么zval会被立即释放掉，不属于GC要处理的垃圾对象，不会进入缓冲区。</p>
+<p>3：如果一个zval的refcount减少之后大于0，那么此zval还不能被释放，此zval可能成为一个垃圾，将其放入缓冲区。PHP5.3中的GC针对的就是这种zval进行的处理。</p>
+</blockquote>
+<p>开启/关闭：垃圾回收机制可以通过修改php配置实现，也可以在程序中使用gc_enable() 和 gc_disable()开启和关闭。</p>
+<hr>
+<h1 id="八-垃圾回收算法">八、垃圾回收算法</h1>
+<p>优化后的垃圾回收算法呢，还是以引用计数为基础，但是不再是使用简单计数作为回收准则，而是使用了一种同步回收算法。</p>
+<p>首先PHP会分配一个固定大小的“根缓冲区”，这个缓冲区用于存放固定数量的zval，这个数量默认是10,000，如果需要修改则需要修改源代码Zend/zend_gc.c中的常量GC_ROOT_BUFFER_MAX_ENTRIES然后重新编译。之后当根缓冲区满额时，PHP就会执行垃圾回收。</p>
+<p>回收时候的具体算法操作如下：</p>
+<ul>
+<li>
+<p>它首先对每个根缓冲区中的根zval按照深度优先遍历算法遍历所有能遍历到的zval，并将每个zval的refcount减1，同时为了避免对同一zval多次减1(因为可能不同的根能遍历到同一个zval)，每次对某个zval减1后就对其标记为“已减”；</p>
+</li>
+<li>
+<p>再次对每个缓冲区中的根zval深度优先遍历，如果某个zval的refcount不为0，则对其加1，否则保持其为0；</p>
+</li>
+<li>
+<p>清空根缓冲区中的所有根(注意是把这些zval从缓冲区中清除而不是销毁它们)，然后销毁所有refcount为0的zval，并收回其内存。</p>
+</li>
+</ul>
+<br>
+<p>如果不能完全理解也没有关系，只需记住PHP5.3的垃圾回收算法有以下几点特性：</p>
+<ul>
+<li>
+<p>并不是每次refcount减少时都进入回收周期，只有根缓冲区满额后在开始垃圾回收。</p>
+</li>
+<li>
+<p>可以解决循环引用问题。</p>
+</li>
+<li>
+<p>可以总将内存泄露保持在一个阈值以下。</p>
+</li>
+</ul>
+<hr>
+<h1 id="九-性能影响">九、性能影响</h1>
+<p>1、内存占用空间的节省<br>
+首先，实现垃圾回收机制的整个原因是为了一旦先决条件满足，通过清理循环引用的变量来节省内存占用。在PHP执行中，一旦根缓冲区满了或者调用gc_collect_cycles() 函数时，就会执行垃圾回收。</p>
+<p>2、执行时间增加<br>
+垃圾回收影响性能的第二个领域是它释放已泄漏的内存耗费的时间。<br>
+通常，PHP中的垃圾回收机制，仅仅在循环回收算法确实运行时会有时间消耗上的增加。但是在平常的(更小的)脚本中应根本就没有性能影响。</p>
+<p>3、在平常脚本中有循环回收机制运行的情况下，内存的节省将允许更多这种脚本同时运行在你的服务器上。因为总共使用的内存没达到上限。</p>
+<p>这种好处在长时间运行脚本中尤其明显，诸如长时间的测试套件或者daemon脚本此类。同时，对通常比Web脚本运行时间长的脚本应用程序，新的垃圾回收机制，应该会大大改变一直以来认为内存泄漏问题难以解决的看法。</p>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/docker_to_tars/" class="post-title gt-a-link">
+                    docker搭建tars环境
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

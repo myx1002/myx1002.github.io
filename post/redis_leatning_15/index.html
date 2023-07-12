@@ -1,0 +1,490 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>Redis学习之路(十七)：集群之哨兵模式 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Redis学习之路(十七)：集群之哨兵模式
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2021-11-21 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tags">
+                            # redis
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>👮 哨兵（sentinel）是一个分布式系统，用于对主从结构中的每台服务器进行监控，当出现故障时，通过投票机制选择新的master，并讲slave连接到新的master。</p>
+<!-- more -->
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1637501838682.png" alt="" loading="lazy"></figure>
+<h2 id="目录">目录</h2>
+<ul>
+<li><a href="#哨兵的作用">1. 哨兵的作用</a></li>
+<li><a href="#启用哨兵模式">2. 启用哨兵模式</a></li>
+<li><a href="#哨兵工作原理">3. 哨兵工作原理</a></li>
+<li><a href="#实现哨兵模式">4. 实现哨兵模式</a></li>
+</ul>
+<!-- more -->
+<hr>
+<h1 id="a-name哨兵的作用1-哨兵的作用a"><a name="哨兵的作用">1. 哨兵的作用</a></h1>
+<ul>
+<li>监控</li>
+</ul>
+<blockquote>
+<p>不断的检查<code>master</code>和<code>slave</code>是否<strong>正常运行</strong><br>
+检测<code>master</code><strong>存活</strong>、检测<code>master</code>与<code>slave</code><strong>运行情况</strong></p>
+</blockquote>
+<ul>
+<li>通知（提醒）</li>
+</ul>
+<blockquote>
+<p>当<strong>被监控</strong>的服务器<strong>出现问题</strong>时，向其它（哨兵、客户端）发送通知</p>
+</blockquote>
+<ul>
+<li>自动故障转移</li>
+</ul>
+<blockquote>
+<p><strong>断开</strong><code>master</code>与<code>slave</code>连接，<strong>选取</strong>一个<code>slave</code>作为<code>master</code>，将其它<code>slave</code>连接到<strong>新</strong>的<code>master</code>，并<strong>告知客户端</strong>新的服务器地址</p>
+</blockquote>
+<ul>
+<li>注意</li>
+</ul>
+<blockquote>
+<p>哨兵也是一台redis服务器，只是<strong>不提供数据服务</strong><br>
+通常哨兵配置数量为<strong>单数</strong>，<strong>防止</strong>投票新的master时出现<strong>平票</strong>的情况</p>
+</blockquote>
+<!-- more -->
+<hr>
+<h1 id="a-name启用哨兵模式2-启用哨兵模式a"><a name="启用哨兵模式">2. 启用哨兵模式</a></h1>
+<ul>
+<li>配置一拖二的主从结构</li>
+<li>配置三个配置相同的哨兵，可参考<code>sentinel.conf</code></li>
+</ul>
+<p>|配置项|	范例|	说明|<br>
+|---|---|---|---|<br>
+|sentinel auth-pass &lt;服务器名称&gt; <password>|	sentinel auth-pass mymaster itcast|连接服务器口令|<br>
+|sentinel down-after-milliseconds &lt;自定义服务名称&gt;&lt;主机地址&gt;&lt;端口&gt;&lt;主从服务器总量&gt;|	sentinel monitor mymaster 192.168.194.131 6381 1|	设置哨兵监听的主服务器信息，最后的参数决定了最终参与选举的服务器数量（-1）|<br>
+|sentinel down-after-milliseconds &lt;服务名称&gt;&lt;毫秒数（整数）&gt;|	sentinel down-after milliseconds mymaster 3000|指定哨兵在监控Redis服务时，判定服务器挂掉的时间周期，默认30秒 （30000），也是主从切换的启动条件之一|<br>
+|sentinel parallel-syncs &lt;服务名称&gt;&lt;服务器数（整数）&gt;|sentinel parallel-syncs mymaster 1	|指定同时进行主从的slave数量，数值越大，要求网络资源越高，要求越小，同步时间约长|<br>
+|sentinel failover-timeout &lt;服务名称&gt;&lt;毫秒数（整数）&gt;	|sentinel failover-timeout mymaster 9000	|指定出现故障后，故障切换的最大超时时间，超过该值，认定切换失败，默认3分钟|<br>
+|sentinel notification-script &lt;服务名称&gt;&lt;脚本路径&gt;|	-	|服务器无法正常联通时，设定的执行脚本，通常调试使用。|</p>
+<ul>
+<li>启动哨兵：<code>redis-sentinel sentinel.conf</code></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>服务类型</th>
+<th>是否是主服务器</th>
+<th>IP地址</th>
+<th>端口</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Redis</td>
+<td>是</td>
+<td>192.168.1.110</td>
+<td>6379</td>
+</tr>
+<tr>
+<td>Redis</td>
+<td>否</td>
+<td>192.168.1.111</td>
+<td>6379</td>
+</tr>
+<tr>
+<td>Redis</td>
+<td>否</td>
+<td>192.168.1.112</td>
+<td>6379</td>
+</tr>
+<tr>
+<td>Sentinel</td>
+<td>-</td>
+<td>192.168.1.110</td>
+<td>26379</td>
+</tr>
+<tr>
+<td>Sentinel</td>
+<td>-</td>
+<td>192.168.1.111</td>
+<td>26379</td>
+</tr>
+<tr>
+<td>Sentinel</td>
+<td>-</td>
+<td>192.168.1.112</td>
+<td>26379</td>
+</tr>
+</tbody>
+</table>
+<figure data-type="image" tabindex="2"><img src="http://mofish.pily.life/post-images/1637505851027.png" alt="" loading="lazy"></figure>
+<!-- more -->
+<hr>
+<h1 id="a-name哨兵工作原理3-哨兵工作原理a"><a name="哨兵工作原理">3. 哨兵工作原理</a></h1>
+<p>哨兵在进行主从切换过程中，经历了三个阶段</p>
+<ul>
+<li>监控</li>
+<li>通知</li>
+<li>故障转移</li>
+</ul>
+<h2 id="31-阶段一监控阶段">3.1 阶段一：监控阶段</h2>
+<p>监控阶段，哨兵有<strong>三个定时监控任务</strong>完成对各节点的<strong>发现</strong>和<strong>监控</strong></p>
+<ul>
+<li>任务1：每个哨兵节点<code>每10秒</code>会向<code>主节点</code>和<code>从节点</code>发送<code>info命令</code>，当有新的从节点加入时可以马上感知到。</li>
+</ul>
+<blockquote>
+<p>哨兵配置时，<code>只要配置主节点</code>的监控即可，通过向主节点发送info命令，便可获取从节点信息。<br>
+<img src="http://mofish.pily.life/post-images/1637591167350.jpg" alt="" loading="lazy"></p>
+</blockquote>
+<ul>
+<li>任务2：每个哨兵节点<code>每隔2秒</code>向redis数据节点的<code>指定频道</code>上发送该哨兵节点<code>对于主节点的判断</code>以及<code>当前哨兵节点的信息</code>，同时<code>每个哨兵</code>节点也会订阅该频道</li>
+</ul>
+<blockquote>
+<p>主要用来了解其它哨兵节点的信息以及对主节点的判断，其实就是通过消息publish和subscribe来完成的。<br>
+<img src="http://mofish.pily.life/post-images/1637591511337.jpg" alt="" loading="lazy"></p>
+</blockquote>
+<ul>
+<li>任务3：<code>每隔1秒</code>每个哨兵都会向<code>主节点</code>、<code>从节点</code>以及<code>其余哨兵节点</code>发送一次<code>ping命令</code>。</li>
+</ul>
+<blockquote>
+<p>这就是<code>心跳机制</code>，哨兵用来判断节点是否正常的重要依据。<br>
+<img src="http://mofish.pily.life/post-images/1637591608691.jpg" alt="" loading="lazy"></p>
+</blockquote>
+<hr>
+<h2 id="32-阶段二通知">3.2 阶段二：通知</h2>
+<p>哨兵要做的就是定时监控这些数据和节点运行情况，每隔一定时间向这些节点发送PING命令来监控。间隔时间和<code>down-after-milliseconds</code>选项有关，<code>down-after-milliseconds</code>的值<strong>小于1秒</strong>时，哨兵会每隔<code>down-after-milliseconds</code>指定的时间发送一次PING命令，当<code>down-after-milliseconds</code>的值<strong>大于1秒</strong>时，哨兵会每隔1秒发送一次PING命令。</p>
+<ul>
+<li>主观下线</li>
+</ul>
+<blockquote>
+<p>当<strong>超过</strong><code>down-after-milliseconds</code>指定时间后，如果<strong>被PING的节点</strong>仍然<strong>未恢复</strong>，则哨兵认为其<strong>主观下线</strong>，主观下线表示<strong>从当前的哨兵</strong>进程来看，该节点已经下线了。</p>
+</blockquote>
+<ul>
+<li>客观下线</li>
+</ul>
+<blockquote>
+<p>在主观下线后，如果该节点是<strong>主节点</strong>，则哨兵会<strong>进一步判断</strong>是否需要对其进行故障转移，哨兵发送<code>sentinel is-master-down-by-addr</code>命令<strong>询问其它哨兵节点</strong>，以便了解其它哨兵节点对该主节点的主观下线状态。<br>
+如果<strong>达到指定数量</strong>时，哨兵会认为其<strong>客观下线</strong>，并开始进行故障转移。</p>
+</blockquote>
+<pre><code class="language-redis">sentinel monitor mymaster 127.0.0.1 6379 2
+// 该配置表示只有当至少有两个Sentinel节点(包括当前节点)认为该主数据库主观下线时，当前哨兵节点才会认为该主数据库客观下线。
+</code></pre>
+<hr>
+<h2 id="33-阶段三故障转移">3.3 阶段三：故障转移</h2>
+<ul>
+<li>选举领头哨兵<br>
+当前哨兵虽然发现了<strong>主节点客观下线</strong>了，需要故障恢复，但是故障恢复需要由<strong>领头哨兵</strong>来完成，这样才能保证<strong>同一时间</strong>是由<strong>一个哨兵</strong>来执行故障恢复，选举领头哨兵的过程使用了Raft算法，过程如下：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>发现主节点客观下线的哨兵节点(A)向每个哨兵节点发送命令，要求对象选择自己成为领头哨兵。</td>
+</tr>
+<tr>
+<td>2</td>
+<td>如果目标哨兵节点没有选过其它节点，则会将A设置为领头哨兵。</td>
+</tr>
+<tr>
+<td>3</td>
+<td>如果A发现有超过半数且超过quorum参数值的哨兵节点同样选择自己成为领头哨兵，则A成功成为领头哨兵。</td>
+</tr>
+<tr>
+<td>4</td>
+<td>当有多个哨兵节点同时参选领头哨兵，则会出现没有任何节点当选的可能，此时每个参选节点将等待一个随机事件重新发起参选请求进行下一轮选举，直到选举成功。</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>故障恢复<br>
+选出领头哨兵后，领头哨兵将会开始对主节点进行故障恢复，步骤如下：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>领头哨兵将从停止服务的主数据库的从数据库中挑选一个来充当新的主数据库。</td>
+</tr>
+<tr>
+<td>2</td>
+<td>选出一个从数据库后，领头哨兵将向从数据库发送SLAVEOF NO ONE命令使其升格为主数据库，而后领头哨兵向其他从数据库发送 SLAVEOF命令来使其成为新主数据库的从数据库，最后一步则是更新内部的记录，将已经停止服务的旧的主数据库更新为新的主数据库的从数据库，使得当其恢复服务时自动以从数据库的身份继续服务。</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>挑选新主节点的依据：</p>
+<ol>
+<li>所有在线的从数据库中，选择优先级最高的从数据库。优先级通过replica-priority参数设置</li>
+<li>优先级相同，则复制的命令偏移量越大(复制越完整)越优先，数据越完整</li>
+<li>如果以上都一样，则选择运行ID较小的从数据库，数据越完整</li>
+</ol>
+</blockquote>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/redis_learning_16/" class="post-title gt-a-link">
+                    Redis学习之路(十六)：集群之主从复制
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

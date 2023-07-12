@@ -1,0 +1,504 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>Redis学习之路(三)：限流之Redis-Cell | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Redis学习之路(三)：限流之Redis-Cell
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2021-05-13 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tags">
+                            # redis
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>限流算法在分布式领域是一个经常被提起的话题 ，当系统的处理能力有限时💢，或者当活动火热访问量突然骤增时📈📈<br>
+如何阻止计划外的请求继续对系统施压，这时一个需要重视的问题🤠</p>
+<!-- more -->
+<p>除了上面所说的情况，限流还有一个同样常用的场景，那就是有目的的控制用户行为，避免垃圾请求，例如用户恶意刷接口、例如每日限制发帖数量等等。</p>
+<h2 id="一-简单限流策略">一、简单限流策略</h2>
+<p>首先我们来看一个常见的、简单的限流策略。系统限定用户某个行为在指定时间里只能发生N次，那么如何使用Redis的数据结构来实现这个简单的限流功能呢？</p>
+<h3 id="a过期时间内自增">a.过期时间内自增</h3>
+<p>原理：该方法是利用Redis的Incr自增命令和Expire命令，从第一次请求开始计算，如果在范围时间内，Incr次数达到最大限制次数的话📈📈，则限制🈲本次操作。</p>
+<h4 id="代码示例">代码示例</h4>
+<pre><code class="language-php">&lt;?php
+
+class ActionLimit {
+    private $redis;
+
+    public function __construct()
+    {
+        // 连接Redis
+        $redis = new Redis();
+        $redis-&gt;connect('127.0.0.1', '6379');
+        $redis-&gt;auth('xxxxxx');
+        $this-&gt;redis = $redis;
+    }
+
+    /**
+     * 检查
+     * @param $userId(用户ID，唯一标识)
+     * @param $action(请求表示)
+     * @param $period(规定时间内,分钟)
+     * @param $maxCount(最大请求次数)
+     * @return bool
+     */
+    public function checkActionLimit($userId, $action, $period, $maxCount)
+    {
+        $key = 'hits:' . $userId . ':' . $action;
+
+        // 访问次数自增一
+        $hitCount = $this-&gt;redis-&gt;incr($key);
+
+        if ($hitCount == 1) {
+            $this-&gt;redis-&gt;expire($key, $period * 60);
+        }
+
+        echo &quot;hits:&quot; . $hitCount . PHP_EOL;
+        if ($hitCount &gt; $maxCount) {
+            return false;
+        }
+        return true;
+    }
+}
+
+
+$actionLimit = new ActionLimit();
+for ($i = 1; $i &lt; 10; $i++) {
+    sleep(2);  // 睡它两秒
+    // 一分钟最多只能评论5次
+    $str =  date('Y-m-d H:i:s') . &quot; : 第{$i}次访问 &quot; ;
+    $checkLimit  = $actionLimit-&gt;checkActionLimit(10086, 'addComment', 1, 5);
+    if (!$checkLimit) {
+        $str .= '超过限制了';
+    }
+    echo $str  . PHP_EOL;
+}
+</code></pre>
+<p>执行结果：<br>
+<img src="http://mofish.pily.life/post-images/1621002196430.jpg" alt="" loading="lazy"></p>
+<!-- more -->
+<h3 id="b滑动时间窗口">b.滑动时间窗口</h3>
+<p>除了上面这个简单的方法，在书中还看到过一个滑动事件窗口（定宽）的方案，就是使用ZSet数据结构的Score值，通过Score值圈出这个时间窗口，</p>
+<p>因此，我们只需要保留该窗口内的数据，窗口外的数据都可以砍掉或者限制额外的数据进入窗口。</p>
+<p>如下图所示，用一个ZSet结构记录用户的行为历史，每一个行为都会作为ZSet中的一个Key保存下来，同一个用户的同一种行为用一个ZSet记录。</p>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1626792680168.png" alt="" loading="lazy"></figure>
+<h4 id="代码示例-2">代码示例</h4>
+<pre><code class="language-php">&lt;?php
+
+class Period
+{
+    private $redis;
+
+    public function __construct()
+    {
+        $redis = new Redis();
+        $redis-&gt;connect('127.0.0.1', 6379);
+        $redis-&gt;auth('111111');
+        $this-&gt;redis = $redis;
+    }
+
+    public function checkIsUsing($userId, $actionKey, $period, $maxCount)
+    {
+        $key = &quot;hist:{$userId}-{$actionKey}&quot;;
+        $nowTime = time();
+
+        // 移除滑动窗口内多余的数据
+        $this-&gt;redis-&gt;zRemRangeByScore($key, 0, $nowTime - $period);
+
+        // 获取当前窗口内活动的数据数量
+        $currentCount = $this-&gt;redis-&gt;zCard($key);
+
+        // 获取当前窗口内最早要过期的一条数据
+        $minActionTime = $this-&gt;redis-&gt;zRange($key, -$maxCount, -$maxCount);
+
+        if ($currentCount &gt;= $maxCount) {
+            // 如果当前窗口数据超过maxCount，则返回错误提示
+            $waitTime = $minActionTime[0] + $period - time();
+            echo &quot;{$period}秒内最多操作{$maxCount}次，请等待{$waitTime}秒&quot;.PHP_EOL;
+            return false;
+        }else {
+            // 如果当前窗口数据没有超过maxCount，则插入数据
+            $this-&gt;redis-&gt;zAdd($key,$nowTime, $nowTime);
+            // 加个过期时间，避免冷数据持续占用内存
+            $this-&gt;redis-&gt;expire($key, $period + 1);
+            return true;
+        }
+    }
+}
+
+$period = new Period();
+// 60秒内只能发表5次评论
+if ($period-&gt;checkIsUsing(10086, 'addComment', 60, 5)) {
+    echo '评论成功' . PHP_EOL;
+}
+</code></pre>
+<p>执行结果：<br>
+<img src="http://mofish.pily.life/post-images/1626793870869.PNG" alt="" loading="lazy"></p>
+<!-- more -->
+<h2 id="二-高级限流算法-漏斗限流">二、高级限流算法-漏斗限流</h2>
+<p>漏斗限流是最常用的限流方法之一，顾名思义，这个算法的灵感是来源于漏斗的结构。</p>
+<p>如下图所示，漏斗的容量是有限的，如果当漏水的速度大于装水的速度时，一切正常；但是当漏水速度小于装水速度时，就会出现漏斗满了，水溢出来的情况。</p>
+<figure data-type="image" tabindex="2"><img src="http://mofish.pily.life/post-images/1626853570223.png" alt="" width="200" height="200" loading="lazy"></figure>
+<p>而在程序设计中，<code>漏斗的容量</code>代表当前用户行为<code>可以持续进行的数量</code>，<code>漏嘴的流水速率</code>代表着系统允许改<code>行为的最大频率</code>，我们需要在程序中判断当前漏斗中是否有充足的容量来处理当前这次用户行为。</p>
+<h4 id="代码示例-3">代码示例</h4>
+<pre><code class="language-php">&lt;?php
+
+
+class Funnel
+{
+    private $capacity;  // 漏斗容量
+    private $leakingRate; // 漏嘴流水速度
+    private $leftQuota;  // 漏斗剩余空间
+    private $leakingTs;  // 上一次漏水时间
+
+    public function __construct($capacity, $leakingRate)
+    {
+        $this-&gt;capacity    = $capacity;
+        $this-&gt;leakingRate = $leakingRate;
+        $this-&gt;leftQuota   = $capacity;
+        $this-&gt;leakingTs   = time();
+    }
+
+    /**
+     * 处理空间
+     */
+    public function makeSpace()
+    {
+        $nowTs = time();
+        // 距离上次漏水过去了多久
+        $deltaTs = $nowTs - $this-&gt;leakingTs;
+        // 又可以腾出不少空间了
+        $deltaQuota = $deltaTs * $this-&gt;leakingRate;
+        if ($deltaQuota &lt; 1) return;
+
+        // 增加剩余空间
+        $this-&gt;leftQuota += $deltaQuota;
+
+        // 记录漏水时间
+        $this-&gt;leakingTs = $nowTs;
+
+        // 剩余空间不得高于容量
+        if ($this-&gt;leftQuota &gt; $this-&gt;capacity) {
+            $this-&gt;leftQuota = $this-&gt;capacity;
+        }
+    }
+
+    /**
+     * 流水
+     * @param $quota 1 消耗一个容量
+     * @return bool
+     */
+    public function watering($quota) {
+        $this-&gt;makeSpace();
+        // 判断剩余空间是否足够
+        if ($this-&gt;leftQuota &gt;= $quota) {
+            $this-&gt;leftQuota -= $quota;
+            echo date('Y-m-d H:i:s') .': '. $this-&gt;leftQuota. PHP_EOL;
+            return true;
+        }
+        echo date('Y-m-d H:i:s') .': '. '不够空间啦' . PHP_EOL;
+        return false;
+    }
+}
+
+$funnels = [];
+function isActionAllowed($userId, $action, $capacity, $leakingRate){
+    $key = &quot;hist:{$userId}_{$action}&quot;;
+    global $funnels;
+    if (isset($funnels[$key])) {
+        $funnel = $funnels[$key];
+    } else {
+        $funnel = new Funnel($capacity, $leakingRate);
+        $funnels[$key] = $funnel;
+    }
+    return $funnel-&gt;watering(1);
+}
+
+
+for ($i = 0; $i &lt; 20; $i++) {
+    isActionAllowed(10086, 'addComment', 15, '0.5');
+    sleep(1);
+}
+</code></pre>
+<!-- more -->
+<h4 id="流程图">流程图</h4>
+<figure data-type="image" tabindex="3"><img src="http://mofish.pily.life/post-images/1626853986842.png" alt="" loading="lazy"></figure>
+<h4 id="不足">不足</h4>
+<p>Funnel对象中，<code>makeSpace</code>方法都漏斗算法的<code>核心</code>，其在每次漏水前都会被调用以触发漏水，给漏斗腾空空间来，</p>
+<p>能腾出多少空间取决于时间过去了多久以及流水的速度 ，而值得注意的是，漏斗的空间占用是一个常量，不会因为行为频率增加而增大。</p>
+<p>从流程我们可以看到，对于漏斗的一系列操作我们<code>无法保证</code>整个过程的<code>原子性</code>，意味着需要进行适当的<code>加锁</code>，而一旦加锁，就意味着有加锁或解锁<code>失败的可能</code>，除此还得引入<code>重试机制</code>，导致<code>性能下降</code>，代码<code>复杂度增加</code>。</p>
+<p>因为为了解决这个问题，我们可以使用本章的重点知识点<code>Redis-Cell</code>。</p>
+<!-- more -->
+<h2 id="redis-cell">Redis-Cell</h2>
+<p>Redis4.0提供了一个限流Redis模块，叫做Redis-Cell。该模块也使用了漏斗算法，并提供了原子的限流指令。</p>
+<p>该模块只有一个指令<code>cl.throttle</code>，它参数我们下面说明一下：</p>
+<figure data-type="image" tabindex="4"><img src="http://mofish.pily.life/post-images/1626858821807.png" alt="" loading="lazy"></figure>
+<p>从上图可以看到，这个指令是意思是：允许用户10086的回复行为频率为60秒最多30次（漏水速率），漏斗的初始容量为15。也就是说一开始可以连续回复15个帖子，然后才开始收漏水速率的影响。</p>
+<pre><code>注意：除此之外，我们可以看到漏水速率变成了2个参数，用两个参数相除的接口来表达漏水速率相对来说更加直观一些。
+</code></pre>
+<pre><code class="language-shell">&gt; cl.throttle 10086:addComment 15 30 60
+&gt; 1) (integet) 0     # 0 表示允许  1 表示拒绝
+&gt; 2) (integet) 15   # 漏斗容量  capacity
+&gt; 3) (integet) 14   # 漏斗剩余空间  leftQuota
+&gt; 4) (integet) -1    # -1代表还有空间  如果被拒绝了，这里返回的是需要多长时间再试(单位秒)
+&gt; 5) (integet) 2     # 多长时间后，漏斗完全空出来(单位秒)
+</code></pre>
+<p>因此在执行限流指令时，如果被拒绝了，就需要丢弃或者重试，一般我们直接使用第4个参数，把重试剩余时间提示给用户即可，是非常方便的，所以以上就是Redis限流的一些用法啦，大家可以去尝试一下。</p>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/redis_learning_02/" class="post-title gt-a-link">
+                    Redis学习之路(二)：布隆过滤器
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

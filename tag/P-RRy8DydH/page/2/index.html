@@ -1,0 +1,533 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>redis | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <div class="main-content">
+        <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+        <div class="current-tag-container">
+            <h2 class="title gt-c-content-color-first">
+                #redis
+            </h2>
+        </div>
+        <div class="post-list-container">
+    <div class="post-inner">
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/redis_learning_11/">
+                            <span class="post-title gt-c-content-color-first">Redis学习之路(十一)：过期删除策略和内存淘汰策略</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>❓ 设置完一个键的过期时间后，到了这个时间，这个键还能获取到么？假如获取不到那这个键还占据着内存吗？<br>
+😐 如何设置Redis的内存大小？当内存满了之后，Redis有哪些内存淘汰策略？我们又该如何选择？</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2021-11-04 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tag">
+                                # redis
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/redis_learning_10/">
+                            <span class="post-title gt-c-content-color-first">Redis学习之路(十)：持久化存储</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>❓ 为了防止数据的意外丢失，确保数据安全性，因此需要对数据进行持久化存储。<br>
+😱 利用永久性存储介质讲数据进行保存，在特定的时间将保存的数据进行恢复的工作机制称为持久化。</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2021-10-16 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tag">
+                                # redis
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/redis_learning_09/">
+                            <span class="post-title gt-c-content-color-first">Redis学习之路(九)：为什么 Redis 单线程却能支撑高并发?</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>经典面试题了这是😇</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2021-09-27 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tag">
+                                # redis
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/redis_learning_08/">
+                            <span class="post-title gt-c-content-color-first">Redis学习之路(八)：Stream</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>😚 Stream 是 Redis 5.0 版本新增加的数据结构，用于弥补 List 和 Pub/Sub 来实现消息队列功能的不足。<br>
+👏 其提供了消息的持久化和主备复制功能，可以让任何客户端访问任何时刻的数据，并且能记住每一个客户端的访问位置，还能保证消息不丢失。</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2021-09-22 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tag">
+                                # redis
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/data_structure_04/">
+                            <span class="post-title gt-c-content-color-first">数据结构学习之路(四)：ZipList压缩链表</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>😵本来这篇是写在《Redis学习之路(一)：5大基础数据类型之Hash》里面的，但是因为篇幅可能过长，</p>
+<p>而且关于数据结构的想单独拧出来整理，所以就抽出来写，那么下面就继续学习ZipList😗</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2021-09-18 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tag">
+                                # redis
+                            </a>
+                        
+                            <a href="http://mofish.pily.life/tag/J4LLJ1xJr/" class="post-tag">
+                                # 数据结构
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/data_structure_03/">
+                            <span class="post-title gt-c-content-color-first">数据结构学习之路(三)：SDS简单动态字符串</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>👉简单动态字符串SDS是Redis中String类型的底层数据结构</p>
+<p>👉Redis的实现方法并没用采用传统的C语言中的字符串表示，而是通过改进后自己定义了一种叫做简单动态字符串（simple dynamic string, 简称SDS）的抽象类型。</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2021-09-17 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tag">
+                                # redis
+                            </a>
+                        
+                            <a href="http://mofish.pily.life/tag/J4LLJ1xJr/" class="post-tag">
+                                # 数据结构
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/data_structure_02/">
+                            <span class="post-title gt-c-content-color-first">数据结构学习之路(二)：哈希表</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>👏 哈希表也叫散列表，这种数据结构提供了Key-Value 的映射关系，只要给出一个 Key ，就可以高效查找到它所匹配的 Value ，时间复杂度接近于 O(1)。</p>
+<p>👻 其实哈希表是基于数组的一种存储方式，它主要由哈希函数和数组构成，当要存储一个数据的时候，首先用一个函数计算数据的地址，然后再将数据存进指定地址位置的数组里面。这个函数就是哈希函数，而这个数组就是哈希表。</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2021-09-17 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tag">
+                                # redis
+                            </a>
+                        
+                            <a href="http://mofish.pily.life/tag/J4LLJ1xJr/" class="post-tag">
+                                # 数据结构
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/redis_learning_07/">
+                            <span class="post-title gt-c-content-color-first">Redis学习之路(七)：Scan命令</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>😵 在平时线上 Redis 维护工作中，有时候需要从 Redis 实例的成千上万个 key 找到特定前缀的 key 列表来手动处理数据。<br>
+🤔 除了简单粗暴的 keys 命令，还有什么方法可以找出满足特定前缀的 key 列表呢？</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2021-09-08 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tag">
+                                # redis
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/redis_learning_06/">
+                            <span class="post-title gt-c-content-color-first">Redis学习之路(六)：管道Pipeline</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>⏩ 一直以来，很多同学都对Redis 管道有一个误解，以为这是Redis服务器提供的一种特别的技术，从而可以加速Redis的存取效率，但是实际上并不是。<br>
+🆗 这个技术本质上是由客户端提供的，与服务器并有没有什么直接的关系，下面我们来整理一下知识点。</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2021-08-26 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tag">
+                                # redis
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/redis_learning_05/">
+                            <span class="post-title gt-c-content-color-first">Redis学习之路(五)：事务和PubSub</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>😀由于这两个实际用的比较少，这里我们整理一下常见的问题即可，all right？</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2021-08-13 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tag">
+                                # redis
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+    </div>
+</div>
+        <div class="pagination-container">
+    
+        <a href="http://mofish.pily.life/tag/P-RRy8DydH" class="prev-page gt-a-link">上一页</a>
+    
+    
+        <a href="http://mofish.pily.life/tag/P-RRy8DydH/page/3/" class="prev-page gt-a-link">下一页</a>
+    
+</div>
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

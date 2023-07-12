@@ -1,0 +1,625 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>Redis学习之路(八)：Stream | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Redis学习之路(八)：Stream
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2021-09-22 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tags">
+                            # redis
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>😚 Stream 是 Redis 5.0 版本新增加的数据结构，用于弥补 List 和 Pub/Sub 来实现消息队列功能的不足。<br>
+👏 其提供了消息的持久化和主备复制功能，可以让任何客户端访问任何时刻的数据，并且能记住每一个客户端的访问位置，还能保证消息不丢失。</p>
+<!-- more -->
+<h2 id="目录">目录</h2>
+<ul>
+<li><a href="#简述">简述</a></li>
+<li><a href="#消息ID和消息内容">消息ID和消息内容</a></li>
+<li><a href="#增删改查">增删改查</a></li>
+<li><a href="#独立消费">独立消费</a></li>
+<li><a href="#创建消费组">创建消费组</a></li>
+<li><a href="#消费">消费</a></li>
+<li><a href="#PEL如何避免消息丢失">PEL如何避免消息丢失</a></li>
+<li><a href="#Stream的高可用">Stream的高可用</a></li>
+</ul>
+<br>
+<h2 id="a-name简述简述a"><a name="简述">简述</a></h2>
+<p>Stream 是一个新的强大的支持多播的可持久化消息队列，其结构如下图所示：</p>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1632294851176.png" alt="" loading="lazy"></figure>
+<p>它有一个消息链表，将所有加入的信息都串起来，每个消息都有一个唯一的ID和对应的内容。</p>
+<pre><code>此外，消息是持久化的，Redis重启后，内容还在，不会丢失。
+</code></pre>
+<p>每个 <code>Stream</code> 都有唯一的名称，就是其对应的 Key，在我们首次使用 xadd 指令追加消息时自动创建。</p>
+<p>每个 <code>Stream</code> 都可以挂多个<code>消费组</code>（Consumer Group），每个<code>消费组</code>都会有个游标 last_delivered_id <code>在Stream</code> 数组之上往前移动，表示当前<code>消费组</code>已经消费到哪条信息了。</p>
+<p>另外每个<code>消费组</code>都有一个 <code>Stream</code> 内唯一的名称，消费者不会自动创建，它需要单独的指令 xgroup create 进行创建，需要指定从 <code>Stream</code> 的某个消息 ID 开始消费，这个 ID 用来初始化 last_deliverer_id 变量。</p>
+<p>每个<code>消费组</code>的状态都是<strong>独立的</strong>，<strong>互不影响</strong>，也就是说同一份<code>Stream</code>内部的消息会被每个消费组消费到。</p>
+<p>除此之外，同一个<code>消费组</code>可以挂接多个<code>消费者</code>（Consumer），这些<code>消费者</code>之间是<strong>竞争关系</strong>，<strong>任意一个</strong><code>消费者</code>读取了消息都会使游标 last_delivered_id 往前移动，每个<code>消费者</code>有一个组内唯一名称。</p>
+<p>我们从图中观察到，消费者内部会有一个状态变量pending_ids，它记录了当前已经被客户端读取，但是还没有 ask 的消息，这个 pending_ids 变量在 Redis 官方被称为 PEL，也就是 Pending Entries List，是一个核心的数据结构，它用来确认客户端<strong>至少消费了消息一次</strong>，而不会再网络传输的中途丢失了而没被处理。</p>
+<hr>
+<br>
+<h2 id="a-name消息id和消息内容消息id和消息内容a"><a name="消息ID和消息内容">消息ID和消息内容</a></h2>
+<p><code>消息ID</code>的形式是 timestampInMillis-sequence，例如1527846880572-5，它表示当前的消息再毫米时间戳 1527846880572 时产生，并且是该毫秒内产生的第 5 条消息。</p>
+<p><code>消息ID</code>可以由服务器自动生产，也可以由客户端自己指定，但是形式<strong>必须</strong>是**“整数-整数”**，而且后面加入的ID必须大于前面的<code>消息ID</code>。</p>
+<p><code>消息内容</code>就是键值对，没啥特别的。</p>
+<hr>
+<br>
+<h2 id="a-name增删改查增删改查a"><a name="增删改查">增删改查</a></h2>
+<ul>
+<li>xadd：向 Stream 追加消息</li>
+</ul>
+<pre><code class="language-shell"># * 号表示服务器自动生成ID，后面顺序跟着 key 和 value
+# 名字叫 dog，年龄 27 岁
+127.0.0.1:6379&gt; xadd codehole * name dog age 27
+&quot;1632301447116-0&quot;
+127.0.0.1:6379&gt; xadd codehole * name pily age 18
+&quot;1632301478393-0&quot;
+127.0.0.1:6379&gt; xadd codehole * name ultraman age 99
+&quot;1632301500592-0&quot;
+</code></pre>
+<ul>
+<li>xlen：获取 Stream 消息长度</li>
+</ul>
+<pre><code class="language-shell">127.0.0.1:6379&gt; xlen codehole
+(integer) 3
+</code></pre>
+<ul>
+<li>xrange：获取 Stream 中的消息列表，会自动过滤已经删除的消息</li>
+</ul>
+<pre><code class="language-shell"># - 表示最小值  + 表示最大值
+127.0.0.1:6379&gt; xrange codehole - +
+1) 1) &quot;1632301447116-0&quot;
+   2) 1) &quot;name&quot;
+      2) &quot;moyuxing&quot;
+      3) &quot;age&quot;
+      4) &quot;27&quot;
+2) 1) &quot;1632301478393-0&quot;
+   2) 1) &quot;name&quot;
+      2) &quot;pily&quot;
+      3) &quot;age&quot;
+      4) &quot;18&quot;
+3) 1) &quot;1632301500592-0&quot;
+   2) 1) &quot;name&quot;
+      2) &quot;ultraman&quot;
+      3) &quot;age&quot;
+      4) &quot;99&quot;
+
+# 指定最小消息 ID 的列表
+127.0.0.1:6379&gt; xrange codehole 1632301478393-0 +
+1) 1) &quot;1632301478393-0&quot;
+   1) 1) &quot;name&quot;
+      1) &quot;pily&quot;
+      2) &quot;age&quot;
+      3) &quot;18&quot;
+2) 1) &quot;1632301500592-0&quot;
+   1) 1) &quot;name&quot;
+      1) &quot;ultraman&quot;
+      2) &quot;age&quot;
+      3) &quot;99&quot;
+
+# 指定最大消息 ID 的列表
+127.0.0.1:6379&gt; xrange codehole - 1632301478393-0
+1) 1) &quot;1632301447116-0&quot;
+   2) 1) &quot;name&quot;
+      2) &quot;moyuxing&quot;
+      3) &quot;age&quot;
+      4) &quot;27&quot;
+2) 1) &quot;1632301478393-0&quot;
+   2) 1) &quot;name&quot;
+      2) &quot;pily&quot;
+      3) &quot;age&quot;
+      4) &quot;18&quot;
+</code></pre>
+<ul>
+<li>xdel：从 Stream 中删除消息</li>
+</ul>
+<pre><code class="language-shell">127.0.0.1:6379&gt; xdel codehole 1632301478393-0
+(integer) 1
+127.0.0.1:6379&gt; xlen codehole
+(integer) 2
+# 删除的消息没了
+127.0.0.1:6379&gt; xrange codehole - +
+1) 1) &quot;1632301447116-0&quot;
+   2) 1) &quot;name&quot;
+      2) &quot;moyuxing&quot;
+      3) &quot;age&quot;
+      4) &quot;27&quot;
+2) 1) &quot;1632301500592-0&quot;
+   2) 1) &quot;name&quot;
+      2) &quot;ultraman&quot;
+      3) &quot;age&quot;
+      4) &quot;99&quot;
+</code></pre>
+<ul>
+<li>del：删除整个 Stream 消息列表中的所有消息</li>
+</ul>
+<pre><code class="language-shell"># 删除整个Stream
+127.0.0.1:6379&gt; del codehole
+(integer) 1
+127.0.0.1:6379&gt; xlen codehole
+(integer) 0
+</code></pre>
+<hr>
+<br>
+<h2 id="a-name独立消费独立消费a"><a name="独立消费">独立消费</a></h2>
+<p>我们可以在不定义<code>消费组</code>的情况下进行 Stream 消息的<strong>独立消费</strong>，当 Stream 没有新的消息时，甚至可以阻塞等待。</p>
+<p>Redis 设计了一个单独的消费指令<strong>xread</strong>，可以将 Stream 当成普通的消息队列（list）来使用。</p>
+<pre><code class="language-shell"># 从 Stream 头部读取两条消息（重新插入前面三条信息）
+127.0.0.1:6379&gt; xread count 2 streams codehole 0-0
+1) 1) &quot;codehole&quot;
+   2) 1) 1) &quot;1632304533303-0&quot;
+         2) 1) &quot;name&quot;
+            2) &quot;moyuxing&quot;
+            3) &quot;age&quot;
+            4) &quot;27&quot;
+      2) 1) &quot;1632304538029-0&quot;
+         2) 1) &quot;name&quot;
+            2) &quot;pily&quot;
+            3) &quot;age&quot;
+            4) &quot;18&quot;
+   
+# 从 Stream 尾部读取一条新的消息，$ 表明只要 Stream 中的新数据
+# （毫无疑问，这里不会返回任何数据，因为没有新数据进来）
+127.0.0.1:6379&gt; xread count 1 streams codehole $
+(nil)
+
+# 从尾部阻塞等待新消息到来，下面的指令会堵住，直到新消息到来
+127.0.0.1:6379&gt; xread block 0 count 1 streams codehole $
+
+# 新打开一个窗口，通过这个窗口往 Stream 里插入一条信息
+127.0.0.1:6379&gt; xadd codehole * name xiaohong age 16
+&quot;1632381201794-0&quot;
+
+# 再切到第一个窗口，我们可以看到阻塞解除了，并返回了新的消息内容和等待时间
+127.0.0.1:6379&gt; xread block 0 count 1 streams codehole $
+1) 1) &quot;codehole&quot;
+   2) 1) 1) &quot;1632381201794-0&quot;
+         2) 1) &quot;name&quot;
+            2) &quot;xiaohong&quot;
+            3) &quot;age&quot;
+            4) &quot;16&quot;
+(1.84s)
+</code></pre>
+<p>客户端如果想要使用 xread 进行顺序消费，那么一定要记住当前消费到哪里，也就是返回的<code>消息ID</code>。下次再继续调用 xread 时，可继续消费后续的信息，<strong>避免重复消费</strong>。</p>
+<p>block 为 0 时表示永远阻塞，直到消息到来；block 为 1000 表示阻塞 1s，如果 1s 内没有任何消息到来，则返回 nil。</p>
+<pre><code class="language-shell">127.0.0.1:6379&gt; xread block 1000 count 1 streams codehole $
+(nil)
+(1.08s)
+</code></pre>
+<hr>
+<br>
+<h2 id="a-name创建消费组创建消费组a"><a name="创建消费组">创建消费组</a></h2>
+<p>Stream 通过 xgroup create 指令创建消费组，如下图所示：<br>
+<img src="http://mofish.pily.life/post-images/1632384574743.png" alt="" loading="lazy"></p>
+<pre><code>注意：创建消费组需要提供起始信息 ID 参数用来初始化 last_delivered_id 变量。
+</code></pre>
+<pre><code class="language-shell"># 表示从头开始消费
+127.0.0.1:6379&gt; xgroup create codehole cg1 0-0
+OK
+
+# $ 表示从尾部开始消费，只接受新消息，当前 Stream 消息会全部忽略
+127.0.0.1:6379&gt; xgroup create codehole cg2 $
+OK
+
+# 获取 Stream 信息
+127.0.0.1:6379&gt; xinfo stream codehole
+ 1) &quot;length&quot;
+ 2) (integer) 3                                    # 共 3 个消息
+ 3) &quot;radix-tree-keys&quot;
+ 4) (integer) 1
+ 5) &quot;radix-tree-nodes&quot;
+ 6) (integer) 2
+ 7) &quot;groups&quot;
+ 8) (integer) 2                                    # 共 2 个消费组
+ 9) &quot;last-generated-id&quot;
+10) &quot;1632385551651-0&quot;
+11) &quot;first-entry&quot;                                 # 第 1 个消息
+12) 1) &quot;1632385524922-0&quot;
+    2) 1) &quot;name&quot;
+       2) &quot;pily&quot;
+       3) &quot;age&quot;
+       4) &quot;18&quot;
+13) &quot;last-entry&quot;                                 # 做后一个消息
+14) 1) &quot;1632385551651-0&quot;
+    2) 1) &quot;name&quot;
+       2) &quot;john&quot;
+       3) &quot;age&quot;
+       4) &quot;88&quot;
+
+# 获取 Stream 消费组信息
+1) 1) &quot;name&quot;
+   2) &quot;cg1&quot;
+   3) &quot;consumers&quot;
+   4) (integer) 0                             # 该消费者没有消费者
+   5) &quot;pending&quot;
+   6) (integer) 0                            # 该消费者没有正在处理的消息
+   7) &quot;last-delivered-id&quot;
+   8) &quot;0-0&quot;
+2) 1) &quot;name&quot;
+   2) &quot;cg2&quot;
+   3) &quot;consumers&quot;
+   4) (integer) 0
+   5) &quot;pending&quot;
+   6) (integer) 0
+   7) &quot;last-delivered-id&quot;
+   8) &quot;1632385551651-0&quot;
+</code></pre>
+<hr>
+<br>
+<h2 id="a-name消费消费a"><a name="消费">消费</a></h2>
+<p>Stream 提供了 xreadgroup 指令可以进行消费组的<code>组内消费</code>，需要提供<strong>消费组名称</strong>、<strong>消费者名称</strong>和<strong>起始消息ID</strong>。</p>
+<p>它同 xread 一样，也可以阻塞等待新信息，读到新信息后，对应的消息ID就会进入消费者的 PEL （正在处理的消息）结构里，客户端处理完毕后使用 xack 指令通知服务器后，表示该消息已处理完毕，该消息 ID 就会从 PEL 中<strong>移除</strong>。</p>
+<pre><code class="language-shell"># &gt; 号表示从当前消费组的 last_delivered_id 后面开始读
+# 每当消费者读取一条消息， last_delivered_id 变量就会前进
+127.0.0.1:6379&gt; xreadgroup Group cg1 c1 count 1 streams codehole &gt;
+1) 1) &quot;codehole&quot;
+   2) 1) 1) &quot;1632388256718-0&quot;
+         2) 1) &quot;name&quot;
+            2) &quot;pily&quot;
+            3) &quot;age&quot;
+            4) &quot;18&quot;
+127.0.0.1:6379&gt; xreadgroup Group cg1 c1 count 1 streams codehole &gt;
+1) 1) &quot;codehole&quot;
+   2) 1) 1) &quot;1632388264858-0&quot;
+         2) 1) &quot;name&quot;
+            2) &quot;ultraman&quot;
+            3) &quot;age&quot;
+            4) &quot;22&quot;
+127.0.0.1:6379&gt; xreadgroup Group cg1 c1 count 2 streams codehole &gt;
+1) 1) &quot;codehole&quot;
+   2) 1) 1) &quot;1632388271050-0&quot;
+         2) 1) &quot;name&quot;
+            2) &quot;john&quot;
+            3) &quot;age&quot;
+            4) &quot;88&quot;
+
+# 再继续读取就没有消息了
+127.0.0.1:6379&gt; xreadgroup Group cg1 c1 count 1 streams codehole &gt;
+(nil)
+
+# 阻塞等待接收消息
+127.0.0.1:6379&gt; xreadgroup group cg1 c1 block 0 count 1 streams codehole &gt;
+
+# 开启另外一个窗口，往里面塞消息
+127.0.0.1:6379&gt; xadd codehole * name marry age 24
+&quot;1632388420051-0&quot;
+
+# 回到前一个窗口，发现阻塞解除，收到了新的消息
+127.0.0.1:6379&gt; xreadgroup group cg1 c1 block 0 count 1 streams codehole &gt;
+1) 1) &quot;codehole&quot;
+   2) 1) 1) &quot;1632388420051-0&quot;
+         2) 1) &quot;name&quot;
+            2) &quot;marry&quot;
+            3) &quot;age&quot;
+            4) &quot;24&quot;
+(12.63s)
+
+# 
+127.0.0.1:6379&gt; xinfo groups codehole
+1) 1) &quot;name&quot;
+   2) &quot;cg1&quot;
+   3) &quot;consumers&quot;
+   4) (integer) 1                             # 1 个消费者
+   5) &quot;pending&quot;
+   6) (integer) 4                             # 共 4 条待处理信息还没有 ack
+   7) &quot;last-delivered-id&quot;
+   8) &quot;1632388420051-0&quot;
+2) 1) &quot;name&quot;
+   2) &quot;cg2&quot;
+   3) &quot;consumers&quot;
+   4) (integer) 0                             # 消费组 cg2 没有变化，因为前面都在操作 cg1
+   5) &quot;pending&quot;
+   6) (integer) 0
+   7) &quot;last-delivered-id&quot;
+   8) &quot;1632388271050-0&quot;
+
+# 如果同一个消费组有多个消费者，则可以通过 xinfo cunsumers 指令观察每个消费者的状态
+127.0.0.1:6379&gt; xinfo consumers codehole cg1
+1) 1) &quot;name&quot;
+   2) &quot;c1&quot;
+   3) &quot;pending&quot;
+   4) (integer) 4                      # 共 4 条信息待处理
+   5) &quot;idle&quot;
+   6) (integer) 524136            # 空闲了多少ms没有读取消息了
+
+# 接下来我们 ack 一条信息
+127.0.0.1:6379&gt; xack codehole cg1 1632388256718-0
+(integer) 1
+# 待处理的信息变成 3 条
+127.0.0.1:6379&gt; xinfo consumers codehole cg1
+1) 1) &quot;name&quot;
+   2) &quot;c1&quot;
+   3) &quot;pending&quot;
+   4) (integer) 3
+   5) &quot;idle&quot;
+   6) (integer) 655723
+
+# 把所有的信息都 ack 掉
+127.0.0.1:6379&gt; xack codehole cg1 1632388420051-0 1632388264858-0 1632388271050-0
+(integer) 3
+# PEL 空了，没有待处理消息了
+127.0.0.1:6379&gt; xinfo consumers codehole cg1
+1) 1) &quot;name&quot;
+   2) &quot;c1&quot;
+   3) &quot;pending&quot;
+   4) (integer) 0
+   5) &quot;idle&quot;
+   6) (integer) 775588
+</code></pre>
+<hr>
+<br>
+<h2 id="a-namepel如何避免消息丢失pel如何避免消息丢失a"><a name="PEL如何避免消息丢失">PEL如何避免消息丢失</a></h2>
+<p>当客户端消费者读取 Stream 消息时，在 Redis 服务器将消息回复给客户端的过程中，如果客户端突然断开了连接，那个这个消息客户还没被客户端收到就丢失了。</p>
+<p>不过没有关系，PEL 里已经保存了发出去的消息ID，待客户端重新连接上之后，可以再次收到PEL 中的消息ID。</p>
+<hr>
+<br>
+<h2 id="a-namestream的高可用stream的高可用a"><a name="Stream的高可用">Stream的高可用</a></h2>
+<p>Stream 的高可用是<code>建立在主从复制基础</code>上的，它和其它数据结构的复制机制没有区别，也就是说再 Sentinel 和 Cluster 集群环境下，Stream 是可以支持高可用的。</p>
+<p>不过鉴于 Redis 的指令复制是异步的，在 failover 发生时，Redis 可能会丢失极小部分数据，这一点 Redis 的其他数据接口也是一样的。</p>
+<pre><code>故障failover表现在一个master分片故障后，slave接管master的过程。
+</code></pre>
+<hr>
+<br>
+<h2 id="a-name小结小结a"><a name="小结">小结</a></h2>
+<p>Stream 的消费模型借鉴了 Kafka 的消费分组的概念，弥补了 Redis PubSub 不能持久化消息的缺陷。 Stream 又不用于Kafka 的消息可以分 Partition，而 Stream 不行。</p>
+<p>如果非要分 Partition 的话， 得在客户端做，提供不同的 Stream 名称，对消息进行 hash 取模来选择往哪个 Stream 里塞。</p>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/data_structure_04/" class="post-title gt-a-link">
+                    数据结构学习之路(四)：ZipList压缩链表
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

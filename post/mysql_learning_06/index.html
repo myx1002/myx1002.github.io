@@ -1,0 +1,450 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>MySql学习之路(六)：explain执行计划详解 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    MySql学习之路(六)：explain执行计划详解
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-03-28 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/YVLEbqd3K/" class="post-tags">
+                            # mysql
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>使用explain关键字可以模拟优化器执行SQL查询语句，从而知道MySql是如何处理你的SQL语句的，分析你的查询语句或是表结构的性能瓶颈。</p>
+<!-- more -->
+<h1 id="explain执行计划包含信息">explain执行计划包含信息</h1>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1648518322679.png" alt="" loading="lazy"></figure>
+<p>其简单含义如下：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>该语句的唯一标识</td>
+</tr>
+<tr>
+<td>select_type</td>
+<td>查询类型</td>
+</tr>
+<tr>
+<td>table</td>
+<td>表名</td>
+</tr>
+<tr>
+<td>partitions</td>
+<td>匹配的分区</td>
+</tr>
+<tr>
+<td>type</td>
+<td>联接类型</td>
+</tr>
+<tr>
+<td>possible_keys</td>
+<td>可能的索引选择</td>
+</tr>
+<tr>
+<td>key</td>
+<td>实际选择的索引，如果没有选择索引,键是NULL。</td>
+</tr>
+<tr>
+<td>key_len</td>
+<td>索引的长度（单位：字节），<code>值越大越好</code>，如果键是NULL，则长度为NULL。</td>
+</tr>
+<tr>
+<td>ref</td>
+<td>索引的哪一列被引用了，如果可能，是一个常量const</td>
+</tr>
+<tr>
+<td>rows</td>
+<td>根据表统计信息以及索引选用情况，大致估算出找到所需的记录所需要读取的行数，<code>值越小越好</code>。</td>
+</tr>
+<tr>
+<td>filtered</td>
+<td>显示了通过条件过滤出的行数的百分比估计值。</td>
+</tr>
+<tr>
+<td>Extra</td>
+<td>附加信息</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>其中比较重要的字段会单独拧出来讲：id、select_type、type、key、rows、Extra</p>
+</blockquote>
+<hr>
+<!-- more -->
+<h1 id="一-id">一、id</h1>
+<p>select查询的序列号，包含一组数字，表示查询中执行select子句或操作表的顺序。</p>
+<h2 id="1-id相同">1、id相同</h2>
+<p>执行顺序由上至下<br>
+<img src="http://mofish.pily.life/post-images/1648534457193.png" alt="" loading="lazy"></p>
+<h2 id="2-id不同">2、id不同</h2>
+<p>如果是子查询，id的序号会递增，id值越大优先级越高，越先被执行<br>
+<img src="http://mofish.pily.life/post-images/1648534790348.png" alt="" loading="lazy"></p>
+<blockquote>
+<p>有一点值得注意的是，查询优化器可能对涉及子查询的查询语句进行重写，从而转换为连接查询，使得id相同。<br>
+所以如果我们想知道查询优化器对某个包含子查询的语句是否进行了重写，直接查看执行计划即可。</p>
+</blockquote>
+<p><strong>小结：</strong></p>
+<ul>
+<li>id如果相同，可以认为是一组，从上往下顺序执行</li>
+<li>在所有组中，id值越大，优先级越高，越先执行</li>
+<li>关注点；id号每个号码，标识一趟独立的查询，一个sql的查询躺数越少越好</li>
+</ul>
+<hr>
+<h1 id="二-select_type">二、select_type</h1>
+<p>查询类型，主要用于区别普通查询，联合查询，子查询等的复杂查询，常见部分类型如下：</p>
+<h2 id="1-simple">1、SIMPLE</h2>
+<p>简单的select查询，查询中不包含子查询或者union<br>
+<img src="http://mofish.pily.life/post-images/1648535469263.png" alt="" loading="lazy"></p>
+<h2 id="2-primary">2、PRIMARY</h2>
+<p>查询中包含任何复杂的子部分，最外层查询被标记<br>
+<img src="http://mofish.pily.life/post-images/1648535607998.png" alt="" loading="lazy"></p>
+<h2 id="3-subquery">3、SUBQUERY</h2>
+<p>在 select 或 where 列表中包含子查询<br>
+<img src="http://mofish.pily.life/post-images/1648535694459.png" alt="" loading="lazy"></p>
+<h2 id="4-derived">4、DERIVED</h2>
+<p>在 from 列表中包含的子查询被标记为 DERIVED(衍生)，Mysql会递归执行这些子查询，把结果放在临时表里</p>
+<h2 id="5-union-和-union-result">5、UNION 和 UNION RESULT</h2>
+<ul>
+<li>
+<p>UNION：当通过 union 来连接多个查询结果时，第二个之后的 select 其 select_type 为 UNION</p>
+</li>
+<li>
+<p>UNION RESULT：从union表获取结果的select</p>
+</li>
+</ul>
+<figure data-type="image" tabindex="2"><img src="http://mofish.pily.life/post-images/1648547018719.png" alt="" loading="lazy"></figure>
+<hr>
+<h1 id="三-type">三、type</h1>
+<p>访问类型，sql查询优化中一个很重要的指标，结果值从好到坏依次是：<br>
+<strong>system</strong> &gt; <strong>const</strong> &gt; <strong>eq_ref</strong> &gt; <strong>ref</strong> &gt; fulltext &gt; ref_or_null &gt; index_merge &gt; unique_subquery &gt; index_subquery &gt; <strong>range</strong> &gt; <strong>index</strong> &gt; <strong>ALL</strong></p>
+<blockquote>
+<p>注意：黑色标注的是常见的类型</p>
+</blockquote>
+<h3 id="31-system">3.1 system👇</h3>
+<p>表只有一行记录（等于系统表），这是const类型的特例，平时不会出现，可以忽略不计。</p>
+<h3 id="32-const">3.2 const👇</h3>
+<p>示通过索引一次就找到，const用于比较primary key或者unique索引。因为只匹配一行数据，所以如果将主键置于where列表中，mysql能将该查询转换为一个常量。<br>
+<img src="http://mofish.pily.life/post-images/1648548132099.png" alt="" loading="lazy"></p>
+<h3 id="33-eq_ref">3.3 eq_ref👇</h3>
+<p>唯一性索引扫描，对于每个索引键，表中只有一条记录与之匹配。常见于主键 或 唯一索引扫描。</p>
+<h3 id="34-ref">3.4 ref👇</h3>
+<p>非唯一性索引扫描，返回匹配某个单独值的所有行，本质上也是一种索引访问，它返回所有匹配某个单独值的行，可能会找多个符合条件的行，属于查找和扫描的混合体。</p>
+<h3 id="35-range">3.5 range👇</h3>
+<p>只检索给定范围的行，使用一个索引来选择行。key列显示使用了哪个索引，一般就是where语句中出现了between,in等范围的查询。这种范围扫描索引扫描比全表扫描要好，因为它开始于索引的某一个点，而结束另一个点，不用全表扫描。</p>
+<h3 id="36-index">3.6 index👇</h3>
+<p>index:index 与all区别为index类型只遍历索引树。通常比all快，因为索引文件比数据文件小很多，数据在索引就能拿到。</p>
+<h3 id="37-all">3.7 all👇</h3>
+<p>遍历全表以找到匹配的行</p>
+<blockquote>
+<p>注意:一般保证查询至少达到range级别，最好能达到ref。</p>
+</blockquote>
+<hr>
+<!-- more -->
+<h1 id="四-extra">四、Extra</h1>
+<p>顾名思义，<code>Extra</code>列是用来说明一些额外信息的，包含不适合在其他列中显示但十分重要的额外信息。我们可以通过这些额外信息来<code>更准确的理解MySQL到底将如何执行给定的查询语句</code>。MySQL提供的额外信息有好几十个，我们就不一个一个介绍了，所以我们只挑选比较重要的额外信息介绍给大家。</p>
+<h3 id="41-using-filesort">4.1 Using filesort👇</h3>
+<p>mysql对数据使用一个外部的索引排序，而不是按照表内的索引进行排序读取。也就是说mysql无法利用索引完成的排序操作成为“文件排序”：<br>
+<img src="http://mofish.pily.life/post-images/1648718445622.png" alt="" loading="lazy"></p>
+<p>由于索引是先按email排序、再按address排序，所以查询时如果直接按address排序，索引就不能满足要求了，mysql内部必须再实现一次“文件排序”。</p>
+<h3 id="42-using-temporary">4.2 Using temporary👇</h3>
+<p>使用临时表保存中间结果，也就是说mysql在对查询结果排序时使用了临时表，常见于order by 和 group by：<br>
+<img src="http://mofish.pily.life/post-images/1648718760188.png" alt="" loading="lazy"></p>
+<h3 id="43-using-index">4.3 Using index👇</h3>
+<p>表示相应的select操作中使用了覆盖索引（Covering Index），避免了访问表的数据行，效率高<br>
+如果同时出现Using where，表明索引被用来执行索引键值的查找（参考上图）<br>
+如果没用同时出现Using where，表明索引用来读取数据而非执行查找动作：</p>
+<figure data-type="image" tabindex="3"><img src="http://mofish.pily.life/post-images/1648719548570.png" alt="" loading="lazy"></figure>
+<blockquote>
+<p>覆盖索引（Covering Index）：也叫索引覆盖。就是select列表中的字段，只用从索引中就能获取，不必根据索引再次读取数据文件，换句话说查询列要被所建的索引覆盖。</p>
+</blockquote>
+<h3 id="44-using-where">4.4 Using where👇</h3>
+<p>使用了where过滤</p>
+<h3 id="45-using-join-buffer">4.5 Using join buffer👇</h3>
+<p>使用了链接缓存</p>
+<h3 id="46-impossible-where">4.6 Impossible WHERE</h3>
+<p>where子句的值总是false，不能用来获取任何元祖。</p>
+<figure data-type="image" tabindex="4"><img src="http://mofish.pily.life/post-images/1648720278327.png" alt="" loading="lazy"></figure>
+<h3 id="47-select-tables-optimized-away">4.7 select tables optimized away</h3>
+<p>在没有group by子句的情况下，基于索引优化MIN/MAX操作或者对于MyISAM存储引擎优化COUNT（*）操作，不必等到执行阶段在进行计算，查询执行计划生成的阶段即可完成优化。</p>
+<h3 id="48-distinct">4.8 distinct</h3>
+<p>优化distinct操作，在找到第一个匹配的元祖后即停止找同样值得动作。</p>
+<hr>
+<!-- more -->
+<h1 id="五-key_len">五、key_len</h1>
+<p>实际使用到的索引长度 (即：字节数)</p>
+<p>帮你检查<code>是否充分的利用了索引</code>，<code>值越大越好</code>，主要针对于联合索引，有一定的参考意义。</p>
+<pre><code class="language-sql">-- key_len的长度计算公式：
+varchar(10)变长字段且允许NULL = 10 * ( character set：utf8=3,gbk=2,latin1=1)+1(NULL)+2(变长字段)
+
+varchar(10)变长字段且不允许NULL = 10 * ( character set：utf8=3,gbk=2,latin1=1)+2(变长字段)
+
+char(10)固定字段且允许NULL = 10 * ( character set：utf8=3,gbk=2,latin1=1)+1(NULL)
+
+char(10)固定字段且不允许NULL = 10 * ( character set：utf8=3,gbk=2,latin1=1)
+</code></pre>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/mysql_learning_05/" class="post-title gt-a-link">
+                    MySql学习之路(五)：redo log、undo log、binlog 的总结
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

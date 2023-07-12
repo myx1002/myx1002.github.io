@@ -1,0 +1,549 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>MySql学习之路(十七)：数据库的一些调优策略 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    MySql学习之路(十七)：数据库的一些调优策略
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2023-01-13 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/YVLEbqd3K/" class="post-tags">
+                            # mysql
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>🤗除了索引调优外，数据库还有一些别的调优策略，如分表、分库、读写分离、系统参数设置等等。</p>
+<!-- more -->
+<h1 id="目录">目录</h1>
+<ul>
+<li><a href='#一、数据库调优的措施'>一、数据库调优的措施</a>
+<ul>
+<li><a href='#1.1 调优的目标'>1.1 调优的目标</a></li>
+<li><a href='#1.2 如何定位调优问题'>1.2 如何定位调优问题</a></li>
+<li><a href='#1.3 调优的维度和步骤'>1.3 调优的维度和步骤</a></li>
+</ul>
+</li>
+<li><a href='#二、优化MySql服务器'>二、优化MySql服务器</a></li>
+<li><a href='#三、优化数据库结构'>三、优化数据库结构</a>
+<ul>
+<li><a href='#3.1 拆分表：冷热数据分离'>3.1 拆分表：冷热数据分离</a></li>
+<li><a href='#3.2 增加中间表'>3.2 增加中间表</a></li>
+<li><a href='#3.3 增加冗余字段'>3.3 增加冗余字段</a></li>
+<li><a href='#3.4 优化数据类型'>3.4 优化数据类型</a></li>
+<li><a href='#3.5 优化插入记录的速度'>3.5 优化插入记录的速度</a></li>
+<li><a href='#3.6 使用非空约束'>3.6 使用非空约束</a></li>
+</ul>
+</li>
+<li><a href='#四、大表优化'>四、大表优化</a>
+<ul>
+<li><a href='#4.1 限定查询的范围'>4.1 限定查询的范围</a></li>
+<li><a href='#4.2 读/写分离'>4.2 读/写分离</a></li>
+<li><a href='#4.3 垂直拆分'>4.3 垂直拆分</a></li>
+<li><a href='#4.4 水平拆分'>4.4 水平拆分</a></li>
+</ul>
+</li>
+<li><a href='#五、其它调优策略'>五、其它调优策略</a>
+<ul>
+<li><a href='#5.1 服务器语句超时处理'>5.1 服务器语句超时处理</a></li>
+<li><a href='#5.2 创建全局通用表空间'>5.2 创建全局通用表空间</a></li>
+<li><a href='#5.3 MySQL 8.0新特性：隐藏索引对调优的帮助'>5.3 MySQL 8.0新特性：隐藏索引对调优的帮助</a></li>
+</ul>
+</li>
+</ul>
+<!-- more -->
+<h1 id="a-name一-数据库调优的措施一-数据库调优的措施a"><a name='一、数据库调优的措施'>一、数据库调优的措施</a></h1>
+<p>👇👇</p>
+<h2 id="a-name11-调优的目标11-调优的目标a"><a name='1.1 调优的目标'>1.1 调优的目标</a></h2>
+<ul>
+<li>
+<p>尽可能节省系统资源 ，以便系统可以提供更大负荷的服务。（吞吐量更大）</p>
+</li>
+<li>
+<p>合理的结构设计和参数调整，以提高用户操作响应的速度 。（响应速度更快）</p>
+</li>
+<li>
+<p>减少系统的瓶颈，提高MySQL数据库整体的性能。</p>
+</li>
+</ul>
+<br>
+<h2 id="a-name12-如何定位调优问题12-如何定位调优问题a"><a name='1.2 如何定位调优问题'>1.2 如何定位调优问题</a></h2>
+<ul>
+<li>
+<p>用户反馈</p>
+</li>
+<li>
+<p>日志分析，通过查看数据库日志和操作系统日志等方式找出异常情况。</p>
+</li>
+<li>
+<p>服务器资源监控，通过监控服务器的CPU、内存、I/O等使用情况，实时了解服务器的性能状况。</p>
+</li>
+<li>
+<p>数据库内部状况监控，<code>活动会话（Active Session）监控</code>是一个重要指标，通过它可了解数据库当前是否处于繁忙状态，是否存在SQL堆积等。</p>
+</li>
+<li>
+<p>其它的话，还可以对事务、锁等待等进行监控</p>
+</li>
+</ul>
+<br>
+<h2 id="a-name13-调优的维度和步骤13-调优的维度和步骤a"><a name='1.3 调优的维度和步骤'>1.3 调优的维度和步骤</a></h2>
+<p>我们需要调优的对象是整个数据库管理系统，它不仅包括 SQL 查询，还包括数据库的部署配置、架构 等。从这个角度来说，我们思考的维度就不仅仅局限在 SQL 优化上了。通过如下的步骤我们进行梳理：</p>
+<h3 id="第1步选择适合的-dbms"><strong>第1步：选择适合的 DBMS</strong></h3>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1673857248226.png" alt="" loading="lazy"></figure>
+<h3 id="第2步优化表设计"><strong>第2步：优化表设计</strong></h3>
+<figure data-type="image" tabindex="2"><img src="http://mofish.pily.life/post-images/1673857267607.png" alt="" loading="lazy"></figure>
+<h3 id="第3步优化逻辑查询"><strong>第3步：优化逻辑查询</strong></h3>
+<figure data-type="image" tabindex="3"><img src="http://mofish.pily.life/post-images/1673857281553.png" alt="" loading="lazy"></figure>
+<h3 id="第4步优化物理查询"><strong>第4步：优化物理查询</strong></h3>
+<p>物理查询优化是在确定了逻辑查询优化之后，采用物理优化技术（比如索引等），通过计算代价模型对 各种可能的访问路径进行估算，从而找到执行方式中代价最小的作为执行计划。<code>在这个部分中，我们需要掌握的重点是对索引的创建和使用。</code></p>
+<h3 id="第5步使用-redis-或-memcached-作为缓存"><strong>第5步：使用 Redis 或 Memcached 作为缓存</strong></h3>
+<p>除了可以对 SQL 本身进行优化以外，我们还可以请外援提升查询的效率。<br>
+因为数据都是存放到数据库中，我们需要从数据库层中取出数据放到内存中进行业务逻辑的操作，当用户量增大的时候，如果频繁地进行数据查询，会消耗数据库的很多资源。<code>如果我们将常用的数据直接放到内存中，就会大幅提升查询的效率。</code></p>
+<h3 id="第6步库级优化"><strong>第6步：库级优化</strong></h3>
+<p><img src="http://mofish.pily.life/post-images/1673857598756.png" alt="" loading="lazy"><br>
+<img src="http://mofish.pily.life/post-images/1673857606407.png" alt="" loading="lazy"><br>
+<img src="http://mofish.pily.life/post-images/1673857614797.png" alt="" loading="lazy"><br>
+<img src="http://mofish.pily.life/post-images/1673857623266.png" alt="" loading="lazy"></p>
+<blockquote>
+<p>但需要注意的是，分拆在提升数据库性能的同时，也会增加维护和使用成本。</p>
+</blockquote>
+<hr>
+<!-- more -->
+<h1 id="a-name二-优化mysql服务器二-优化mysql服务器a"><a name='二、优化MySql服务器'>二、优化MySql服务器</a></h1>
+<p>现在主流都是使用云服务器，因此硬件方面的优化就不过多描述，主要需要记录的是一些服务器参数的调优。</p>
+<ul>
+<li>
+<p>innodb_buffer_pool_size ：这个参数是Mysql数据库最重要的参数之一，表示InnoDB类型的 表 和索引的最大缓存 。它不仅仅缓存 索引数据 ，还会缓存 表的数据 。这个值越大，查询的速度就会越 快。但是这个值太大会影响操作系统的性能。</p>
+</li>
+<li>
+<p>key_buffer_size ：表示 索引缓冲区的大小 。索引缓冲区是所有的 线程共享 。增加索引缓冲区可 以得到更好处理的索引（对所有读和多重写）。当然，这个值不是越大越好，它的大小取决于内存 的大小。如果这个值太大，就会导致操作系统频繁换页，也会降低系统性能。对于内存在 4GB 左右 的服务器该参数可设置为 256M 或 384M 。</p>
+</li>
+<li>
+<p>table_cache ：表示 同时打开的表的个数 。这个值越大，能够同时打开的表的个数越多。物理内 存越大，设置就越大。默认为2402，调到512-1024最佳。这个值不是越大越好，因为同时打开的表 太多会影响操作系统的性能。</p>
+</li>
+<li>
+<p>query_cache_size ：表示 查询缓冲区的大小 。可以通过在MySQL控制台观察，如果 Qcache_lowmem_prunes的值非常大，则表明经常出现缓冲不够的情况，就要增加Query_cache_size 的值；如果Qcache_hits的值非常大，则表明查询缓冲使用非常频繁，如果该值较小反而会影响效 率，那么可以考虑不用查询缓存；Qcache_free_blocks，如果该值非常大，则表明缓冲区中碎片很 多。MySQL8.0之后失效。该参数需要和query_cache_type配合使用。</p>
+</li>
+<li>
+<p>query_cache_type 的值是0时，所有的查询都不使用查询缓存区。但是query_cache_type=0并不 会导致MySQL释放query_cache_size所配置的缓存区内存。</p>
+<ul>
+<li>当query_cache_type=1时，所有的查询都将使用查询缓存区，除非在查询语句中指定 SQL_NO_CACHE ，如SELECT SQL_NO_CACHE * FROM tbl_name。</li>
+<li>当query_cache_type=2时，只有在查询语句中使用 SQL_CACHE 关键字，查询才会使用查询缓 存区。使用查询缓存区可以提高查询的速度，这种方式只适用于修改操作少且经常执行相同的 查询操作的情况。</li>
+</ul>
+</li>
+<li>
+<p>sort_buffer_size ：表示每个 需要进行排序的线程分配的缓冲区的大小 。增加这个参数的值可以 提高 ORDER BY 或 GROUP BY 操作的速度。默认数值是2 097 144字节（约2MB）。对于内存在4GB 左右的服务器推荐设置为6-8M，如果有100个连接，那么实际分配的总共排序缓冲区大小为100 × 6 ＝ 600MB。</p>
+</li>
+<li>
+<p>join_buffer_size = 8M ：表示 联合查询操作所能使用的缓冲区大小 ，和sort_buffer_size一样， 该参数对应的分配内存也是每个连接独享。</p>
+</li>
+<li>
+<p>read_buffer_size ：表示 每个线程连续扫描时为扫描的每个表分配的缓冲区的大小（字节） 。当线 程从表中连续读取记录时需要用到这个缓冲区。SET SESSION read_buffer_size=n可以临时设置该参 数的值。默认为64K，可以设置为4M。</p>
+</li>
+<li>
+<p>innodb_flush_log_at_trx_commit ：表示 何时将缓冲区的数据写入日志文件 ，并且将日志文件 写入磁盘中。该参数对于innoDB引擎非常重要。该参数有3个值，分别为0、1和2。该参数的默认值 为1。</p>
+<ul>
+<li>值为 0 时，表示 每秒1次 的频率将数据写入日志文件并将日志文件写入磁盘。每个事务的 commit并不会触发前面的任何操作。该模式速度最快，但不太安全，mysqld进程的崩溃会导 致上一秒钟所有事务数据的丢失。</li>
+<li>值为 1 时，表示 每次提交事务时 将数据写入日志文件并将日志文件写入磁盘进行同步。该模 式是最安全的，但也是最慢的一种方式。因为每次事务提交或事务外的指令都需要把日志写入 （flush）硬盘。</li>
+<li>值为 2 时，表示 每次提交事务时 将数据写入日志文件， 每隔1秒 将日志文件写入磁盘。该模 式速度较快，也比0安全，只有在操作系统崩溃或者系统断电的情况下，上一秒钟所有事务数 据才可能丢失。</li>
+</ul>
+</li>
+<li>
+<p>innodb_log_buffer_size ：这是 InnoDB 存储引擎的 事务日志所使用的缓冲区 。为了提高性能， 也是先将信息写入 Innodb Log Buffer 中，当满足 innodb_flush_log_trx_commit 参数所设置的相应条 件（或者日志缓冲区写满）之后，才会将日志写到文件（或者同步到磁盘）中。</p>
+</li>
+<li>
+<p>max_connections ：表示 允许连接到MySQL数据库的最大数量 ，默认值是 151 。如果状态变量 connection_errors_max_connections 不为零，并且一直增长，则说明不断有连接请求因数据库连接 数已达到允许最大值而失败，这是可以考虑增大max_connections 的值。在Linux 平台下，性能好的 服务器，支持 500-1000 个连接不是难事，需要根据服务器性能进行评估设定。这个连接数 不是越大 越好 ，因为这些连接会浪费内存的资源。过多的连接可能会导致MySQL服务器僵死。</p>
+</li>
+<li>
+<p>back_log ：用于 控制MySQL监听TCP端口时设置的积压请求栈大小 。如果MySql的连接数达到 max_connections时，新来的请求将会被存在堆栈中，以等待某一连接释放资源，该堆栈的数量即 back_log，如果等待连接的数量超过back_log，将不被授予连接资源，将会报错。5.6.6 版本之前默 认值为 50 ， 之后的版本默认为 50 + （max_connections / 5）， 对于Linux系统推荐设置为小于512 的整数，但最大不超过900。</p>
+<p>如果需要数据库在较短的时间内处理大量连接请求， 可以考虑适当增大back_log 的值。</p>
+</li>
+<li>
+<p>thread_cache_size ： 线程池缓存线程数量的大小 ，当客户端断开连接后将当前线程缓存起来， 当在接到新的连接请求时快速响应无需创建新的线程 。这尤其对那些使用短连接的应用程序来说可 以极大的提高创建连接的效率。那么为了提高性能可以增大该参数的值。默认为60，可以设置为 120。</p>
+<p>可以通过如下几个MySQL状态值来适当调整线程池的大小：</p>
+<pre><code class="language-mysql">mysql&gt; show global status like 'Thread%';
++-------------------+-------+
+| Variable_name | Value |
++-------------------+-------+
+| Threads_cached | 2 |
+| Threads_connected | 1 |
+| Threads_created | 3 |
+| Threads_running | 2 |
++-------------------+-------+
+4 rows in set (0.01 sec)
+</code></pre>
+<p>当 Threads_cached 越来越少，但 Threads_connected 始终不降，且 Threads_created 持续升高，可 适当增加 thread_cache_size 的大小。</p>
+</li>
+<li>
+<p>wait_timeout ：指定 一个请求的最大连接时间 ，对于4GB左右内存的服务器可以设置为5-10。</p>
+</li>
+<li>
+<p>interactive_timeout ：表示服务器在关闭连接前等待行动的秒数。</p>
+</li>
+</ul>
+<p>这里给出一份my.cnf的参考配置：</p>
+<pre><code class="language-mysql">[mysqld]
+port = 3306 
+serverid = 1 
+socket = /tmp/mysql.sock 
+skip-locking #避免MySQL的外部锁定，减少出错几率增强稳定性。 
+skip-name-resolve #禁止MySQL对外部连接进行DNS解析，使用这一选项可以消除MySQL进行DNS解析的时间。但需要注意，如果开启该选项，则所有远程主机连接授权都要使用IP地址方式，否则MySQL将无法正常处理连接请求！ 
+back_log = 384
+key_buffer_size = 256M 
+max_allowed_packet = 4M 
+thread_stack = 256K
+table_cache = 128K 
+sort_buffer_size = 6M 
+read_buffer_size = 4M
+read_rnd_buffer_size=16M 
+join_buffer_size = 8M 
+myisam_sort_buffer_size =64M 
+table_cache = 512 
+thread_cache_size = 64 
+query_cache_size = 64M
+tmp_table_size = 256M 
+max_connections = 768 
+max_connect_errors = 10000000
+wait_timeout = 10 
+thread_concurrency = 8 #该参数取值为服务器逻辑CPU数量*2，在本例中，服务器有2颗物理CPU，而每颗物理CPU又支持H.T超线程，所以实际取值为4*2=8
+skip-networking #开启该选项可以彻底关闭MySQL的TCP/IP连接方式，如果WEB服务器是以远程连接的方式访问MySQL数据库服务器则不要开启该选项！否则将无法正常连接！ 
+table_cache=1024
+innodb_additional_mem_pool_size=4M #默认为2M 
+innodb_flush_log_at_trx_commit=1
+innodb_log_buffer_size=2M #默认为1M 
+innodb_thread_concurrency=8 #你的服务器CPU有几个就设置为几。建议用默认一般为8 
+tmp_table_size=64M #默认为16M，调到64-256最挂
+thread_cache_size=120 
+query_cache_size=32M
+</code></pre>
+<hr>
+<!-- more -->
+<h1 id="a-name三-优化数据库结构三-优化数据库结构a"><a name='三、优化数据库结构'>三、优化数据库结构</a></h1>
+<p>一个好的<code>数据库设计方案</code>对于数据库的性能常常会起到<code>事半功倍</code>的效果。合理的数据库结构不仅可以使数据库占用更下的磁盘空间，而且能够查询速度更快。数据库结构的设计需要考虑<code>数据冗余</code>、<code>查询和更新的速度</code>、<code>字段的数据类型</code>是否合理等多个方面的内容。</p>
+<h2 id="a-name31-拆分表冷热数据分离31-拆分表冷热数据分离a"><a name='3.1 拆分表：冷热数据分离'>3.1 拆分表：冷热数据分离</a></h2>
+<figure data-type="image" tabindex="4"><img src="http://mofish.pily.life/post-images/1673963950438.png" alt="" loading="lazy"></figure>
+<h2 id="a-name32-增加中间表32-增加中间表a"><a name='3.2 增加中间表'>3.2 增加中间表</a></h2>
+<figure data-type="image" tabindex="5"><img src="http://mofish.pily.life/post-images/1673964037101.png" alt="" loading="lazy"></figure>
+<h2 id="a-name33-增加冗余字段33-增加冗余字段a"><a name='3.3 增加冗余字段'>3.3 增加冗余字段</a></h2>
+<figure data-type="image" tabindex="6"><img src="http://mofish.pily.life/post-images/1673964049930.png" alt="" loading="lazy"></figure>
+<h2 id="a-name34-优化数据类型34-优化数据类型a"><a name='3.4 优化数据类型'>3.4 优化数据类型</a></h2>
+<figure data-type="image" tabindex="7"><img src="http://mofish.pily.life/post-images/1673964116429.png" alt="" loading="lazy"></figure>
+<h2 id="a-name35-优化插入记录的速度35-优化插入记录的速度a"><a name='3.5 优化插入记录的速度'>3.5 优化插入记录的速度</a></h2>
+<p><strong>针对nnoDB引擎的表：</strong></p>
+<p><strong>① 禁用唯一性检查</strong></p>
+<p>插入数据之前执行<code>set unique_checks=0</code>来禁止对唯一索引的检查，数据导入完成之后再运行<code>set unique_check=1</code>。这个和MyISAM引擎的使用方法一样。</p>
+<p><strong>② 禁用外键检查</strong><br>
+<img src="http://mofish.pily.life/post-images/1673964809794.png" alt="" loading="lazy"></p>
+<p><strong>③ 禁止自动提交</strong><br>
+<img src="http://mofish.pily.life/post-images/1673964818653.png" alt="" loading="lazy"></p>
+<h2 id="a-name36-使用非空约束36-使用非空约束a"><a name='3.6 使用非空约束'>3.6 使用非空约束</a></h2>
+<figure data-type="image" tabindex="8"><img src="http://mofish.pily.life/post-images/1673964837871.png" alt="" loading="lazy"></figure>
+<hr>
+<!-- more -->
+<h1 id="a-name四-大表优化四-大表优化a"><a name='四、大表优化'>四、大表优化</a></h1>
+<p>当MySQL单表记录数过大时，数据库的CRUD性能会明显下降，一些常见的优化措施如下：</p>
+<h2 id="a-href41-限定查询的范围41-限定查询的范围a"><a href='#4.1 限定查询的范围'>4.1 限定查询的范围</a></h2>
+<p>禁止不带任何限制数据范围条件的查询语句。比如：我们当用户在查询订单历史的时候，我们可以控制 在一个月的范围内；</p>
+<h2 id="a-href42-读写分离42-读写分离a"><a href='#4.2 读/写分离'>4.2 读/写分离</a></h2>
+<p>经典的数据库拆分方案，主库负责写，从库负责读。</p>
+<ul>
+<li>
+<p>一主一从模式：<br>
+<img src="http://mofish.pily.life/post-images/1673965903009.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>双主双从模式：<br>
+<img src="http://mofish.pily.life/post-images/1673965909280.png" alt="" loading="lazy"></p>
+</li>
+</ul>
+<h2 id="a-href43-垂直拆分43-垂直拆分a"><a href='#4.3 垂直拆分'>4.3 垂直拆分</a></h2>
+<p>当数据量级达到 <code>千万级</code> 以上时，有时候我们需要把一个数据库切成多份，放到不同的数据库服务器上， 减少对单一数据库服务器的访问压力。</p>
+<figure data-type="image" tabindex="9"><img src="http://mofish.pily.life/post-images/1673965931420.png" alt="" loading="lazy"></figure>
+<ul>
+<li>如果数据库的数据表过多，可以采用<code>垂直分库</code>的方式，将关联的数据库部署在同一个数据库上。</li>
+<li>如果数据库中的列过多，可以采用<code>垂直分表</code>的方式，将一张数据表分拆成多张数据表，把经常一起使用的列放在同一张表里。</li>
+</ul>
+<figure data-type="image" tabindex="10"><img src="http://mofish.pily.life/post-images/1673965955695.png" alt="" loading="lazy"></figure>
+<p><code>垂直拆分的优点</code>： 可以使得列数据变小，在查询时减少读取的Block数，减少I/O次数。此外，垂直分区可以简化表的结构，易于维护。</p>
+<p><code>垂直拆分的缺点</code>： 主键会出现冗余，需要管理冗余列，并会引起 JOIN 操作。此外，垂直拆分会让事务变得更加复杂。</p>
+<h2 id="a-href44-水平拆分44-水平拆分a"><a href='#4.4 水平拆分'>4.4 水平拆分</a></h2>
+<figure data-type="image" tabindex="11"><img src="http://mofish.pily.life/post-images/1673966013911.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="12"><img src="http://mofish.pily.life/post-images/1673966024608.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="13"><img src="http://mofish.pily.life/post-images/1673966032074.png" alt="" loading="lazy"></figure>
+<p>下面补充一下数据库分片的两种常见方案：</p>
+<ul>
+<li><strong>客户端代理： 分片逻辑在应用端，封装在jar包中，通过修改或者封装JDBC层来实现。</strong> 当当网的 Sharding-JDBC 、阿里的TDDL是两种比较常用的实现。</li>
+<li><strong>中间件代理： 在应用和数据中间加了一个代理层。分片逻辑统一维护在中间件服务中。</strong> 我们现在谈的Mycat 、360的Atlas、网易的DDB等等都是这种架构的实现。</li>
+</ul>
+<hr>
+<!-- more -->
+<h1 id="a-name五-其它调优策略五-其它调优策略a"><a name='五、其它调优策略'>五、其它调优策略</a></h1>
+<p>👇👇</p>
+<h2 id="a-name51-服务器语句超时处理51-服务器语句超时处理a"><a name='5.1 服务器语句超时处理'>5.1 服务器语句超时处理</a></h2>
+<p>在MySQL 8.0中可以设置 服务器语句超时的限制 ，单位可以达到 毫秒级别 。当中断的执行语句超过设置的 毫秒数后，服务器将终止查询影响不大的事务或连接，然后将错误报给客户端。</p>
+<p>设置服务器语句超时的限制，可以通过设置系统变量 MAX_EXECUTION_TIME 来实现。默认情况下， MAX_EXECUTION_TIME的值为0，代表没有时间限制。 例如：</p>
+<pre><code class="language-mysql">SET GLOBAL MAX_EXECUTION_TIME=2000;
+</code></pre>
+<pre><code class="language-mysql">SET SESSION MAX_EXECUTION_TIME=2000; #指定该会话中SELECT语句的超时时间
+</code></pre>
+<h2 id="a-name52-创建全局通用表空间52-创建全局通用表空间a"><a name='5.2 创建全局通用表空间'>5.2 创建全局通用表空间</a></h2>
+<p><img src="http://mofish.pily.life/post-images/1673967154928.png" alt="" loading="lazy"><br>
+<img src="http://mofish.pily.life/post-images/1673967160089.png" alt="" loading="lazy"></p>
+<h2 id="a-name53-mysql-80新特性隐藏索引对调优的帮助53-mysql-80新特性隐藏索引对调优的帮助a"><a name='5.3 MySQL 8.0新特性：隐藏索引对调优的帮助'>5.3 MySQL 8.0新特性：隐藏索引对调优的帮助</a></h2>
+<figure data-type="image" tabindex="14"><img src="http://mofish.pily.life/post-images/1673967182658.png" alt="" loading="lazy"></figure>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/mysql_learning_16/" class="post-title gt-a-link">
+                    MySql学习之路(十六)：join语句的原理
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

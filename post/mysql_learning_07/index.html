@@ -1,0 +1,572 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>MySql学习之路(七)：读写分离、主从复制、主从延迟 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    MySql学习之路(七)：读写分离、主从复制、主从延迟
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-04-01 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/YVLEbqd3K/" class="post-tags">
+                            # mysql
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>👉 你们有没有做 MySQL 读写分离？如何实现 MySQL 的读写分离？MySQL 主从复制原理的是啥？如何解决 MySQL 主从同步的延时问题？</p>
+<!-- more -->
+<h1 id="一-读写分离">一、读写分离</h1>
+<p>为什么要做读写分离？因为在大流量网站，往往会出现读多写少的情况，如果把读写都放到一个库里面，可能会影响数据的写入和更新。</p>
+<p>所以针对这一情况，就有了读写分离的概念。使用一个主库来处理写操作，多个从库来处理读操作，把读写操作分离开，即可不影响写操作，同时也能支持更多的读操作，提供读的并发量。</p>
+<blockquote>
+<p>既然只有主库才会写数据，那么从库是怎么读到新写入的数据的呢？接下来我们就得提到“主从复制”。</p>
+</blockquote>
+<hr>
+<!-- more -->
+<h1 id="二-主从复制">二、主从复制</h1>
+<p>主从，即有主数据库(Master)，也有从数据库(Slave)，当主数据库变化时，把主数据库的数据复制给从数据库，使得主从数据变得完全一致。</p>
+<h2 id="21-主从复制的作用">2.1 主从复制的作用</h2>
+<ul>
+<li>读写分离，使数据库能支撑更大的并发</li>
+</ul>
+<blockquote>
+<p>主从只负责各自的写和读，极大程度的缓解X锁和S锁争用。在报表中尤其重要。由于部分报表sql语句非常的慢，导致锁表，影响前台服务。如果前台使用master，报表使用slave，那么报表sql将不会造成前台锁，保证了前台速度。</p>
+</blockquote>
+<ul>
+<li>实时灾备（数据备份）</li>
+</ul>
+<blockquote>
+<p>可作为后备数据库，当主库发生故障时，可切换到从库继续工作，提供系统可用性</p>
+</blockquote>
+<ul>
+<li>高可用性</li>
+</ul>
+<blockquote>
+<p>数据备份实际上是一种冗余的机制，通过这种冗余的方式可以换取数据库的高可用性，也就是当服务器出现故障或宕机的情况下，可以切换到从服务器上，保证服务的正常运行。</p>
+</blockquote>
+<ul>
+<li>架构扩展</li>
+</ul>
+<blockquote>
+<p>当业务量越来越大的时候，一主一丛或者多从已经满足不了性能，此时需要多主多从，增加物理服务器，减轻数据库负担，那么这多主多从之间也需要主从复制。</p>
+</blockquote>
+<br>
+<h2 id="22-主从复制的必要条件">2.2 主从复制的必要条件</h2>
+<ul>
+<li>
+<p>主库开启binlog日志</p>
+</li>
+<li>
+<p>主从server_id需不同</p>
+</li>
+<li>
+<p>从服务器能连接主服务器</p>
+</li>
+</ul>
+<br>
+<h2 id="23-主从复制的原理">2.3 主从复制的原理</h2>
+<p>主库将数据变更的逻辑写入到<code>binlog</code>，然后从库连接到主库后，主库会有一个<code>log dump线程</code>把binlog发送给从库，从库有个<code>I/O线程</code>将主库传过来的binlog日志内容写入到<code>relay log</code>中，之后从库有一个<code>SQL线程</code>会从<code>relay log</code>读取内容，把内容写入到库中，使得<code>主从数据一致</code>。<br>
+<img src="http://mofish.pily.life/post-images/1675392503061.png" alt="" loading="lazy"></p>
+<blockquote>
+<p>relay log是什么？<br>
+relay log又叫中续日志，一般情况下它在MySql主从复制读写分离集群的从节点才开启，主节点一般不需要这个日志，可通过修改my.cnf中relay-log配置来开启。<br>
+它是一个中介临时的日志文件，用于存储从主库同步过来的binlog日志内容，所以它里面的内容和binlog日志内容是一致的，然后slave从节点从这个relaylog日志文件中读取数据应用到数据库中，来实现数据的主从复制。</p>
+</blockquote>
+<br>
+<h2 id="24-主从复制的具体流程">2.4 主从复制的具体流程</h2>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1649039910696.png" alt="" loading="lazy"></figure>
+<ol>
+<li>
+<p>主库db的更新事件(update、insert、delete)被写到binlog；</p>
+</li>
+<li>
+<p>从库发起连接，连接到主库；</p>
+</li>
+<li>
+<p>此时主库创建一个binlog dump thread线程，把binlog的内容发送到从库；</p>
+</li>
+<li>
+<p>从库启动之后，创建一个I/O线程，读取主库传过来的binlog内容并写入到relay log；</p>
+</li>
+<li>
+<p>还会创建一个SQL线程，从relay log里面读取内容，从Exec_Master_Log_Pos位置开始执行读取到的更新事件，将更新内容写入到slave的db。</p>
+</li>
+</ol>
+<br>
+<h2 id="25-如果主服务器挂了怎么办手动切换">2.5 如果主服务器挂了怎么办(手动切换)？</h2>
+<p>假设发生了突发事件，master宕机，需要手动切换把从库提升为主库需要怎么做？</p>
+<ol>
+<li>停止从库 IO_THREAD 线程</li>
+</ol>
+<blockquote>
+<p>在从库中执行<code>stop slave io_thread;</code>，使从库断开接收主库的信息，有利于从库完成剩余的数据同步。</p>
+</blockquote>
+<ol start="2">
+<li>确认slave完成所有同步</li>
+</ol>
+<blockquote>
+<p>在从库中执行<code>show processlist;</code>，直到看到Has read all relay log,则表示从库更新都执行完毕了。</p>
+</blockquote>
+<ol start="3">
+<li>选择合适的从库作为主库</li>
+</ol>
+<blockquote>
+<p>登陆所有从库，查看master.info文件，对比选择pos最大的作为新的主库</p>
+</blockquote>
+<ol start="4">
+<li>切换从库为主库</li>
+</ol>
+<blockquote>
+<p>执行<code>stop slave</code>来完全停止从库的复制工作<br>
+执行<code>reset salve all</code>来完全清空slave信息<br>
+执行<code>reset master</code>来清空本机上的master信息</p>
+</blockquote>
+<ol start="5">
+<li>检查新主库配置</li>
+</ol>
+<blockquote>
+<p>检查<code>read-only</code>是否已经关闭<br>
+检查是否开启<code>binlog</code>等等<br>
+修改后重启生效</p>
+</blockquote>
+<ol start="6">
+<li>
+<p>调整其它从库，连接到新的主库中</p>
+</li>
+<li>
+<p>测试master-slave是否能正常通信和正常同步</p>
+</li>
+</ol>
+<br>
+<h2 id="26-如何主库突然宕机数据来不及同步到从库导致数据丢失怎么办">2.6 如何主库突然宕机，数据来不及同步到从库导致数据丢失怎么办？</h2>
+<p>传统的异步同步，主库写事务事件到二进制日志，从库索取主库日志，这不能确保事务事件被传送到从库。而对于全同步（fully synchronous replication）复制，主库提交事务，必须等待从库也提交这个事务成功，才能完成这个事务，这样容易造成事务的延迟。所以，出现了半同步，。</p>
+<p>因此MySql中有个介于异步和全同步之间的<code>半同步复制机制</code>，所谓的半同步复制就是master每commit一个事务(简单来说就是做一个改变数据的操作）,要确保slave接受完主服务器发送的binlog日志文件并写入到自己的中继日志relay log里，然后会给master信号，告诉对方已经接收完毕，这样master才能把事物成功commit。这样就保证了master-slave的数据绝对的一致（但是以牺牲master的性能为代价)。</p>
+<figure data-type="image" tabindex="2"><img src="http://mofish.pily.life/post-images/1649044686646.png" alt="" loading="lazy"></figure>
+<blockquote>
+<p>主从库都需要安装半同步复制插件，并开启半同步复制才能生效。</p>
+</blockquote>
+<pre><code class="language-sql">--- 主库开启
+install plugin rpl_semi_sync_master soname 'semisync_master.so';
+show global variables like 'rpl_semi_sync%';
+set global rpl_semi_sync_master_enabled=on;
+show global status like 'rpl_semi_sync%';
+
+## my.cnf参数配置
+rpl_semi_sync_master_wait_for_slave_count=1; # 等待直到至少一个salve接收并记录了事件后才提交事务
+
+--- 从库开启
+install plugin rpl_semi_sync_slave soname 'semisync_slave.so';
+show global variables like 'rpl_semi_sync%';
+set global rpl_semi_sync_slave_enabled=on;
+show global variables like 'rpl_semi_sync%';
+stop slave IO_THREAD;
+start slave IO_THREAD;
+</code></pre>
+<h2 id="27-组复制技术">2.7 组复制技术</h2>
+<p>异步复制和半同步复制都<strong>无法最终保证数据的一致性问题</strong>，半同步复制是通过判断从库响应的个数来决定是否返回给客户端，虽然数据一致性相比于异步复制有提升，但仍然无法满足对数据一致性要求高的场景，比如金融领域。MGR 很好地弥补了这两种复制模式的不足。</p>
+<p>组复制技术，简称 MGR（MySQL Group Replication）。是 MySQL 在 5.7.17 版本中推出的一种新的数据复制技术，这种复制技术是基于 Paxos 协议的状态机复制。</p>
+<p>那么MGR 是如何工作的？</p>
+<p>首先我们将多个节点共同组成一个复制组，在 <code>执行读写（RW）事务</code> 的时候，需要通过一致性协议层 （Consensus 层）的同意，也就是读写事务想要进行提交，必须要经过组里“大多数人”（对应 Node 节 点）的同意，大多数指的是同意的节点数量需要大于 （N/2+1），这样才可以进行提交，而不是原发起方一个说了算。而针对 <code>只读（RO）事务</code> 则不需要经过组内同意，直接 COMMIT 即可。</p>
+<p>在一个复制组内有多个节点组成，它们各自维护了自己的数据副本，并且在一致性协议层实现了原子消息和全局有序消息，从而保证组内数据的一致性。<br>
+<img src="http://mofish.pily.life/post-images/1675408031084.png" alt="" loading="lazy"></p>
+<hr>
+<!-- more -->
+<h1 id="三-主从延迟">三、主从延迟</h1>
+<p>竟然有主从复制，那么主库把数据复制到从库时，中间肯定有个时间差，从而导致了主从延迟。但是除了正常的延迟外，可能还会有其它异常导致主从延迟，下面我们继续学习一下。</p>
+<h2 id="31-如何查看主从是否延迟">3.1 如何查看主从是否延迟？</h2>
+<p>在从库上执行<code>show slave satus;</code>可以看到很多主从同步的信息：<br>
+<img src="http://mofish.pily.life/post-images/1649046372974.png" alt="" loading="lazy"></p>
+<ul>
+<li>
+<p><code>Seconds_Behind_Master</code>：<strong>不为0</strong>的时候，或者说数值很大的时候。</p>
+</li>
+<li>
+<p><code>Relay_Log_File</code>和<code>Master_Log_File</code>显示binlog的<strong>编号相差很大</strong>，说明binlog在从库上没有及时的同步，所以近期执行的binlog和当前IO线程读取的binlog编号会相差比较大。</p>
+</li>
+<li>
+<p>从库的目录下存在着<strong>大量的relay log</strong>，一般来说同步完成后会自动把relay log删除掉，如果大量存在说明主从复制延迟很厉害，导致很多relay log没执行。</p>
+</li>
+</ul>
+<h2 id="32-主从延迟的原因和解决方案还有哪些">3.2 主从延迟的原因和解决方案还有哪些？</h2>
+<ol>
+<li>
+<p>主从之间有网络延迟，导致同步binlog异常；</p>
+</li>
+<li>
+<p>从库较多，因为主服务器因为向多个从服务器发送更新的二进制日志过程是串行的，所以从库较多时，会出现部分从库同步较慢的情况</p>
+</li>
+<li>
+<p>主库写并发较高，产生的DDL数量超过slave一个sql线程所能承受的范围</p>
+</li>
+<li>
+<p>随机重放，SQL线程对数据重放是一个随机写盘的过程，因为相较于顺序写盘，效率会慢一点</p>
+</li>
+<li>
+<p>锁等待，当从库的查询量大或者有锁等待时，导致执行relay log时需要待锁解除后此啊能继续执行</p>
+</li>
+<li>
+<p>从库中因为sql_thread只有单线程，因此执行relay log时如果有个DDL卡住了，那么所有之后的DDL会等待这个DDL执行完才会继续执行，这就导致了延时，但是可以使用<code>并行复制</code>来解决。</p>
+</li>
+</ol>
+<blockquote>
+<p>“主库上那个相同的DDL也需要执行10分，为什么slave会延时？”，答案是master可以并发，Slave_SQL_Running线程却不可以，后面我们会再次介绍什么是并行复制。</p>
+</blockquote>
+<h2 id="33-解决主从延迟的方法有哪些">3.3 解决主从延迟的方法有哪些？</h2>
+<ol>
+<li>硬件方面</li>
+</ol>
+<blockquote>
+<ul>
+<li>采用性能好一点的服务器，使MySql的性能更好，支撑更大的业务量</li>
+<li>主从尽量放到同一局域网内，减少网络延迟，提供binlog传输速度</li>
+</ul>
+</blockquote>
+<ol start="2">
+<li>架构方面</li>
+</ol>
+<blockquote>
+<ul>
+<li>业务采用分库架构，mysql服务可平行扩展，分散每个库的压力</li>
+<li>当从库较多时，可使用级联结构，减轻主库同步binlog的压力</li>
+<li>加入缓存层，减轻MySql的读压力</li>
+</ul>
+</blockquote>
+<ol start="3">
+<li>主从库设计</li>
+</ol>
+<blockquote>
+<ul>
+<li>开启<code>并行复制</code>，既然 SQL 单线程进行重放时速度有限，MySQL 5.6 版本后，提供了一种并行复制的方式，通过将 SQL 线程转换为多个 work 线程来进行重放。</li>
+<li>如果不是级联模式，从库可关闭生成binlog以及关闭logs-slave-updates设置</li>
+</ul>
+</blockquote>
+<ol start="4">
+<li>代码层面</li>
+</ol>
+<blockquote>
+<ul>
+<li>当出现慢查询和锁等待时，需要考虑执行的业务sql是否有问题或者需要优化</li>
+<li>写入主库后，马上读取主库数据，确保强一致，但是这样读写分离的意义就不大，甚至提高了主库的压力</li>
+</ul>
+</blockquote>
+<hr>
+<!-- more -->
+<h1 id="四-额外问题">四、额外问题</h1>
+<h2 id="41-什么是并行复制">4.1 什么是并行复制</h2>
+<p>MySQL的从库是要通过IO_thread去拉取主库上的binlog的，然后存入本地，落盘成relay log，通过sql_thread来应用这些relay log。</p>
+<p>在MySQL5.6之前的版本中，当主库上有多个线程并发执行SQL时，sql_thread只有一个，在某些TPS比较高的场景下，会出现主库严重延迟的问题。MySQL为了解决这个问题，将sql_thread演化了多个worker的形式，在slave端并行应用relay log中的事务，从而提高relay log的应用速度，减少复制延迟。这就是并行复制的由来。</p>
+<figure data-type="image" tabindex="3"><img src="http://mofish.pily.life/post-images/1649052230228.png" alt="" loading="lazy"></figure>
+<pre><code class="language-sql">-- 主库配置
+-- 表示 binlog 提交后等待延迟多少时间再同步到磁盘，默认0 ，不延迟。当设置为 0 以上的时候，就允许多个事务的日志同时一起提交，也就是我们说的组提交。组提交是并行复制的基础，我们设置这个值的大于 0 就代表打开了组提交的功能。
+binlog_group_commit_sync_delay=100     
+
+-- 表示等待延迟提交的最大事务数，如果上面参数的时间没到，但事务数到了，则直接同步到磁盘。若 binlog_group_commit_sync_delay 没有开启，则该参数也不会开启。
+binlog_group_commit_sync_no_delay_count=10
+
+-- 从库配置
+-- slave_parallel_type：默认值DATABASE，基于库的并行复制方式；LOGICAL_CLOCK基于组提交的并行复制方式（与主库的组提交对应）
+slave_parallel_type=logical_clock 
+
+-- 开启多个work线程并行复制，slave_parallel_workers不要设为1，否则要经过一层负载器，更慢，不如关闭
+slave_parallel_workers=8 
+
+-- 参数在多线程复制环境下，能够保证从库回放relay log事务的顺序与这些事务在relay log中的顺序完全一致，也就是与主库提交的顺序完全一致。
+slave_preserve_commit_order=1
+
+-- 开启MTS功能后，务必将参数master_info_repostitory设置为TABLE，这样性能可以有50%~80%的提升。这是因为并行复制开启后对于元master.info这个文件的更新将会大幅提升，资源的竞争也会变大。在之前InnoSQL的版本中，添加了参数来控制刷新master.info这个文件的频率，甚至可以不刷新这个文件。因为刷新这个文件是没有必要的，即根据master-info.log这个文件恢复本身就是不可靠的。在MySQL 5.7中，Inside君推荐将master_info_repository设置为TABLE，来减小这部分的开销。
+master_info_repository=TABLE 
+relay_log_info_repository=TABLE 
+relay-log-recovery = ON
+log_slave_updates=0
+</code></pre>
+<br>
+<h2 id="42-为什么主从的server_id需要不一样">4.2 为什么主从的server_id需要不一样？</h2>
+<p>server-id用于标识数据库实例，防止在链式主从、多主多从拓扑中导致SQL语句的无限循环。</p>
+<ul>
+<li>
+<p>当主库和备库server-id重复时<br>
+由于默认情况replicate-same-server-id=0，因此备库会跳过所有主库同步的数据，导致主从数据的不一致。</p>
+</li>
+<li>
+<p>当两个备库server-id重复时<br>
+会导致从库跟主库的连接时断时连，产生大量异常。根据MySQL的设计，主库和从库通过事件机制进行连接和同步，当新的连接到来时，如果发现server-id相同，主库会断开之前的连接并重新注册新连接。当A库连接上主库时，此时B库连接到来，会断开A库连接，A库再进行重连，周而复始导致大量异常信息。</p>
+</li>
+</ul>
+<br>
+<h2 id="43-主主-主从-主备有什么不同">4.3 主主、主从、主备有什么不同？</h2>
+<ul>
+<li>
+<p>主主是为了减轻单台服务器的压力，使用多主来分散压力。</p>
+</li>
+<li>
+<p>主主复制是通过互为从节点来实现同步，通过增值的规避解决主键冲突，但是如果两个节点同时写入时，仍然会有两个节点同时修改数据的情况，所以此种主主模式一般仅用于快速切换主备，不用来直接同时提供双写入。<br>
+<img src="http://mofish.pily.life/post-images/1649051934962.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>主从是为了读写分离，减轻主库压力，从库只能读不能写，同步数据的话只能从主库同步到从库。<br>
+<img src="http://mofish.pily.life/post-images/1649051939727.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>主备即读写都在主库，单一主库能够应该工作时使用，从库只是用来备份数据<br>
+<img src="http://mofish.pily.life/post-images/1649051944661.png" alt="" loading="lazy"></p>
+</li>
+</ul>
+<h2 id="44-gtid主从-与-传统主从复制">4.4 GTID主从 与 传统主从复制</h2>
+<p>MySQL 5.6 的新特性之一，全局事务标识符（GTID）是创建的唯一标识符，并与在源（主）服务器上提交的每个事务相关联。此标识符不但是唯一的，而且在给定复制设置中的所有服务器上都是唯一的。所有交易和所有GTID之间都有一对一的映射关系 。它由服务器ID以及事务ID组合而成。这个全局事务ID不仅仅在原始服务器上唯一，在所有存在主从关系 的mysql服务器上也是唯一的。正是因为这样一个特性使得mysql的主从复制变得更加简单，以及数据库一致性更可靠。一个GTID在一个服务器上只执行一次，避免重复执行导致数据混乱或者主从不一致。<br>
+https://www.cnblogs.com/Confession/p/7777577.html</p>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/mysql_learning_06/" class="post-title gt-a-link">
+                    MySql学习之路(六)：explain执行计划详解
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

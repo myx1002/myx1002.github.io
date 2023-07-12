@@ -1,0 +1,687 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>MySql学习之路(一)：索引及其实现原理 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    MySql学习之路(一)：索引及其实现原理
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-03-16 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/YVLEbqd3K/" class="post-tags">
+                            # mysql
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>📖 开发过程中都避免不了使用<code>数据库索引</code>，所以这章节详细整理一下什么是数据库索引、 聚簇索引与非聚簇索引的却别、MyISAM和InnoDB的索引实现方式的区别等等。</p>
+<!-- more -->
+<h1 id="目录">目录</h1>
+<ul>
+<li><a href="#一、什么是索引">一、什么是索引</a>
+<ul>
+<li><a href="#1.1 索引的优缺点">1.1 索引的优缺点</a></li>
+<li><a href="#1.2 索引的使用场景">1.2 索引的使用场景</a></li>
+</ul>
+</li>
+<li><a href="#二、常见索引类型">二、常见索引类型</a>
+<ul>
+<li><a href="#2.1 主键索引">2.1 主键索引</a></li>
+<li><a href="#2.2 普通索引">2.2 普通索引</a></li>
+<li><a href="#2.3 唯一索引">2.3 唯一索引</a></li>
+<li><a href="#2.4 全文索引">2.4 全文索引</a></li>
+<li><a href="#2.5 组合索引">2.5 组合索引</a></li>
+</ul>
+</li>
+<li><a href="#三、聚簇索引和非聚簇索引">三、聚簇索引和非聚簇索引</a>
+<ul>
+<li><a href="#3.1 聚簇索引">3.1 聚簇索引</a></li>
+<li><a href="#3.2 非聚簇索引">3.2 非聚簇索引</a></li>
+</ul>
+</li>
+<li><a href="#四、普通索引 vs 唯一索引">四、普通索引 vs 唯一索引</a>
+<ul>
+<li><a name="4.1 查询过程">4.1 查询过程</a></li>
+<li><a name="4.2 更新/插入过程">4.2 更新/插入过程</a></li>
+<li><a name="4.3 什么是change buffer">4.3 什么是change buffer</a></li>
+</ul>
+</li>
+<li><a href="/post/data_structure_08" target='_blank'>五、为什么使用B+树作为索引</a></li>
+<li><a href="#六、MySQL索引的实现">六、MySQL索引的实现</a>
+<ul>
+<li><a href="#6.1 MyISAM索引的实现">6.1 MyISAM索引的实现</a></li>
+<li><a href="#6.2 InnoDB索引的实现">6.2 InnoDB索引的实现</a></li>
+<li><a href="#6.3 索引下推（ICP）">6.3 索引下推（ICP）</a></li>
+</ul>
+</li>
+<li><a href="#七、什么情况下索引会失效">七、什么情况下索引会失效</a></li>
+<li><a href="#八、COUNT(*)、COUNT(1)和COUNT(具体字段)效率">八、COUNT(*)、COUNT(1)和COUNT(具体字段)效率</a></li>
+</ul>
+<hr>
+<!-- more -->
+<h1 id="a-name一-什么是索引一-什么是索引a"><a name="一、什么是索引">一、什么是索引❓❓</a></h1>
+<p><code>索引</code>其实是一种数据结构，通过缩小一张表中需要查询的数据来加快搜索的速度，类似于字典目录一样，可以目录快速定位到需要查找内容的位置，而不需要一页一页的去找（全表扫描）。</p>
+<h2 id="a-name11-索引的优缺点11-索引的优缺点️a"><a name="1.1 索引的优缺点">1.1 索引的优缺点✔️</a></h2>
+<ul>
+<li><strong>优点😄</strong></li>
+</ul>
+<ol>
+<li>减少查询需要检索的行数，加快查询速度，避免全表扫描（主要优点）；</li>
+<li>如果索引的结构是B+树的话，使用分组和排序时，可以显著减少所需操作时间；</li>
+<li>通过唯一性索引，可保证每行数据的唯一性；</li>
+<li>联表查询时，加速表与表之间的连接，提高查询速度。</li>
+</ol>
+<br>
+<ul>
+<li><strong>缺点😅</strong></li>
+</ul>
+<ol>
+<li>当对表中的数据进行增加、删除和修改时，索引也要进行更新，维护的耗时随着数据量的增加而增加（记录移位、页分裂、页回收）；</li>
+<li>索引需要占用物理空间，如果要建立聚簇索引，那么需要的空间就会更大。</li>
+</ol>
+<br>
+<h2 id="a-name12-索引的使用场景12-索引的使用场景a"><a name="1.2 索引的使用场景">1.2 索引的使用场景📑</a></h2>
+<ul>
+<li><strong>需要建立索引的列⭕️</strong></li>
+</ul>
+<ol>
+<li>在<code>Where条件</code>上<code>经常出现的列</code>加上索引，加快条件的判断速度；</li>
+<li>按<code>范围获取</code>的列或者在<code>group by</code>、<code>order by</code>使用的列，因为索引已经排序，所以可以利用索引加快排序查找时间；</li>
+<li>在经常<code>用于连接的列</code>上，这些列主要时一些外键，可以加快连接查询的速度；</li>
+<li>作为<code>主键的列</code>上，强制该列的唯一性和组织表中数据的排列结构；</li>
+<li>有时候我们需要对某个字段进行去重，使用 <code>DISTINCT</code>时也可对这个字段创建索引；</li>
+</ol>
+<br>
+<ul>
+<li><strong>不建议建立索引的列⚠️</strong></li>
+</ul>
+<ol>
+<li><code>频繁更新的列</code>不适合创建过多的索引，因为每次更新不单单是更新记录，还需要重新维护索引，反而<code>降低</code>了系统的<code>维护速度</code>和<code>增大</code>了<code>空间需求</code>；</li>
+<li><code>查询中很少用到的列</code>不需要创建索引，减少空间占用和降低索引的维护资源；</li>
+<li>只有很少数据值的列不应该增加索引。如性别，由于这些列的取值很少，在表中搜索的数据行的比例很大，所以增加索引，并不能明显加快检索速度；</li>
+<li>不建议用无序的值作为索引，例如身份证、MD5、HASH、无序长字符串等；</li>
+<li>删除不再使用或者很少使用的索引；</li>
+<li>不要定义夯余或重复的索引。</li>
+</ol>
+<blockquote>
+<p>如果数据量比较少的情况下，有时会出现即使建立了索引也会出现全表扫描的情况，那是因为数据量少，使用索引还得回表，效率还没全表扫描的高，所以mysql会经分析后，使用最优的查询方案。</p>
+<p>此外，索引也不是越多越好，因为每个索引都需要占用磁盘空间，索引越多，占用越大，而且索引会影响增、删、改等语句的性能，因为在数据修改的同时，索引也需要进行调整和更新，会造成负担。</p>
+</blockquote>
+<hr>
+<!-- more -->
+<h1 id="a-name二-常见索引类型二-常见索引类型a"><a name="二、常见索引类型">二、常见索引类型💭</a></h1>
+<ul>
+<li>按<code>作用</code>分类：普通索引、唯一索引、主键索引、全文索引、组合索引。</li>
+<li>按<code>结构</code>分类：聚簇索引、非聚簇索引<br>
+说明：无论何种类型的索引，其实现的原理都是建立关键字与位置的对应关系来实现的。<br>
+<img src="http://mofish.pily.life/post-images/1647680465224.png" alt="" width="600" height="400" loading="lazy"></li>
+</ul>
+<p>接下来我们先来整理按<code>作用</code>分类的不同索引。</p>
+<br>
+<h2 id="a-name21-普通索引21-普通索引a"><a name="2.1 普通索引">2.1 普通索引👈👈</a></h2>
+<p>最基本的索引，没有任何限制，在功能上能够提高索引字段的搜索效率。</p>
+<pre><code class="language-sql">--直接创建索引：
+CREATE INDEX index_name ON table_name(column_name);
+
+--修改表结构的方式添加索引：
+ALTER TABLE table_name ADD INDEX index_name (column_name);
+
+--创建表的时候同时创建索引：
+CREATE TABLE table_name(
+    ID INT NOT NULL,
+    username VARCHAR(16) NOT NULL DEFAULT '',
+    INDEX index_name (username)
+);
+</code></pre>
+<h2 id="a-name22-唯一索引22-唯一索引a"><a name="2.2 唯一索引">2.2 唯一索引👈👈</a></h2>
+<p>与普通索引类型，但是索引列的值必须是唯一的，允许有空值和NULL值，但是如果是组合唯一索引时，则多个列的值的组合必须是唯一的。</p>
+<pre><code class="language-sql">--直接创建索引：
+CREATE UNIQUE INDEX index_name ON table_name(column_name,...);
+
+--修改表结构的方式添加索引：
+ALTER TABLE table_name ADD UNIQUE INDEX  index_name  (column_name,...);
+
+--创建表的时候同时创建索引：
+CREATE TABLE table_name(
+    ID INT NOT NULL,
+    username VARCHAR(16) NOT NULL DEFAULT '',
+    UNIQUE index_name (username)
+);
+</code></pre>
+<h2 id="a-name23-主键索引23-主键索引a"><a name="2.3 主键索引">2.3 主键索引👈👈</a></h2>
+<p><code>主键索引</code>其实可以说是一种有约束的<code>唯一索引</code>，它与<code>唯一索引</code>的区别在于：</p>
+<ol>
+<li>唯一索引允许NULL，而主键不允许</li>
+<li>主键索引可以被其他表引用为外键，而唯一索引不能</li>
+<li>一张表仅能有一个主键，但可有多个唯一索引</li>
+</ol>
+<blockquote>
+<p>主键是为了提升查询速度，InnoDB中默认主键为聚簇索引，但聚簇索引不一定是主键，至于什么是聚簇索引，下面会讲到。</p>
+</blockquote>
+<pre><code class="language-sql">--创建表的时候创建，当把某个列设为主键的时候,数据库会自动的创建一个以主键作为名称的主键索引。
+CREATE TABLE table(
+id INT PRIMARY KEY AUTO_INCREMENT,
+name VARCHAR(32) NOT NULL DEFAULT ''
+)
+
+--修改表结构：
+ALTER TABLE `table_name` ADD PRIMARY KEY ( `col` );
+</code></pre>
+<h2 id="a-name24-全文索引24-全文索引a"><a name="2.4 全文索引">2.4 全文索引👈👈</a></h2>
+<p>全文索引<code>仅</code>可用于 <code>MyISAM 表</code>，并<code>只</code>支持<code>CHAR</code>、<code>VARCHAR</code>或<code>TEXT</code>类型，用于<code>替代</code>效率较低的<code>like模糊匹配</code>操作，而且可以通过多字段组合的全文索引一次性全模糊匹配多个字段。对于大容量的数据表，生成<code>全文索引</code>是一个非常<code>消耗时间</code>和<code>空间</code>的做法。</p>
+<blockquote>
+<p>一般不建议使用，如果对全文搜索有需求的话，建议使用<code>elasticsearch</code>，其搜索效率和准确度会更高。</p>
+</blockquote>
+<pre><code class="language-sql">--直接创建索引：
+CREATE FULLTEXT INDEX index_name on table_name(column);
+
+--修改表结构：
+ALTER TABLE `table_name` add FULLTEXT INDEX  index_name(column);
+
+--创建表的时候同时创建索引：
+CREATE TABLE `table_name`
+(
+    id  INT PRIMARY KEY auto_increment,
+    name VARCHAR(11),
+    remarks text ,
+    FULLTEXT (remarks)
+);
+</code></pre>
+<h2 id="a-name25-组合索引25-组合索引a"><a name="2.5 组合索引">2.5 组合索引👈👈</a></h2>
+<p>为了更多的提高查询效率可建立组合索引，即把多个列组合起来归为一个索引。创建组合索引时应该将最常用（频率高）作限制条件的列放在最左边，依次递减，即我们常说的<a href='https://blog.csdn.net/weixin_47872288/article/details/122213482?spm=1001.2014.3001.5502'><code>《最左匹配原则》</code>(点击查看)</a>。</p>
+<pre><code class="language-sql">--直接创建索引：
+CREATE  INDEX index_name on table_name(column1, column2, column3);
+
+--修改表结构：
+ALTER TABLE `table_name` add  INDEX  index_name(column1, column2, column3);
+</code></pre>
+<p>当创建(a,b,c)联合索引时，相当于创建了(a)单列索引，(a,b)联合索引以及(a,b,c)联合索引。<br>
+想要索引生效的话,只能使用 a和a,b和a,b,c三种组合；当然，a,c组合也可以，但实际上只用到了a的索引，c并没有用到！</p>
+<blockquote>
+<p>因此创建和使用组合索引时，需要注意索引中列的顺序。</p>
+</blockquote>
+<h3 id="组合索引和多个单列索引的区别">组合索引和多个单列索引的区别？</h3>
+<p><code>多个单列索引</code>在多条件查询时优化器会选择最优索引策略，可能只用一个索引，也可能将多个索引全用上！ 但<code>多个单列索引</code>底层会建立<code>多个B+索引树</code>，比较<code>占用空间</code>，也会浪费一定搜索效率，故如果有多条件联合查询时最好建<code>联合索引</code>！</p>
+<hr>
+<!-- more -->
+<h1 id="a-name三-聚簇索引和非聚簇索引三-聚簇索引和非聚簇索引a"><a name="三、聚簇索引和非聚簇索引">三、聚簇索引和非聚簇索引🕺</a></h1>
+<p>MySQL的InnoDB索引数据结构是B+树，主键索引叶子节点的值存储的就是MySQL的数据行，普通索引的叶子节点的值存储的是主键值，这是了解聚簇索引和非聚簇索引的前提。</p>
+<p>那二者究竟有什么区别，简单的说：</p>
+<blockquote>
+<ul>
+<li>
+<p>聚簇索引：找到了索引就找到了需要的数据，那么这个索引就是聚簇索引，所以主键就是聚簇索引，修改聚簇索引其实就是修改主键。</p>
+</li>
+<li>
+<p>非聚簇索引：索引的存储和数据的存储是分离的，也就是说找到了索引但没找到数据，需要根据索引上的值(主键)再次回表查询，非聚簇索引也叫做辅助索引。</p>
+</li>
+</ul>
+</blockquote>
+<h2 id="a-name31-聚簇索引31-聚簇索引a"><a name="3.1 聚簇索引">3.1 聚簇索引👈👈</a></h2>
+<p>聚簇索引并不是一种单独的索引类型，而是<code>一种数据存储方式</code>。具体细节依赖于其实现方式。</p>
+<p>聚簇索引就是按照每张表的主键构造一颗B+树，同时叶子节点中存放的就是整张表的行记录数据，也将聚集索引的叶子节点称为数据页。这个特性决定了索引组织表中数据也是索引的一部分，每张表只能拥有一个聚簇索引。</p>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1647849966193.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="2"><img src="http://mofish.pily.life/post-images/1670733675693.png" alt="" loading="lazy"></figure>
+<blockquote>
+<p>Innodb通过主键聚集数据，如果没有定义主键，innodb会选择非空的唯一索引代替。如果没有这样的索引，innodb会隐式的定义一个主键来作为聚簇索引。</p>
+</blockquote>
+<h3 id="特点">特点</h3>
+<ol>
+<li><code>页内</code>的记录是按照主键大小顺序排成一个<code>单向链表</code></li>
+<li>各个存放<code>用户记录的页</code>也是根据页中记录的主键大小顺序排成一个<code>双向链表</code></li>
+<li>存放<code>目录项记录的页</code>分为不同的层次，在同一层次中的页也是根据页中目录项记录的主键大小顺序排成一个<code>双向链表</code></li>
+<li>B+树<code>叶子结点</code>存储的是<code>完整的用户记录</code>，就是所谓的<code>索引即数据，数据即索引</code></li>
+</ol>
+<h3 id="优点">优点</h3>
+<ol>
+<li>数据访问更快，因为聚簇索引将索引和数据保存在同一个B+树中，因此从聚簇索引中获取数据比非聚簇索引更快</li>
+<li>聚簇索引对于主键的排序查找和范围查找速度非常快</li>
+</ol>
+<h3 id="缺点">缺点</h3>
+<ol>
+<li>插入速度严重依赖于插入顺序，按照主键的顺序插入是最快的方式，否则将会出现页分裂，严重影响性能。因此，对于InnoDB表，我们一般都会定义一个自增的ID列为主键</li>
+<li>更新主键的代价很高，因为将会导致被更新的行移动。因此，对于InnoDB表，我们一般定义主键为不可更新</li>
+<li>非聚簇索引，访问需要两次索引查找，第一次找到主键值，第二次根据主键值找到行数据，即我们常说的回表查询</li>
+</ol>
+<h2 id="a-name33-非聚簇索引32-非聚簇索引a"><a name="3.3 非聚簇索引">3.2 非聚簇索引👈👈</a></h2>
+<p>非聚簇索引也成为辅助索引，辅助索引访问数据总是需要二次查找。Innodb辅助索引的叶子节点并不包含行记录的全部数据，只存储了索引对应的值外，还包含了相应行数据的聚簇索引键。</p>
+<figure data-type="image" tabindex="3"><img src="http://mofish.pily.life/post-images/1647851302031.png" alt="" loading="lazy"></figure>
+<p>辅助索引的存在不影响数据在聚簇索引中的组织，所以一张表可以有多个辅助索引。</p>
+<hr>
+<!-- more -->
+<h1 id="a-name四-普通索引-vs-唯一索引四-普通索引-vs-唯一索引a"><a name="四、普通索引 vs 唯一索引">四、普通索引 vs 唯一索引</a></h1>
+<p>从性能的角度考虑，你选择唯一索引还是普通索引呢？选择的依据是什么呢？</p>
+<h2 id="a-name41-查询过程41-查询过程a"><a name="4.1 查询过程">4.1 查询过程</a></h2>
+<p>假设，执行查询的语句是 select id from test where k=5。</p>
+<ul>
+<li>
+<p>对于普通索引来说，查找到满足条件的第一个记录(5,500)后，需要查找下一个记录，直到碰到第一 个不满足k=5条件的记录。</p>
+</li>
+<li>
+<p>对于唯一索引来说，由于索引定义了唯一性，查找到第一个满足条件的记录后，就会停止继续检 索。</p>
+</li>
+</ul>
+<br>
+<h2 id="a-name42-更新插入过程42-更新插入过程a"><a name="4.2 更新/插入过程">4.2 更新/插入过程</a></h2>
+<pre><code class="language-sql">update table where k=4
+</code></pre>
+<p><strong>当要更新的记录在内存中的时候：</strong><br>
+普通索引k会找到索引记录等于3和5的位置，然后在中间插入k=4的记录；<br>
+唯一索引k会找到索引记录等于3和5的位置，然后判断没有冲突，插入k=4的记录；<br>
+可以看出，当记录在内存中的时候，这俩差别不大，仅仅是唯一索引多了一步判断唯一性的操作。这个判断，仅仅会消耗很小一部分cpu的资源。</p>
+<p><strong>当要更新的记录不在内存中的时候：</strong><br>
+唯一索引需要将数据页加载到内存中，判断这个值没有冲突，然后插入这个新值；<br>
+普通索引则是将更新记录在change buffer，语句执行就结束了。<br>
+可以看到，普通索引利用了change buffer，减少了磁盘上的随机访问，对性能的提升比较明显。</p>
+<blockquote>
+<p>唯一索引的更新和查询就不能使用change buffer，实际上也只有普通索引可以使用。</p>
+</blockquote>
+<br>
+<h2 id="a-name43-什么是change-buffer43-什么是change-buffera"><a name="4.3 什么是change buffer">4.3 什么是change buffer</a></h2>
+<p>当需要更新一个数据页时，如果数据页在内存中就直接更新，而如果这个数据页还没有在内存中的话， 在不影响数据一致性的前提下， <code>InooDB会将这些更新操作缓存在change buffer中</code> ，这样就不需要从磁盘中读入这个数据页了。在下次查询需要访问这个数据页的时候，将数据页读入内存，然后执行change buffer中与这个页有关的操作。通过这种方式就能保证这个数据逻辑的正确性。</p>
+<p>将change buffer中的操作应用到原数据页，得到最新结果的过程称为 merge 。除了 <code>访问这个数据页</code> 会触 发merge外，系统有 <code>后台线程会定期</code> merge。在 <code>数据库正常关闭（shutdown）</code> 的过程中，也会执行merge 操作。</p>
+<p>如果能够将更新操作先记录在change buffer， <code>减少读磁盘</code> ，语句的执行速度会得到明显的提升。而且， 数据读入内存是需要占用 buffer pool 的，所以这种方式还能够 <code>避免占用内存 </code>，提高内存利用率。</p>
+<hr>
+<!-- more -->
+<h1 id="a-hrefpostdata_structure_08五-为什么使用b树作为索引a"><a href="/post/data_structure_08">五、为什么使用B+树作为索引？🤔</a></h1>
+<p>👆👆👆点击查看B+树的由来，便可更加深刻的了解到为什么要用B+树作为索引了。</p>
+<blockquote>
+<p>问：高度为3的B+树可以存储多少条数据？<br>
+答：<br>
+InnoDB引擎中数据页的大小是<code>16K</code>，假设key值使用<code>bigint</code>占用8个字节，指针也占用8个字节，那么一页可以存储 16 * 1024 / (8+8) = 1024个索引指针<br>
+再假设一行数据的大小是1K，那么一页可以存储16条数据<br>
+那么可以算出高度为3个一个B+树可以存储：1024 * 1024 * 16 = 16777216条数据。</p>
+</blockquote>
+<blockquote>
+<p>问：为什么说一般最多只需要1-3次I/O即可？<br>
+答：<br>
+从上面来看，层数为3的B+树就可以存储千万级别的数据量，实际情况上每个节点的数据可能不能填满，因此在数据库中， B+树的高度一般为<code>1～4层</code>。<br>
+但是！InnbDB存储引擎在设计时将根节点常驻内存的，因此第一层无需再参与磁盘I/O了，因此减去根结点的话，一般1-3次I/O即可。</p>
+</blockquote>
+<hr>
+<!-- more -->
+<h1 id="a-name六-mysql索引的实现六-mysql索引的实现a"><a name="六、MySQL索引的实现">六、MySQL索引的实现👏</a></h1>
+<p>在MySQL中，索引属于存储引擎级别的概念，不同存储引擎对索引的实现方式是不同的，本部分主要讨论MyISAM和InnoDB两个存储引擎的索引实现方式。</p>
+<blockquote>
+<p>当查询非主键的字段时 , MyISAM查询性能更好，从索引文件数据文件的设计来看 , MyISAM每一个索引字段都有上面的索引树，MyISAM直接找到物理地址后就可以直接定位到数据记录。</p>
+<p>但是InnoDB查询到叶子节点后，还需要再查询一次主键索引树，才可以定位到具体数据，等于MyISAM一步就查到了数据，但是InnoDB要两步，那当然MyISAM查询性能更高。</p>
+<p>如果是查询的主键的字段时,Innodb更好一些 , 因为直接从主键的聚簇索引里就取到了数据 , 不需要再次用指针去拿。</p>
+</blockquote>
+<h2 id="a-name61-myisam索引的实现61-myisam索引的实现a"><a name="6.1 MyISAM索引的实现">6.1 MyISAM索引的实现</a></h2>
+<p>MyISAM索引文件和数据文件是分离的，索引文件仅保存数据记录的地址，因此MyISAM都可以看作是<code>非聚簇索引</code>。</p>
+<ul>
+<li>
+<p>主键索引<br>
+MyISAM引擎使用B+Tree作为索引结构，叶节点的data域存放的是数据记录的地址。下图是MyISAM主键索引的原理图：<br>
+<img src="http://mofish.pily.life/post-images/1647854616590.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>辅助索引<br>
+在MyISAM中，主索引和辅助索引（Secondary key）在结构上没有任何区别，只是主索引要求key是唯一的，而辅助索引的key可以重复。如果我们在Col2上建立一个辅助索引，则此索引的结构如下图所示：<br>
+<img src="http://mofish.pily.life/post-images/1647854869457.png" alt="" loading="lazy"></p>
+</li>
+</ul>
+<p>同样也是一颗B+Tree，data域保存数据记录的地址。因此，MyISAM中索引检索的算法为首先按照B+Tree搜索算法搜索索引，如果指定的Key存在，则取出其data域的值，然后以data域的值为地址，读取相应数据记录。</p>
+<h2 id="a-name62-innodb索引的实现62-innodb索引的实现a"><a name="6.2 InnoDB索引的实现">6.2 InnoDB索引的实现</a></h2>
+<p>InnoDB也使用B+Tree作为索引结构，但具体实现方式却与MyISAM截然不同。</p>
+<ul>
+<li>
+<p>主键索引<br>
+在InnoDB中，表数据文件本身就是按B+Tree组织的一个索引结构，这棵树的叶节点data域保存了完整的数据记录。这个索引的key是数据表的主键，因此InnoDB表数据文件本身就是主索引。<br>
+<img src="http://mofish.pily.life/post-images/1647855743903.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>辅助索引<br>
+InnoDB的所有辅助索引都引用主键作为data域。例如，下图为定义在UserName上的一个辅助索引：<br>
+<img src="http://mofish.pily.life/post-images/1647855822068.png" alt="" loading="lazy"></p>
+</li>
+</ul>
+<p>辅助索引搜索需要检索<code>两遍索引</code>：首先<code>检索辅助索引</code>获得<code>主键</code>，然后用<code>主键</code>到<code>主索引</code>中检索<code>获得记录</code>。不过由于辅助索引会包含主键列，所以，如果主键使用<code>过长</code>的字段，将会导致其他<code>辅助索引</code>变得<code>更大</code>。所以<strong>争取尽量把主键定义得小一些</strong>。</p>
+<h2 id="a-name63-索引下推icp63-索引下推icpa"><a name="6.3 索引下推（ICP）">6.3 索引下推（ICP）</a></h2>
+<p>索引下推是从 MySql5.6 开始引入一个特性，英文是 index condition pushdown，一般简称为 ICP，索引下推通过减少回表的次数，来提高数据库的查询效率。</p>
+<pre><code class="language-sql"># 打开索引下推
+SET optimizer_switch = 'index_condition_pushdown=on';
+
+# 关闭索引下推
+SET optimizer_switch = 'index_condition_pushdown=off';
+
+// 创建联合索引
+create index idx_user on users (username,age);
+
+// 查询数据
+select * from users where username = '1' and age = 99;
+</code></pre>
+<ul>
+<li>MySql5.6<strong>之前</strong>：存储层通过索引拿到 username = '1'的数据后通过回表找到完整数据并返回给serve层，server层拿到数据后再判断 age = 99，如果不满足则丢弃。</li>
+</ul>
+<blockquote>
+<p>如果我们能够把 age 直接传入存储引擎，在存储引擎中直接去判断 age 是否满足条件，满足条件了，再去回表，不满足条件就到此结束，这样就可以减少回表的次数，进而提高查询效率。</p>
+</blockquote>
+<ul>
+<li>MySql5.6<strong>及之后</strong>：由于是联合索引，所以B+数节点会包含username和age的值，在拿到username = '1' 的数据后，再判断 age = 99 是否满足，只有满足条件的情况下才返回给server层。</li>
+</ul>
+<blockquote>
+<p>这就是索引下推（index condition pushdown，ICP），有效的减少了回表次数，提高了查询效率。</p>
+</blockquote>
+<hr>
+<!-- more -->
+<h1 id="a-name七-什么情况下索引会失效七-什么情况下索引会失效a"><a name="七、什么情况下索引会失效">七、什么情况下索引会失效😤</a></h1>
+<blockquote>
+<ol>
+<li>
+<p>在WHERE中使用OR时，有一个列没有索引，那么其它列的索引将不起作用；</p>
+</li>
+<li>
+<p>不匹配数据类型，会造成索引失效。如字段类型是字符串，WHERE时一定用引号括起来，否则索引失效；</p>
+</li>
+<li>
+<p>对列进行计算或者是使用函数，则该列的索引会失效；</p>
+</li>
+<li>
+<p>LIKE通配符可能导致索引失效，如果是覆盖索引或者右模糊查询可能会走索引，如果是左模糊或全模糊(非覆盖索引)的话则不会走索引；</p>
+</li>
+<li>
+<p>如果是联合索引，但是不满足最左匹配原则的；</p>
+</li>
+<li>
+<p>is null可以使用索引，is not null无法使用索引；</p>
+</li>
+<li>
+<p>索引字段上使用（！= 或者 &lt; &gt;，not in）时，可能会导致索引失效；</p>
+</li>
+<li>
+<p>左连接查询或者右连接查询查询关联的字段编码格式不一样，可能导致索引失效；</p>
+</li>
+<li>
+<p>mysql估计使用全表扫描要比使用索引快,则不使用索引。</p>
+</li>
+</ol>
+</blockquote>
+<hr>
+<!-- more -->
+<h1 id="a-name七-排序优化七-排序优化a"><a name="七、排序优化">七、排序优化</a></h1>
+<blockquote>
+<p>问：在 WHERE 条件字段上加索引，但是为什么在 ORDER BY 字段上还要加索引呢？<br>
+答：在MySQL中，支持两种排序方式，分别是 <code>FileSort</code> 和 <code>Index</code> 排序。</p>
+<ul>
+<li>Index 排序中，索引可以保证数据的有序性，不需要再进行排序，<code>效率更高</code>。</li>
+<li>FileSort 排序则一般在 <code>内存中</code> 进行排序，占用<code>CPU较多</code>。如果待排结果较大，会产生临时文件 I/O 到磁盘进行排序的情况，效率较低。</li>
+</ul>
+</blockquote>
+<p><strong>优化建议：</strong></p>
+<ol>
+<li>
+<p>SQL 中，可以在 WHERE 子句和 ORDER BY 子句中使用索引，目的是在 WHERE 子句中 <code>避免全表扫描</code> ，在 ORDER BY 子句 <code>避免使用 FileSort 排序</code> 。当然，某些情况下全表扫描，或者 FileSort 排序不一定比索引慢。但总的来说，我们还是要避免，以提高查询效率。</p>
+</li>
+<li>
+<p>尽量使用 Index 完成 ORDER BY 排序。如果 WHERE 和 ORDER BY 后面是相同的列就使用单索引列； 如果不同就使用联合索引。</p>
+</li>
+<li>
+<p>无法使用 Index 时，需要对 FileSort 方式进行调优。</p>
+</li>
+</ol>
+<hr>
+<!-- more -->
+<h1 id="a-name八-count-count1和count具体字段效率八-count-count1和count具体字段效率a"><a name="八、COUNT(*)、COUNT(1)和COUNT(具体字段)效率">八、COUNT(*)、COUNT(1)和COUNT(具体字段)效率</a></h1>
+<p>InnoDB中，<code>COUNT(*)</code>和<code>COUNT(1)</code>都是对所有结果进行COUNT，二者本质上<code>没什么区别</code>，如果使用<code>COUNT(具体字段)</code>来统计，要<code>尽量使用二级索引</code>。因为<code>主键</code>是聚簇索引，包含的<code>信息较多</code>，明显会大于二级索引（非聚簇索引）。</p>
+<p>但对于COUNT(*)和COUNT(1)来说，它们不需要查找具体的行，只是统计行数，系统会<code>自动</code>采用占用空间更小的二级索引来进行统计。</p>
+<p>如果有多个二级索引，会使用<code>key_len</code>小的二级索引进行扫描，当没有二级索引时，才会使用主键索引来进行统计。</p>
+<blockquote>
+<p>如果是MyISAM存储引擎，统计<code>整个数据表的行数只需要O(1)复杂度</code>，因为每张MyISAM的数据都有一个meta信息存储了<code>row_count</code>值，可直接获取。</p>
+<p>而InnoDB在统计整表数据量时，由于其支持事务，采用行级锁和MVCC机制，因此需要扫描全表。</p>
+</blockquote>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/data_structure_08/" class="post-title gt-a-link">
+                    数据结构学习之路(八)：B和B+树
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

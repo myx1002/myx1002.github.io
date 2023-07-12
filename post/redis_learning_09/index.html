@@ -1,0 +1,531 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>Redis学习之路(九)：为什么 Redis 单线程却能支撑高并发? | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Redis学习之路(九)：为什么 Redis 单线程却能支撑高并发?
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2021-09-27 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tags">
+                            # redis
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>经典面试题了这是😇</p>
+<!-- more -->
+<h2 id="为什么redis是单线程的">为什么Redis是单线程的</h2>
+<p>因为Redis是基于内存的操作，CPU不是Redis的瓶颈，Redis的瓶颈最有可能是机器内存的大小或者网络带宽。既然单线程容易实现，而且CPU不会成为瓶颈，那就顺理成章地采用单线程的方案了。</p>
+<p>这里的单线程可以理解为：执行命令仍然是单线程顺序执行。</p>
+<p>其实Redis 4.0 开始就有多线程的概念了，比如 Redis 通过多线程方式在后台删除对象、以及通过 Redis 模块实现的阻塞命令等。</p>
+<hr>
+<h2 id="单线程的优劣势">单线程的优劣势</h2>
+<ol>
+<li>
+<p>单进程单线程优势<br>
+代码更清晰，处理逻辑更简单<br>
+不用去考虑各种锁的问题，不存在加锁释放锁操作，没有因为可能出现死锁而导致的性能消耗<br>
+不存在多进程或者多线程导致的切换而消耗CPU</p>
+</li>
+<li>
+<p>单进程单线程弊端<br>
+无法发挥多核CPU性能，不过可以通过在单机开多个Redis实例来完善；</p>
+</li>
+</ol>
+<hr>
+<h2 id="为什么cpu不是瓶颈">为什么CPU不是瓶颈</h2>
+<ol>
+<li>
+<p>redis是基于内存的，因此减少了cpu将数据从磁盘复制到内存的时间</p>
+</li>
+<li>
+<p>redis是单线程的，因此减少了多线程切换和恢复上下文的时间</p>
+</li>
+<li>
+<p>redis是单线程的，因此多核cpu和单核cpu对于redis来说没有太大影响，单个线程的执行使用一个cpu即可</p>
+</li>
+<li>
+<p>只是相对其它的数据库来说，redis没有受到cpu的太多限制，也并不是丝毫没有关系。</p>
+</li>
+</ol>
+<p>redis官网说，因为cpu不是redis的瓶颈，且单线程简单，因此redis采用的单线程。内存大小和网络带宽才有可能是redis的瓶颈。</p>
+<hr>
+<h2 id="redis-60-为什么要引入多线程呢">Redis 6.0 为什么要引入多线程呢？</h2>
+<p>既然Redis 的瓶颈并不在 CPU，而在内存和网络。</p>
+<p>内存不够的话，可以加内存或者做数据结构优化和其他优化等，但网络的性能优化才是大头，网络 IO 的读写在 Redis 整个执行期间占用了大部分的 CPU 时间，如果把网络处理这部分做成多线程处理方式，那对整个 Redis 的性能会有很大的提升。</p>
+<p>6.0因为的多线程针对的是网络IO，并非是多线程执行redis命令，执行命令仍然是单线程顺序执行。</p>
+<hr>
+<h2 id="redis-60开启多线程后是否会存在线程并发安全问题">Redis 6.0开启多线程后，是否会存在线程并发安全问题？</h2>
+<p>从实现机制可以看出，Redis 的多线程部分只是用来处理网络数据的读写和协议解析，执行命令仍然是单线程顺序执行。</p>
+<p>所以我们不需要去考虑控制 Key、Lua、事务，LPUSH/LPOP 等等的并发及线程安全问题。</p>
+<hr>
+<h2 id="什么是io多路复用技术">什么是IO多路复用技术</h2>
+<p>在了解<code>I/O多路复用</code>之前，我们可以先了解一下传统的<code>I/O</code>模型</p>
+<ul>
+<li>
+<p><strong>阻塞I/O模型</strong> (<code>无法处理高并发</code>)<br>
+最传统的一种 I/O 模型，即在读写数据过程中会发生阻塞现象。</p>
+<p>当用户线程发出 I/O 请求之后，内核回去查看数据是否就绪，如果没有就绪就会等待数据就绪，而用户线程就会处于阻塞状态 (block)，用户线程交出CPU。</p>
+<p>当数据就绪之后，内核会将数据拷贝到用户线程，并返回结果给用户线程，用户线程才能解除阻塞状态。</p>
+</li>
+<li>
+<p>**非阻塞I/O模型 **(<code>过度浪费CPU资源</code>)<br>
+当用户线程发起一个 read 操作后，并不需要等待，而是马上得到一个结果。如果结果是一个 error 时，它就知道数据还没准备好，于是它可以再次发送 read 操作。</p>
+<p>一旦内核中的数据准备好了，并且再次收到用户线程的请求，那么它马上就将数据拷贝到了用户线程，然后返回。</p>
+<p>所以事实上，在非阻塞 I/O 模型中，用户线程需要不断地询问内核数据是否就绪，也就是说非阻塞 I/O 不会交出CPU，而会一直占用 CPU，从而导致 CPU 占用率非常高。</p>
+</li>
+<li>
+<p><strong>信号驱动 I/O 模型</strong> (<code>一般用于UDP中</code>)<br>
+在信号驱动 I/O 模型中，当用户线程发起一个 I/O 请求操作，会给对应的 socket 注册一个信号函数，然后用户线程会继续执行。</p>
+<p>当内核数据就绪时会发送一个信号给用户线程，用户线程接收到信号之后，便在信号函数中调用 I/O 读写操作来进行实际的 I/O 请求操作。</p>
+<p>这个一般用于 UDP 中，对 TCP 套接口几乎是没用的，原因是该信号产生得过于频繁，并且该信号的出现并没有告诉我们发生了什么事情。</p>
+</li>
+<li>
+<p><strong>I/O 多路复用模型</strong><br>
+该模式是目前使用得比较多的 I/O 模型，在该模型中，会有一个线程不断去轮循多个 socket 的状态，只有当 socket 真正有读写事件时，才真正调用实际的 I/O 读写操作。</p>
+</li>
+</ul>
+<blockquote>
+<p>这里的 I/O 通常指网络 I/O，多路指多个 Socket 链接，复用指操作系统进行运算调度的最小单位线程。整体意思也就是多个网络 I/O 复用一个或少量的线程来处理 Socket。</p>
+</blockquote>
+<p>因为 I/O 多路复用模型中，只需要一个线程就可以管理多个 socket，系统不需要建立和维护新的进程或者线程，并且只有真正有 socket 读写事件进行时，才会使用 I/O 资源，所以大大的减少了资源占用。</p>
+<blockquote>
+<p>其实采用多线程+阻塞 I/O 也可以达到类似效果，但是由于在多线程 + 阻塞 I/O中，每个 socket 对应一个线程，这样会造成很大的资源占用，<br>
+尤其是对于长连接来说，线程的资源一直不会释放，如果连接较多的话，会造成性能上的瓶颈。<br>
+而 I/O 多路复用模型，通过一个线程就可以管理多个 socket，只有当 socket 真正有读写事件发生才会占用资源来进行实际的读写操作。<br>
+因此 I/O 多路复用比较适合连接数较多的情况。</p>
+</blockquote>
+<blockquote>
+<p>另外，I/O 多路复用为比非阻塞 I/O 模型效率高是因为在非阻塞 I/O 中，不断地询问 socket 状态是通过用户线程去进行的，<br>
+而在 I/O 多路复用中，轮询每个 socket 状态是在内核进行的，效率比用户线程高很多</p>
+</blockquote>
+<blockquote>
+<p>对于多路复用 I/O 模型来说，一旦事件响应太慢，那么就会导致后续的事件迟迟得不到处理，并且会影响新的事件轮询。<br>
+这就是说，如果 Redis 每条命令执行如果占用大量时间，就会造成其他线程阻塞，对于 Redis 这种高性能服务是致命的，所以 Redis 是面向高速执行的数据库。</p>
+</blockquote>
+<ul>
+<li>
+<p><strong>异步 I/O 模型</strong><br>
+异步 I/O 模型是最理想的 I/O 模型，当用户线程发起 read 操作后，立刻可以去做其它事情，另一方面，从内核的角度看，当它收到一个 asynchronous read 之后，它会立刻返回，说明 read 请求已经成功发起了，因此不会对用户线程产生任何阻塞(block)。</p>
+<p>然后内核会等待数据准备完成，然后将数据拷贝到用户线程，当一切处理完成后，内核会给用户线程发送一个信号告诉它 read 操作完成了。</p>
+<p>也就是说，用户线程完全不需要关心实际的整个 I/O 操作是如何进行的，只需要先发起一个请求，当接收内核返回了成功信号时，可以直接去使用数据了。</p>
+</li>
+</ul>
+<hr>
+<h2 id="各种-io-模型的对比">各种 I/O 模型的对比</h2>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1634198964200.png" alt="" loading="lazy"></figure>
+<p>需要注意的是，除了异步 I/O 外，其它的四种模型其实都可以归类为阻塞式 I/O 模型，从图中我们可以看出前四种模型的第二阶段都是相同的，都会阻塞。</p>
+<p>而阻塞 I/O 模型和 I/O 多路复用模式是两个阶段都阻塞的，那区别在哪呢？</p>
+<p>区别就在于，虽然第一阶段都阻塞，但是阻塞 I/O 模型如果接收更多的连接，就必须创建更多的线程；而 I/O 多路复用模型在第一阶段大量的连接通通都可以直接注册到 selector 复用器上，同时是要单个或者少量的线程来循环处理这些连接事件就可以了，一旦达到“就绪”的条件，就可以立即执行真正的 I/O 操作。</p>
+<p>这就是 I/O 多路复用模型和阻塞 I/O 模型最大的不同，也是 I/O 多路复用模型的精髓所在。</p>
+<hr>
+<h2 id="io-多路复用技术的实现">I/O 多路复用技术的实现</h2>
+<p>Redis的I/O多路复用模式使用的是 <code>Reactor设计模式</code> 的方式来实现</p>
+<figure data-type="image" tabindex="2"><img src="http://mofish.pily.life/post-images/1634281488433.png" alt="" loading="lazy"></figure>
+<blockquote>
+<p>文件描述符(file descriptor)：<br>
+Linux系统中，把一切都看做是文件，当进程打开现有文件或创建新文件时，内核向进程返回一个文件描述符。<br>
+可以理解文件描述符是一个索引，这样，要操作文件的时候，我们直接找到索引就可以对其进行操作了。<br>
+我们将这个索引叫做文件描述符，简称 fd。</p>
+</blockquote>
+<p>如上图对 Redis 的 I/O 多路复用模型进行说明一下：</p>
+<ol>
+<li>
+<p>一个 socket 客户端与服务端连接时，会生成对应一个套接字描述符（套接字描述符是文件描述符的一种），每一个 socket 网络连接其实都对应一个文件描述符。</p>
+</li>
+<li>
+<p>多个客户端与服务端连接时，Redis 使用 「I/O 多路复用程序」将客户端 socket 对应的 fd 注册到监听列表（一个队列）中。当客户端执行<code>accept</code>、<code>read</code>、<code>write</code>和<code>close</code>等操作命令时，「I/O 多路复用程序」会将命令封装称一个事件，并绑定到对应的 fd 上。</p>
+</li>
+<li>
+<p>当 socket 有文件事件产生时，I/O 多路复用模块就会将那些产生了事件的套接字 fd 传送给文件事件分派器。</p>
+</li>
+<li>
+<p>「文件事件分派器」接收到「I/O多路复用」程序传来的套接字 fd 后，并根据套接字产生的事件类型，将套接字派发给相应的时间处理器来进行处理相关命令操作。</p>
+</li>
+</ol>
+<blockquote>
+<p>例如：以Redis的I/O多路复用程序 epoll函数为例<br>
+多个客户端连接服务端时，Redis会将客户端 socket 对应的 fd 注册进epoll，然后epoll同时监听多个文件描述符fd是否有数据到来，<br>
+如果有数据来了就通知事件处理器赶紧处理，这样就不会存在服务端一直等待某个客户端给数据的情形。<br>
+#（I/O多路复用程序函数有select、poll、epoll、kqueue）</p>
+</blockquote>
+<ol start="5">
+<li>
+<p>整个「文件事件处理器」是在单线程上运行的，但是通过「I/O多路复用模块」的引入，实现了同时对多个 fd 读写的监控，当其中一个client端达到就绪的状态，文件事件处理器就马上执行，从而不会出现 I/O 堵塞的问题，提高了网络通信的性能。</p>
+<p>I/O 多路复用有多种实现模式：select、 poll、 epoll</p>
+</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>select</th>
+<th>poll</th>
+<th>epoll</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>操作方式</td>
+<td>遍历</td>
+<td>遍历</td>
+<td>回调</td>
+</tr>
+<tr>
+<td>底层实现</td>
+<td>数组</td>
+<td>链表</td>
+<td>红黑树</td>
+</tr>
+<tr>
+<td>IO效率</td>
+<td>每次调用都进行线性遍历，时间复杂度为O(n)</td>
+<td>每次调用都进行线性遍历，时间复杂度为O(n)</td>
+<td>事件通知方式，每当fd就绪，系统注册的回调函数就会被调用，将就绪fd放到readyList里面，时间复杂度O(1)</td>
+</tr>
+<tr>
+<td>最大连接数</td>
+<td>1024（x86）或2048（x64）</td>
+<td>无上限</td>
+<td>无上限</td>
+</tr>
+<tr>
+<td>fd拷贝</td>
+<td>每次调用select，都需要把fd集合从用户态拷贝到内核态</td>
+<td>每次调用poll，都需要把fd集合从用户态拷贝到内核态</td>
+<td>调用epoll_ctl时拷贝进内核并保存，之后每次epoll_wait不拷贝</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>
+<p>select 函数</p>
+<ol>
+<li>每次调用select，都需要把 fd_set 集合从用户态拷贝到内核态，这个开销在 fd 很多时会很大；</li>
+<li>同时每次调用select都需要在内核遍历传递进来的所有fd，如果fd_set集合很大时，那这个开销也很大；</li>
+<li>为了减少数据拷贝带来的性能损坏，内核对被监控的 fd_set 集合大小做了限制，大小不可改变(限制为1024)。</li>
+</ol>
+</li>
+<li>
+<p>poll 函数</p>
+<ol>
+<li>poll的机制与select类似，管理多个描述符也是进行轮询，根据描述符的状态进行处理；</li>
+<li>poll改变了文件描述符集合的描述方式，使用了 pollfd 结构而不是select的 fd_set 结构，使得poll没有最大文件描述符数量的限制，解决了select的问题3，但是并没有解决问题1、2的性能问题。</li>
+</ol>
+</li>
+<li>
+<p>epoll 函数</p>
+<ol>
+<li>为处理大批量文件描述符而作了改进的poll，是Linux下 I/O多路复用 接口select/poll的增强版本但是只能再Linux下工作；</li>
+<li>同样没有描述符数量的限制；</li>
+<li>效率提升，不是轮询的方式，不会随着FD数目的增加效率下降。只有活跃可用的FD才会调用callback函数；即Epoll最大的优点就在于它只管你“活跃”的连接，而跟连接总数无关，因此在实际的网络环境中，Epoll的效率就会远远高于select和poll；</li>
+<li>使用一个文件描述符管理多个描述符，将用户关心的文件描述符的事件存放到内核的一个事件表中，这样在用户空间和内核空间的copy只需一次；</li>
+<li>epoll可以理解为 event poll，不同于忙轮询和无差别轮询，epoll会把哪个流发生了怎样的I/O事件通知我们。所以我们说epoll实际上是事件驱动（每个事件关联上fd）的，此时我们对这些流的操作都是有意义的；</li>
+<li>epoll使用“事件”的就绪通知方式，通过epoll_ctl注册fd，一旦该fd就绪，内核就会采用类似callback的回调机制来激活该fd，epoll_wait便可以收到通知。</li>
+</ol>
+</li>
+</ul>
+<p>epoll除了提供select/poll那种IO事件的水平触发（Level Triggered）外，还提供了边缘触发（Edge Triggered），这就使得用户空间程序有可能缓存IO状态，减少epoll_wait/epoll_pwait的调用，提高应用程序效率。</p>
+<ul>
+<li>
+<p>水平触发  (LT) : 默认工作模式，只要这个fd还有数据可读，每次 epoll_wait都会返回它的事件，提醒用户程序去操作；</p>
+</li>
+<li>
+<p>边缘触发  (ET) : 又称高速模式，它只会提示一次，直到下次再有数据流入之前都不会再提示了，无 论fd中是否还有数据可读，所以在ET模式下，read一个fd的时候一定要把它的buffer读光，也就是说一直读到read的返回值小于请求值，或者遇到EAGAIN错误。</p>
+</li>
+</ul>
+<blockquote>
+<p>如果采用EPOLLLT模式的话，系统中一旦有大量你不需要读写的就绪文件描述符，它们每次调用epoll_wait都会返回，这样会大大降低处理程序检索自己关心的就绪文件描述符的效率.。而采用EPOLLET这种边沿触发模式的话，当被监控的文件描述符上有可读写事件发生时，epoll_wait()会通知处理程序去读写。如果这次没有把数据全部读写完(如读写缓冲区太小)，那么下次调用epoll_wait()时，它不会通知你，也就是它只会通知你一次，直到该文件描述符上出现第二次可读写事件才会通知你！！！这种模式比水平触发效率高，系统不会充斥大量你不关心的就绪文件描述符</p>
+</blockquote>
+<hr>
+<h2 id="为什么要用io多路复用技术redis默认使用epoll">为什么要用IO多路复用技术(Redis默认使用epoll)</h2>
+<ul>
+<li>
+<p>首先采用普通的同步阻塞I/O，那么Redis可能会在一个客户端上长期阻塞。该客户端可能长期没有数据到达，而Redis需要处理多个客户端的通信，当其他客户端有请求到达时，Redis则无法处理了，这显然是无法接受的。</p>
+</li>
+<li>
+<p>如果使用同步非阻塞I/O，那么就需要不断轮循客户端，那么这种频繁的轮循会很浪费CPU资源，如果轮循不频繁，那么可能就会出现数据不能实时获取的问题。</p>
+</li>
+<li>
+<p>如果使用 异步IO模型，线程的创建和频繁的上下文切换会浪费更多的资源。其次Redis本身就是单进程单线程的模式工作，多线程等待多个客户端显然与其系统思想不符。</p>
+</li>
+</ul>
+<p>因此，代入到Redis来说，Redis 是单线程架构，所有的命令操作都是先进入队列，然后一个一个按照顺序线性执行的，但是由于读写操作等待用户输入或输出都是阻塞的，所以 I/O 操作在一般情况下往往不能直接返回，这会导致某一文件的 I/O 阻塞导致整个进程无法对其它客户提供服务，而采用 I/O 多路复用技术就是为了解决这个问题。</p>
+<p>它最大的优势在于可以在一次阻塞中监听多个文件描述符（FD），即可以让单个线程高效的处理多个连接请求（尽量减少网络IO的时间消耗）。</p>
+<p>综上，Redis 采用 I/O 多路复用技术（epoll）是因为 Redis 是单线程架构，是为了避免网络 I/O 读写操作阻塞整个进程。</p>
+<hr>
+<h2 id="单线程却能支撑搞并发总结">单线程却能支撑搞并发总结：</h2>
+<ol>
+<li>
+<p>完全基于内存，绝大部分请求是纯粹的内存操作，非常快速。数据存在内存中，类似于HashMap，HashMap的优势就是查找和操作的时间复杂度都是O(1)；</p>
+</li>
+<li>
+<p>Redis中的数据结构是专门进行设计的，简单、高效，如压缩表、跳表等等；</p>
+</li>
+<li>
+<p>采用I/O多路复用技术可以让单个线程高效的处理多个连接请求（尽量减少网络IO的时间消耗）；</p>
+</li>
+<li>
+<p>采用单线程，避免了不必要的上下文切换和竞争条件，也不存在多进程或者多线程导致的切换而消耗 CPU，不用去考虑各种锁的问题，不存在加锁释放锁操作，没有因为可能出现死锁而导致的性能消耗；</p>
+</li>
+<li>
+<p>Redis基于Reactor模式开发了自己的网络事件处理器，效率比较高。</p>
+</li>
+</ol>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/redis_learning_08/" class="post-title gt-a-link">
+                    Redis学习之路(八)：Stream
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

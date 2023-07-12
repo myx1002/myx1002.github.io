@@ -1,0 +1,333 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>数据结构学习之路(一)：数据结构基础 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    数据结构学习之路(一)：数据结构基础
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2021-09-16 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/J4LLJ1xJr/" class="post-tags">
+                            # 数据结构
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>💻 在复习 Redis 的同时，数据结构也要提上日程了，该来还是得来得，以前拉下的最终还是得偿还的😭<br>
+👉 所以接下来就陆续记录一下数据结构的一下复习知识点吧，包括各种二叉树、B树、跳跃表等等的！！</p>
+<!-- more -->
+<hr>
+<h2 id="数据结构基础">数据结构基础</h2>
+<p>常用的数据结构又很多，但大多数都以数组或链表作为存储方式，数组和链表可以被看作数据存储的“物理结构”</p>
+<p>那什么是数据存储的“物理结构”呢？<br>
+如果把数据接口比作活生生的人，那么物理结构就是人的血肉和骨骼，看得见摸得着，实实在在存在。</p>
+<p>如果物质层面的人体比作数据存储的物理结构，那么精神层面的人格则是数据存储的逻辑结构，它是抽象的概念，是依赖于物理结构的存在。</p>
+<hr>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>线性结构</th>
+<th>非线性结构</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>逻辑结构</td>
+<td>顺序表、栈、队列</td>
+<td>树图</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>顺序存储结构</th>
+<th>链式存储结构</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>物理结构</td>
+<td>数组</td>
+<td>链表</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p>我们常用的两种数据结构：栈和队列，这两者都属于逻辑结构，它们的物理实现既可以利用数组，也可以利用链表来完成。</p>
+<p>而后面学到的二叉树，也是一种逻辑结构，同样地，二叉树也可以依托物理上的数组或链表来实现。</p>
+<h2 id="数组">数组</h2>
+<p>数组是由有限个相同类型的变量所组成的有序集合，它的物理存储方式是顺序存储，访问方式是随机访问。<br>
+利用下标查找数组元素的时间复杂度是O(1),中间插入、删除数组元素的时间复杂度是O(n)。</p>
+<blockquote>
+<p>注意：PHP 的数组是一种非常强大灵活的数据类型，我们可以使用 PHP 中的数组轻易的实现集合、栈、列表、字典等多种数据结构。</p>
+</blockquote>
+<h2 id="链表">链表</h2>
+<p>链表是一种链式数据结构，由若干节点组成，每个节点包含指向下一个节点的指针。<br>
+链表的物理存储方式是随机存储，访问方式是顺序访问。<br>
+查找链表节点的时间复杂度是O(n)，中间插入、删除节点的时间复杂度是O(1)。</p>
+<h2 id="栈">栈</h2>
+<p>栈是一个线性逻辑结构，可以用数组或者链表实现，其包含入栈和出栈操作，遵循先入后出的原则(FILO)。</p>
+<h2 id="队列">队列</h2>
+<p>队列也是一种线性逻辑结构，也是可以用数组或者链表实现，其包含入队和出队操作，遵循先入先出的原则(FIFO)。</p>
+<h2 id="哈希表">哈希表</h2>
+<p>哈希表也叫散列表，是存储 Key-Value 映射的集合。对于某一个 Key，哈希表可以在接近O(1)的时间内进行读写操作。<br>
+哈希表通过哈希函数实现 Key 和数组下标的转换，通过开发寻址法和链表法来解决哈希冲突。</p>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/redis_learning_07/" class="post-title gt-a-link">
+                    Redis学习之路(七)：Scan命令
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

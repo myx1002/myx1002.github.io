@@ -1,0 +1,380 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>Linux的五个查找命令及其区别（已迁移） | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Linux的五个查找命令及其区别（已迁移）
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-01-26 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/62-1bH5aj/" class="post-tags">
+                            # linux
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>find、locate、which、whereis、type命令。</p>
+<!-- more -->
+<h1 id="1-find">1. find</h1>
+<p>find是最常见和最强大的查找命令，你可以用它找到任何你想找的文件。</p>
+<h3 id="11-使用格式">1.1 使用格式</h3>
+<pre><code class="language-shell">$ find &lt;指定目录&gt; &lt;指定条件&gt; &lt;指定动作&gt;
+</code></pre>
+<ul>
+<li>
+<p>&lt;指定目录&gt;： 所要搜索的目录及其所有子目录。默认为当前目录。</p>
+</li>
+<li>
+<p>&lt;指定条件&gt;： 所要搜索的文件的特征。</p>
+</li>
+<li>
+<p>&lt;指定动作&gt;： 对搜索结果进行特定的处理。</p>
+</li>
+</ul>
+<h3 id="12-常用实例">1.2 常用实例</h3>
+<pre><code class="language-shell">## 搜索当前目录（包含子目录）中，所有文件名以my开头的文件
+$ find . -name &quot;my*&quot; 
+
+## 搜索当前目录及子目录中，所有文件名以my开头的文件（-iname忽略大小写），并显示它们的详细信息。
+$ find . -iname &quot;My*&quot; -ls
+
+## 搜索当前目录中，名为test的目录。
+$ find . -type d -name test
+
+## 搜索当前目录及子目录中，所有以.go为结尾的文件
+$ find . -type f -name &quot;*.go&quot;
+
+## 查找所有空文件-type f，如果是查找目录则是-type d
+$ find . -type f -empty
+
+## 查找最近1小时内修改过的文件，查找查看过的用-amin
+$ find . -cmin -60
+
+## 查找所有被修改超过50天以及少于100天的文件，查找查看过的用-atime
+$ find . -ctime +50 -ctime -100
+
+## 搜索当前目录及其子目录中，查出指定文件大小或范围大小的文件（默认单位是块，1块=512字节）
+$ find . -size -10000 -size +10 -ls
+$ find . -size 1M
+$ find . -size -1G
+</code></pre>
+<blockquote>
+<p>注意：<code>find</code>是在硬盘上遍历查找，因此非常消耗硬盘的资源，而且效率也非常低，因此建议大家优先使用<code>whereis</code>和<code>locate</code>。</p>
+</blockquote>
+<hr>
+<h1 id="2-locate">2. locate</h1>
+<p>locate命令其实是“find -name”的另一种写法，但是要比后者快得多，原因在于它不搜索具体目录，而是搜索一个数据库（/var/lib/locatedb），这个数据库中含有本地所有文件信息。</p>
+<h3 id="21-使用格式">2.1 使用格式</h3>
+<pre><code class="language-shell">## 一般情况我们只需要输入 locate your_file_name 即可查找指定文件
+$ locate &lt;参数&gt; &lt;文件名&gt;
+</code></pre>
+<h3 id="22-常用实例">2.2 常用实例</h3>
+<pre><code class="language-shell">## 查找php.ini配置文件的路径
+$ locate php.ini
+/www/server/php/74/etc/php.ini
+</code></pre>
+<blockquote>
+<p>Linux系统自动创建这个数据库，并且每天自动更新一次，所以使用locate命令查不到最新变动过的文件。为了避免这种情况，可以在使用locate之前，先使用updatedb命令，手动更新数据库。</p>
+</blockquote>
+<hr>
+<h1 id="3-which">3. which</h1>
+<p>which命令的作用是，在PATH变量指定的路径中，搜索某个系统命令的位置，并且返回第一个搜索结果。也就是说，使用which命令，就可以看到某个系统命令是否存在，以及执行的到底是哪一个位置的命令。</p>
+<pre><code class="language-shell">$ which netstat
+/usr/bin/netstat
+</code></pre>
+<blockquote>
+<p>which 查找的可执行文件，必须是要在 PATH 下的可执行文件，而不能是没有加入 PATH 的可执行文件，即使他就是可执行文件，但是没有加入到系统搜索路径，它仍然无法被 which 发现。</p>
+</blockquote>
+<hr>
+<h1 id="4-whereis">4. whereis</h1>
+<p>whereis命令只能用于程序名的搜索，而且只搜索二进制文件（参数-b）、man说明文件（参数-m）和源代码文件（参数-s）。如果省略参数，则返回所有信息。</p>
+<h3 id="41-使用格式">4.1 使用格式</h3>
+<pre><code class="language-shell">$ whereis &lt;参数&gt; &lt;程序名&gt;
+</code></pre>
+<h3 id="42-常用实例">4.2 常用实例</h3>
+<pre><code class="language-shell">## 显示netstat命令的二进制程序  
+$ whereis -b netstat
+netstat: /usr/bin/netstat   # netstat命令的二进制程序的地址
+
+## 显示netstat命令的帮助文件
+$ whereis -m netstat
+netstat: /usr/share/man/man8/netstat.8.gz  #netstat命令的帮助文件地址
+</code></pre>
+<blockquote>
+<p>这个命令可以用来查找二进制（命令）、源文件、man文件。与which不同的是这条命令可以是通过文件索引数据库而非PATH来查找的，所以查找的面比which要广。</p>
+</blockquote>
+<hr>
+<h1 id="5-type">5. type</h1>
+<p>type命令其实不能算查找命令，它是用来区分某个命令到底是由shell自带的，还是由shell外部的独立二进制文件提供的。</p>
+<h3 id="51-使用格式">5.1 使用格式</h3>
+<pre><code class="language-shell">$ type &lt;参数&gt; &lt;程序名&gt;
+</code></pre>
+<h3 id="52-常用实例">5.2 常用实例</h3>
+<pre><code class="language-shell">## 如果是系统命令，系统会提示，cd是shell的自带命令（build-in）
+$ type cd
+cd is a shell builtin  
+
+## 如果是外部命令，系统会提示，并显示该命令的路径
+$ type netstat
+netstat is /usr/bin/netstat
+
+# 外部命令使用-p参数，会显示该命令的路径，相当于which命令
+$ type -p netstat
+/usr/bin/netstat
+</code></pre>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/data_structure_07/" class="post-title gt-a-link">
+                    数据结构学习之路(七)：SkipList跳跃表
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

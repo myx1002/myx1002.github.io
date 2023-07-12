@@ -1,0 +1,679 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>Redis学习之路(一)：5大基础数据类型 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Redis学习之路(一)：5大基础数据类型
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2021-04-15 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tags">
+                            # redis
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>🤺来，今天开始整理的是Redis的相关知识点，当然<code>设计模式</code>的也会继续同步更新</p>
+<p>🗣🗣 所以，要抓紧时间巩固啦！虽然这些知识点以前已经整理过一遍，但是因为数据丢了，所以只能重新整理了，就当记忆加深吧！😤</p>
+<!-- more -->
+<p>Redis自身是一个<code>Map</code>，其中所有数据都是采用<code>key-value</code>的形式存储</p>
+<p>而<code>数据类型</code>指的是存储数据的类型，也就是value的部分，key部分永远都是字符串</p>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1615992757352.png" alt="" width="600" height="400" loading="lazy"></figure>
+<!-- more -->
+<h2 id="目录">目录🔖🔖</h2>
+<ul>
+<li><a href="#String">String</a></li>
+<li><a href="#Hash">Hash</a></li>
+<li><a href="#List">List</a></li>
+<li><a href="#Set">Set</a></li>
+<li><a href="#ZSet">ZSet</a></li>
+</ul>
+<br>
+<!-- more -->
+<h2 id="a-namestring一-stringa"><a name="String">一、String</a></h2>
+<h3 id="类型描述">📖📖类型描述</h3>
+<ul>
+<li>存储的数据：单个数据，最简单的数据存储类型，也是我们最常用到的类型</li>
+<li>存储数据的格式：一个存储空间保存一个数据</li>
+<li>存储内容：字符串、整数、浮点数</li>
+<li>存储特点：二进制安全的，意思是可以包含任何数据，比如jpg图片或者序列化的对象等</li>
+</ul>
+<h3 id="常用场景">🏠🏠常用场景</h3>
+<ul>
+<li>计数器（如：粉丝数）</li>
+<li>查询频繁且处理逻辑复杂，但不必实时更新的数据（如：月活量、转码排队数）</li>
+<li>乐观锁（incr 命令）</li>
+<li>分布式锁（set 命令的 NX 参数）</li>
+</ul>
+<h3 id="常用命令">💻💻常用命令</h3>
+<ul>
+<li>
+<p>set<br>
+命令格式：set key value [EX seconds|PX milliseconds] [NX|XX]</p>
+<ul>
+<li><code>EX seconds</code>: 将键的过期时间设置为<code>seconds</code>秒。 执行<code>SET key value EX seconds</code>的效果等同于执行<code>SETEX key seconds value</code>。</li>
+<li><code>PX milliseconds</code> ： 将键的过期时间设置为<code>milliseconds</code>毫秒。 执行<code>SET key value PX milliseconds</code>的效果等同于执行<code>PSETEX key milliseconds value</code>。</li>
+<li><code>NX</code>： 只在键不存在时， 才对键进行设置操作。 执行<code>SET key value NX</code>的效果等同于执行<code>SETNX key value</code>。</li>
+<li><code>XX</code>： 只在键已经存在时， 才对键进行设置操作。</li>
+</ul>
+<blockquote>
+<p>因为 SET 命令可以通过参数来实现 SETNX 、 SETEX 以及 PSETEX 命令的效果， 所以 Redis 将来的版本可能会移除并废弃 SETNX 、 SETEX 和 PSETEX 这三个命令。</p>
+</blockquote>
+</li>
+<li>
+<p>setnx<br>
+命令格式：set key value</p>
+<blockquote>
+<p>只在键<code>key</code>不存在的情况下，将键<code>key</code>的值设置为<code>value</code><br>
+若键<code>key</code>已经存在， 则<code>SETNX</code>命令不做任何动作<br>
+命令在设置成功时返回<code>1</code>，设置失败时返回<code>0</code></p>
+</blockquote>
+</li>
+<li>
+<p>setex<br>
+命令格式：set key seconds value</p>
+<blockquote>
+<p>将键<code>key</code>的值设置为<code>value</code>， 并将键<code>key</code>的生存时间设置为<code>seconds</code>秒钟<br>
+如果键<code>key</code>已经存在， 那么<code>SETEX</code>命令将覆盖已有的值<br>
+命令在设置成功时返回<code>OK</code></p>
+</blockquote>
+</li>
+<li>
+<p>get<br>
+命令格式：get key</p>
+<blockquote>
+<p>返回与键<code>key</code>相关联的字符串值<br>
+如果键<code>key</code>不存在， 那么返回特殊值<code>nil</code>； 否则， 返回键<code>key</code>的值<br>
+如果键<code>key</code>的值并非字符串类型， 那么返回一个错误， 因为<code>GET</code>命令只能用于字符串值</p>
+</blockquote>
+</li>
+<li>
+<p>append<br>
+命令格式：append key value</p>
+<blockquote>
+<p>如果键 <code>key</code> 已经存在并且它的值是一个字符串， <code>APPEND</code> 命令将把 <code>value</code> 追加到键 <code>key</code> 现有值的末尾<br>
+如果 <code>key</code> 不存在， APPEND 就简单地将键 <code>key</code> 的值设为 <code>value</code> ， 就像执行 <code>SET key value</code> 一样<br>
+追加<code>value</code>之后， 返回键 <code>key</code> 的值的长度</p>
+</blockquote>
+</li>
+<li>
+<p>strlen<br>
+命令格式：strlen key</p>
+<blockquote>
+<p>返回键<code>key</code>储存的字符串值的长度<br>
+当键<code>key</code>不存在时， 命令返回<code>0</code><br>
+当<code>key</code>储存的不是字符串值时， 返回一个错误</p>
+</blockquote>
+</li>
+<li>
+<p>incr/decr<br>
+命令格式 incr/dect key</p>
+<blockquote>
+<p>为键 <code>key</code> 储存的数字值加1/减1<br>
+如果键 <code>key</code> 不存在， 那么它的值会先被初始化为 0 ， 然后再执行 <code>incr/decr</code> 命令<br>
+如果键 <code>key</code> 储存的值不能被解释为数字， 那么将返回一个错误</p>
+</blockquote>
+</li>
+<li>
+<p>incrby 、decrby<br>
+命令格式 incrby/decrby key decrement</p>
+<blockquote>
+<p>与incr/dect类型，只不过增减的值不是1而是<code>decrement</code>步长</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="编码方式">📠📠编码方式</h3>
+<ul>
+<li>int：当存储的字符串全是数字时，此时使用int方式存储</li>
+<li>embstr：当存储的字符串长度小于44个字符时，使用该<code>embstr</code>方式存储</li>
+<li>raw：当存储的字符串长度大于44个字符时，使用该<code>raw</code>方式存储</li>
+</ul>
+<blockquote>
+<p>可以使用<code>object encoding key</code>查看<code>key</code>对应的<code>encoding</code>类型<br>
+对于embstr和raw这两种encoding类型，其存储方式还不太一样。对于embstr类型，它将RedisObject对象头和SDS对象在内存中地址是连在一起的，但对于raw类型，二者在内存地址不是连续的。</p>
+</blockquote>
+<figure data-type="image" tabindex="2"><img src="http://mofish.pily.life/post-images/1640874753915.png" alt="" loading="lazy"></figure>
+<p>至于为什么是44字节，首先我们要了解到，所有的Redis对象都有下面这个头结构，共<code>16字节</code>：</p>
+<pre><code class="language-c">struct RedisObject {
+    int4   type;              // 4bits，不同的对象有不同的type
+    int4   encoding;      // 4bits，同一个类型的type会有不同的存储形式
+    int24 lru;                // 24bits，记录LRU信息，
+    int32 refcount;       // 4bytes，每个对象都有引用计数器，当引用计数为0时，对象就会被销毁，内存被回收
+    void  *ptr;              //  8bytes，64-bit system，指向对象内容（body）的具体存储位置
+} robj;
+</code></pre>
+<p>我们再来看SDS结构体的大小，在字符串比较小时，SDS对象头结构的大小是capacity+3，<code>至少是3字节</code>，意味着分配一个字符串的最小空间占用为<code>19字节</code>（16+3）。</p>
+<pre><code class="language-c">struct SDS {
+    int8 capacity;        //  1bytes
+    int8 len;                //  1bytes
+    int8 flags;             //  1bytes
+    bytes[] content;   // 内联数组，长度为 capacity
+}
+</code></pre>
+<p>因为内存分配器jemalloc、tcmalloc等分配内存大小的单位都是2/4/8/16/32/64字节等，为了能容纳以恶完整的embstr对象，jemalloc<code>至少</code>会分配<code>32字节</code>空间，如果再稍微长一点就是64字节，<code>超过64字节</code>的话，Redis就认为它是一个大字符串，就不再适用embstr格式存储，而该使用raw形式。</p>
+<p>那么继续回答上面的问题，为什么是44字节呢？因为除去头部的<code>19个字节</code>（16+3），还剩下45个字节，而SDS结构体中的content中的字符串是以NULL结尾的字符串,，占用<code>1个字节</code>，所以就只剩下44个字节了。</p>
+<p>在介绍string类型的存储类型时，我们说到，对于embstr和raw两种类型其存储方式不一样，但ptr指针最后都指向一个SDS的结构。那什么是SDS呢？</p>
+<h3 id="底层原理embstr-vs-raw">⛏⛏底层原理（embstr vs raw）</h3>
+<ul>
+<li><a href="/post/data_structure_03/">SDS动态字符串</a></li>
+</ul>
+<br>
+<!-- more -->
+<h2 id="a-namehash二-hasha"><a name="Hash">二、Hash</a></h2>
+<p>我们日常使用string类型来json_encode存储对象数据时，本能的会觉得好方便😁啥都不用管，一个字符串丢进去就行。</p>
+<p>但是当我们需要频繁的获取并修改某个属性时，就需要不断的decode、encode😱，因此String类型就显得笨重了。</p>
+<figure data-type="image" tabindex="3"><img src="http://mofish.pily.life/post-images/1617025932255.png" alt="" loading="lazy"></figure>
+<p>而Hash类型就很好的解决了这个问题，下面我们继续学习。</p>
+<h3 id="类型描述-2">📖📖类型描述</h3>
+<ul>
+<li>新的存储需求：对一系列存储的数据进行编组，方便管理，典型应用存储对象信息</li>
+<li>需要的存储结构：一个存储空间保存多个键值对数据</li>
+</ul>
+<h3 id="️️注意事项">❗️❗️注意事项</h3>
+<ul>
+<li>Hash类型下的Value只能存储字符串，不允许存储其它数据类型，不存在嵌套现象。</li>
+<li>每个Hash可以存储<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mn>2</mn><mn>3</mn></msup></mrow><annotation encoding="application/x-tex">2^3</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141079999999999em;vertical-align:0em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">3</span></span></span></span></span></span></span></span></span></span></span><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mrow></mrow><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141079999999999em;vertical-align:0em;"></span><span class="mord"><span></span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span> - 1个键值对</li>
+<li>Hash类型十分贴近对象的数据存储形式，并且可以灵活添加删除对象属性，但切记不可滥用，更不要将其作为对象列表使用</li>
+<li>hgetall 操作可以获取全部属性，如果内部Field过多，遍历整体数据效率就很会低，有可能成为数据访问瓶颈</li>
+</ul>
+<blockquote>
+<p>对于同样是存储字符串，Hash与String的主要区别是什么呢？<br>
+Hash把所有相关的值聚集到一个Key中，节省内存空间并且减少了Key冲突<br>
+当需要批量获取值的时候，只需要使用一个命令，减少内存/IO/CPU的消耗</p>
+</blockquote>
+<h3 id="常用场景-2">🏠🏠常用场景</h3>
+<ul>
+<li>
+<p>购物车</p>
+<ul>
+<li>以客户ID作为Key，每个客户创建一个购物车Hash存储结构</li>
+<li>将商品的信息数量等字段作为Field，对应的信息对应
+<ul>
+<li>商品id_nums : 商品数量</li>
+<li>商品id_name : 商品名称</li>
+<li>商品id_descript : 商品描述</li>
+<li>......</li>
+</ul>
+</li>
+<li>添加商品：追加新的Field和Value</li>
+<li>更改数量：商品数量自增自减</li>
+<li>浏览：遍历Hash</li>
+<li>删除商品：删除Field</li>
+<li>清空：删除Key</li>
+</ul>
+</li>
+<li>
+<p>同一商品不同优惠卷的抢购</p>
+</li>
+</ul>
+<h3 id="常用命令-2">💻💻常用命令</h3>
+<ul>
+<li>
+<p>hset<br>
+命令格式：hset key field value</p>
+<blockquote>
+<p>field不存在，新建成功时返回 1<br>
+field已经存在，成功覆盖时返回 0</p>
+</blockquote>
+</li>
+<li>
+<p>hget<br>
+命令格式：hget key field</p>
+<blockquote>
+<p><code>hget</code> 命令在默认情况下返回给定域的值<br>
+如果给定域不存在于哈希表中， 又或者给定的哈希表并不存在， 那么命令返回 <code>nil</code></p>
+</blockquote>
+</li>
+<li>
+<p>hsetnx<br>
+命令格式：hsetnx key field value</p>
+<blockquote>
+<p>设置成功时返回 1，域已存在导致设置为成功时返回 0<br>
+当且仅当域 <code>field</code> 尚未存在于哈希表的情况下， 将它的值设置为 <code>value</code><br>
+如果哈希表 <code>hash</code> 不存在， 那么一个新的哈希表将被创建并执行 <code>hsetnx</code> 命令。</p>
+</blockquote>
+</li>
+<li>
+<p>hexists<br>
+命令格式：hexists key field</p>
+<blockquote>
+<p>检查给定域 field 是否存在于哈希表 hash 当中<br>
+<code>hexists</code> 命令在给定域存在时返回 <code>1</code> ， 在给定域不存在时返回 <code>0</code></p>
+</blockquote>
+</li>
+<li>
+<p>hdel<br>
+命令格式：hdel key field [field ...]</p>
+<blockquote>
+<p>删除哈希表 <code>key</code> 中的一个或多个指定域，不存在的域将被忽略</p>
+</blockquote>
+</li>
+<li>
+<p>hincrby<br>
+命令格式：hincrby key field inctement</p>
+<blockquote>
+<p>作用：为哈希表 <code>key</code> 中的域 <code>field</code> 的值加上增量 <code>increment</code><br>
+增量也可以为负数，相当于对给定域进行减法操作<br>
+如果 <code>key</code> 不存在，一个新的哈希表被创建并执行 <code>HINCRBY</code> 命令<br>
+如果域 <code>field</code> 不存在，那么在执行命令前，域的值被初始化为 <code>0</code><br>
+注意：对一个储存字符串值的域 <code>field</code> 执行 <code>HINCRBY</code> 命令将造成一个错误</p>
+</blockquote>
+</li>
+<li>
+<p>hgetall<br>
+命令格式：hgetall key</p>
+<blockquote>
+<p>返回哈希表 <code>key</code> 中，所有的域和值</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="底层原理">⛏⛏底层原理</h3>
+<p>Hash本身就是一个K-V结构，但是当存储Hash数据类型时，我们把它叫做内层的哈希，其底层可以使用两种数据结构实现的，分别是ZipList和HashTable。</p>
+<p>当我们创建<code>Hash</code>表示默认存储结构，并不是<code>HashTable</code>，而是<code>ZipList</code>结构<br>
+hash_max_ziplist_entries和hash_max_ziplist_value值作为阀值</p>
+<ol>
+<li>hash_max_ziplist_entries（默认512个键值对）表示一旦ziplist中元素数量超过该值，则需要转换为HashTable结构</li>
+<li>hash_max_ziplist_value（默认64）表示一旦ziplist中数据长度大于该值，则需要转换为HashTable结构</li>
+</ol>
+<blockquote>
+<p>底层原理详情：</p>
+<ul>
+<li>ZipList：<a href="/post/data_structure_04/">压缩链表</a></li>
+<li>HashTable：<a href="/post/data_structure_02/#Redis的数据底层原理的相关知识点">哈希表</a></li>
+</ul>
+</blockquote>
+<br>
+<!-- more -->
+<h2 id="a-namelist三-lista"><a name="List">三、List</a></h2>
+<h3 id="类型描述-3">📖📖类型描述</h3>
+<ul>
+<li>数据存储需求：存储多个数据，并对数据进入存储空间的顺序进行区分</li>
+<li>需要的存储结构：一个存储空间保存多个数据，且通过数据可以体现进入顺序</li>
+</ul>
+<figure data-type="image" tabindex="4"><img src="http://mofish.pily.life/post-images/1618844141402.jpg" alt="" loading="lazy"></figure>
+<h3 id="常用场景-3">常用场景</h3>
+<ul>
+<li>微信朋友圈点赞，要求按照点赞顺序显示点赞好友信息，如果取消点赞，移除对应好友信息</li>
+<li>简单的异步队列，将需要延后处理的任务塞进list里面，按先后顺序取出处理</li>
+</ul>
+<h3 id="常用命令-3">常用命令</h3>
+<ul>
+<li>lpush/rpush</li>
+<li>lpushx/rpushx</li>
+<li>lpop/rpop</li>
+<li>rpop/lpush</li>
+<li>lrem</li>
+<li>llen</li>
+<li>lindex</li>
+<li>linsert</li>
+</ul>
+<h3 id="底层原理-2">底层原理</h3>
+<p>在3.2之后，redis新增了一种数据结构<code>QuickList</code>，用在列表的底层实现，而<code>QuickList</code>其实是Redis将<code>链表</code>和<code>ZipList</code>结合起来组成的。</p>
+<p>如果只用<code>链表</code>的话，每个元素都需要附件指针空间，会导致浪费空间并且加重内存的碎片化。</p>
+<p>而<code>ZipList</code>，即压缩列表，它将所有的元素彼此紧凑地挨在一起，存储在一块连续的内存中。</p>
+<p>所以Redis讲两者结合起来组成了<code>QuickList</code>，也就是将多个<code>ZipList</code>使用双向指针串起来使用，即满足了快速的插入和删除性能，又不会出现太大的空间冗余。</p>
+<blockquote>
+<p>底层原理详情：</p>
+<ul>
+<li>QuickList：<a href="#">快速列表</a></li>
+</ul>
+</blockquote>
+<br>
+<!-- more -->
+<h2 id="a-namesetseta"><a name="Set">Set</a></h2>
+<h3 id="类型描述-4">类型描述</h3>
+<ul>
+<li>新的存储需求：存储大量的数据，在查询方面提供更高的效率<br>
+因此<code>List</code>是链表结构，无论是插入还是查询方面效率都不算特别高</li>
+<li>需要的存储结构：能够保存大量的数据，高效的内部存储机制，便于查询</li>
+<li>set类型：与hash存储结构完全相同，但是仅存储键，不存储值（nil），并且值是不允许重复的</li>
+</ul>
+<figure data-type="image" tabindex="5"><img src="http://mofish.pily.life/post-images/1618930727419.png" alt="" width="500" height="300" loading="lazy"></figure>
+<h3 id="常用场景-4">常用场景</h3>
+<ul>
+<li>可以用来存储活动中中奖的用户ID、存储所需爬虫的网址、黑名单等，因为有去重功能，可以保证不会重复</li>
+<li>应用于随机推荐类信息检索，例如热点歌单推荐，热点新闻推荐，热卖旅游线路，应用APP推荐，<br>
+大V推荐等</li>
+<li>使用其交集、并集、差集等操作来实现共同好友、共同关注等功能</li>
+<li>记录UP和IP访问量</li>
+</ul>
+<h3 id="常用命令-4">常用命令</h3>
+<ul>
+<li>sadd</li>
+<li>smembers</li>
+<li>srem</li>
+<li>scard</li>
+<li>sismember</li>
+<li>srandmember</li>
+<li>spop</li>
+<li>sinter</li>
+<li>sunion</li>
+<li>sdiff</li>
+<li>sinterstore</li>
+<li>smove</li>
+</ul>
+<h3 id="底层原理-3">底层原理</h3>
+<p><code>Set</code>底层使用了<code>Intset</code>和<code>Hashtable</code>两种数据结构存储的，<code>Intset</code>我们可以理解为数组，<code>HashTable</code>就是普通的哈希表（key为set的值，value为null）</p>
+<p><code>Set</code>的底层存储<code>Intset</code>和<code>Hashtable</code>是存在编码转换的，使用<code>Intset</code>存储必须满足下面两个条件，否则使用`Hashtable，条件如下：</p>
+<ol>
+<li>结合对象保存的所有元素都是整数值</li>
+<li>集合对象保存的元素数量不超过512个</li>
+</ol>
+<blockquote>
+<p>底层原理详情：</p>
+<ul>
+<li>Intset：<a href="/post/data_structure_05/">整数集合</a></li>
+<li>HashTable：<a href="/post/data_structure_02/#Redis的数据底层原理的相关知识点">哈希表</a></li>
+</ul>
+</blockquote>
+<br>
+<!-- more -->
+<h2 id="a-namezsetzseta"><a name="Zset">Zset</a></h2>
+<h3 id="类型描述-5">类型描述</h3>
+<ul>
+<li>新的存储需求：数据排序有利于数据的有效展示，需要提供一种可以根据自身特征进行排序的方式</li>
+<li>需要的存储结构：新的存储模型，可以保存可排序的数据</li>
+<li>sorted_set类型：在set的存储结构基础上添加可排序字段</li>
+</ul>
+<figure data-type="image" tabindex="6"><img src="http://mofish.pily.life/post-images/1618933512240.png" alt="" loading="lazy"></figure>
+<h3 id="常用场景-5">常用场景</h3>
+<ul>
+<li>粉丝列表，好友列表，根据亲密度排序</li>
+<li>TOP10榜单、各种投票列表</li>
+<li>带有权重的任务队列、带有指定执行时间的计划任务</li>
+</ul>
+<h3 id="常用命令-5">常用命令</h3>
+<ul>
+<li>zadd</li>
+<li>zrange</li>
+<li>zrevrange</li>
+<li>zrem</li>
+<li>zrangebyscore</li>
+<li>zrevrangebyscore</li>
+<li>zremrangebyrank</li>
+<li>zremrangebyscore</li>
+<li>zcard</li>
+<li>zcount</li>
+<li>zinterstore</li>
+<li>zunionstore</li>
+<li>zrank/zrevrank</li>
+<li>zscore</li>
+<li>zincrby</li>
+</ul>
+<h3 id="底层原理-4">底层原理</h3>
+<p>sorted set有两种实现方式，一种是ziplist压缩表，一种是zset(dict、skiplist)，</p>
+<ol>
+<li>当sorted set中的元素个数小于128时(即元素对member score的个数，共256个元素)，使用ziplist，</li>
+<li>当元素对中member长度小于64个字节时使用ziplist。</li>
+</ol>
+<p>当然这两个可以通过配置文件修改zset-max-ziplist-entries、zset-max-ziplist-value。</p>
+<blockquote>
+<p>底层原理详情：</p>
+<ul>
+<li>
+<p>ZipList：<a href="/post/data_structure_04/">压缩列表</a></p>
+</li>
+<li>
+<p>HashTable+SkipList：<a href="/post/data_structure_07/">跳跃表</a><br>
+当不满足ZipList的使用条件时，zset会使用一种复合结构来存储数据，即HashTable+SkipList，<br>
+HashTable用来存储member到score的映射，这样就可以在O(1)时间内找到member对应的分数<br>
+SkipList按照从小到大的顺序存储分数，便于通过score范围来获取元素列表，并且SkipList每个元素的值都是[socre,value]对</p>
+</li>
+</ul>
+</blockquote>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/design_patterns_06/" class="post-title gt-a-link">
+                    硬啃设计模式(六)：适配器模式
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

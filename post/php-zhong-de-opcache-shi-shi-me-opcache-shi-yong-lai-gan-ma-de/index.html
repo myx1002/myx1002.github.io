@@ -1,0 +1,497 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>PHP中的opcache是什么，opcache是用来干嘛的？（已迁移） | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    PHP中的opcache是什么，opcache是用来干嘛的？（已迁移）
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-08-22 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/qo6XPqkl5/" class="post-tags">
+                            # php
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>PHP项目中，尤其是在高并发大流量的场景中，如何提升PHP的响应时间，是一项十分重要的工作。而opcache又是优化PHP性能不可缺失的组件，尤其是应用了PHP框架的项目中，作用更是明显🤑</p>
+<p>opcache从字面意思，肯定是缓存这一块的，那么它的工作原理是什么呢😲</p>
+<!-- more -->
+<h1 id="目录">目录</h1>
+<ul>
+<li><a href='#一、概述'>一、概述</a>
+<ul>
+<li><a href='#1.1、PHP-FPM + Nginx 的工作机制'>1.1、PHP-FPM + Nginx 的工作机制</a></li>
+<li><a href='#1.2、PHP脚本解释执行的机制'>1.2、PHP脚本解释执行的机制</a></li>
+</ul>
+</li>
+<li><a href='#二、opcache 介绍'>二、opcache 介绍</a></li>
+<li><a href='#三、opcache 原理'>三、opcache 原理</a></li>
+<li><a href='#四、opcache 缓存解读'>四、opcache 缓存解读</a></li>
+<li><a href='#五、opcache 更新策略'>五、opcache 更新策略</a></li>
+<li><a href='#六、opcache 配置'>六、opcache 配置</a></li>
+</ul>
+<hr>
+<h1 id="a-name一-概述一-概述a"><a name='一、概述'>一、概述</a></h1>
+<blockquote>
+<p>在理解 opcache 功能之前，我们有必要先理解PHP-FPM + Nginx 的工作机制，以及PHP脚本解释执行的机制。</p>
+</blockquote>
+<h2 id="a-name11-php-fpm-nginx-的工作机制11-php-fpm-nginx-的工作机制a"><a name='1.1、PHP-FPM + Nginx 的工作机制'>1.1、PHP-FPM + Nginx 的工作机制</a></h2>
+<p>请求从 Web浏览器 到 Nginx，再到 PHP处理 完成，一共要经历如下五个步骤：</p>
+<h3 id="第一步启动服务">第一步：启动服务</h3>
+<ul>
+<li>
+<p>启动PHP-FPM。PHP-FPM 支持两种通信模式：TCP socket和Unix socket</p>
+</li>
+<li>
+<p>PHP-FPM 会启动两种类型的进程：master 进程 和 worker 进程，前者负责<code>监控端口</code>、<code>分配任务</code>、<code>管理worker进程</code>；后者就是<code>PHP的cgi程序</code>，负责<code>解释编译执行PHP脚本</code></p>
+</li>
+<li>
+<p>启动 Nginx。首先会载入 <code>ngx_http_fastcgi_module</code> 模块，初始化 FastCGI 执行环境，实现 FastCGI协议 请求代理</p>
+</li>
+</ul>
+<blockquote>
+<p>这里注意：FastCGI 的 worker 进程(cgi进程)，是由 PHP-FPM 来管理的，不是 Nginx 负责，Nginx只是代理。</p>
+</blockquote>
+<br>
+<h3 id="第二步nginx-接收请求">第二步：Nginx 接收请求</h3>
+<ul>
+<li>Nginx 接收到请求后，基于 location 配置选择一个合适的 handler（这里就是代理 PHP 的handler）</li>
+</ul>
+<br>
+<h3 id="第三步nginx-转发请求到-php-fpm">第三步：Nginx 转发请求到 PHP-FPM</h3>
+<ul>
+<li>
+<p>Nginx 把请求翻译成 fastcgi 请求</p>
+</li>
+<li>
+<p>通过 TCP socket / Unix socket 发送给 PHP-FPM 的 master 进程</p>
+</li>
+</ul>
+<br>
+<h3 id="第四步php-fpm-master-分配任务到-worker">第四步：PHP-FPM master 分配任务到 worker</h3>
+<ul>
+<li>
+<p>PHP-FPM master进程接收到请求</p>
+</li>
+<li>
+<p>分配任务到 worker进程执行 PHP脚本，如果没有空闲的 worker，返回 502 错误</p>
+</li>
+<li>
+<p>worker（cgi程序）进程执行 PHP脚本，如果超时，返回 504 错误</p>
+</li>
+<li>
+<p>处理结束，返回结果</p>
+</li>
+</ul>
+<br>
+<h3 id="第五步php-fpm-worker-返回处理结果">第五步：PHP-FPM worker 返回处理结果</h3>
+<ul>
+<li>
+<p>PHP-FPM worker 进程返回处理结果，并关闭连接，等待下一个请求</p>
+</li>
+<li>
+<p>PHP-FPM Master 进程通过 socket 返回处理结果</p>
+</li>
+<li>
+<p>Nginx 再把处理结果返回给客户端</p>
+</li>
+</ul>
+<br>
+<h2 id="a-name12-php脚本解释执行的机制12-php脚本解释执行的机制a"><a name='1.2、PHP脚本解释执行的机制'>1.2、PHP脚本解释执行的机制</a></h2>
+<p>了解了PHP + Nginx 整体的处理流程后，我们接下来看一下PHP脚本具体执行流：</p>
+<ul>
+<li>
+<p>PHP 初始化执行环节，启动Zend引擎，加载注册的扩展模块</p>
+</li>
+<li>
+<p>初始化后读取脚本文件，Zend引擎 对脚本进行词法和语法分析，生成语法树</p>
+</li>
+<li>
+<p>Zend引擎 编译语法树，生成opcode操作码</p>
+</li>
+<li>
+<p>Zend 引擎执行opcode，返回执行结果</p>
+</li>
+</ul>
+<blockquote>
+<p>在PHP cli模式下，每次执行PHP脚本，四个步骤都会依次执行一遍；</p>
+<p>在PHP-FPM模式下，步骤①)在PHP-FPM启动时执行一次，后续的请求中不再执行；步骤②~④每个请求都要执行一遍；</p>
+<p>其实步骤②和③生成的语法树和opcode，同一个PHP脚本每次运行的结果都是一样的，在PHP-FPM模式下，每次请求都要处理一遍，是对系统资源极大的浪费，而<code>opcache</code>就是一个有效的优化方法！</p>
+</blockquote>
+<hr>
+<h1 id="a-name二-opcache-介绍二-opcache-介绍a"><a name='二、opcache 介绍'>二、opcache 介绍</a></h1>
+<p>OPCache 是Zend官方出品的，开放自由的 opcode 缓存扩展，还具有代码优化功能，省去了每次加载和解析 PHP 脚本的开销。</p>
+<p>PHP 5.5.0 及后续版本中已经绑定了 OPcache 扩展。</p>
+<p>缓存两类内容：</p>
+<ul>
+<li>
+<p>opcode</p>
+</li>
+<li>
+<p>interned string，如注释、变量名等</p>
+</li>
+</ul>
+<hr>
+<h1 id="a-name三-opcache-原理三-opcache-原理a"><a name='三、opcache 原理'>三、opcache 原理</a></h1>
+<blockquote>
+<p>opcache 缓存的机制主要是<code>将编译好的操作码opcode放入共享内存中，提供给其它进程访问</code>。</p>
+</blockquote>
+<p>依据PHP字节码缓存的场景，opcache的内存管理设计非常简单，快速读写，不释放内存，过期数据置为wasted。</p>
+<p>当 wasted 内存大于设定值时，自动重启 opcache 机制，清空并重新生成缓存。</p>
+<hr>
+<h1 id="a-name四-opcache-缓存解读四-opcache-缓存解读a"><a name='四、opcache 缓存解读'>四、opcache 缓存解读</a></h1>
+<p>opcache 是官方的 opcode 缓存解决方案，在PHP5.5版本之后，已经打包到PHP源码中一起发布。</p>
+<p>它将PHP编译产生的字节码以及数据缓存到共享内存中, 在每次请求，从缓存中直接读取编译后的opcode，进行执行。通过节省脚本的编译过程，提高PHP的运行效率。</p>
+<h2 id="41-opcode-缓存">4.1 opcode 缓存</h2>
+<p>opcache 会缓存 opcode以及如下内容：</p>
+<ul>
+<li>
+<p>PHP脚本涉及到的函数</p>
+</li>
+<li>
+<p>PHP脚本中定义的Class</p>
+</li>
+<li>
+<p>PHP脚本文件路径</p>
+</li>
+<li>
+<p>PHP脚本oparray（这个OPArray中就包含了所有的 opcode，Zend引擎就是从这个数组中取出opcode，一个接一个地执行）</p>
+</li>
+<li>
+<p>PHP脚本自身结构/内容</p>
+</li>
+</ul>
+<br>
+<h2 id="42-interned-string-缓存">4.2 interned string 缓存</h2>
+<p>在PHP5.4的时候, 引入了Interned String机制, 用于优化PHP对字符串的存储和处理。尤其是处理大块的字符串，比如PHP doces时，Interned String 可以优化内存。</p>
+<p>Interned String 缓存的内容包括：变量名称、类名、方法名、字符串、注释等。</p>
+<p>在PHP-FPM模式中，Interned String 缓存字符，仅限于Worker 进程内部。而缓存到OPCache中，那么Worker进程之间可以使用 Interned String 缓存的字符串，节省内存。</p>
+<blockquote>
+<p>我们需要注意一个事情，在PHP开发中，一般会有大段的注释，也会被缓存到OPCache中。可以通过php.ini的配置，关闭注释的缓存。</p>
+</blockquote>
+<hr>
+<h1 id="a-name五-opcache更新策略五-opcache更新策略a"><a name='五、opcache更新策略'>五、opcache更新策略</a></h1>
+<p>只要是缓存，都会存在过期以及更新策略。而 opcache 的更新策略非常简单，到期数据设为 wasted ,当 wasted 达到设定值时，清空缓存，重建缓存。</p>
+<blockquote>
+<p>注意：<br>
+在高流量的场景下，重建缓存是一件非常消耗资源的事，opcache 在创建缓存时并不会组织进程读取，这会导致大量进程反复新建缓存。<br>
+所以，尽量不要设置 opcache 过期时间！</p>
+</blockquote>
+<p><strong>每次发布新代码时，都会出现反复新建缓存的情况，如何避免？</strong></p>
+<ul>
+<li>
+<p>不要再高峰期发布代码</p>
+</li>
+<li>
+<p>代码预热，比如使用脚本批量掉PHP访问URL，提前缓存</p>
+</li>
+</ul>
+<hr>
+<h1 id="a-name六-opcache-配置六-opcache-配置a"><a name='六、opcache 配置'>六、opcache 配置</a></h1>
+<h2 id="61-内存配置">6.1 内存配置</h2>
+<ul>
+<li>
+<p>opcache.preferred_memory_model=&quot;mmap&quot; 。opcache 首选的内存模块。如果留空，opcache 会选择适用的模块， 通常情况下，自动选择就可以满足需求。可选值包括：mmap，shm, posix 以及 win32。</p>
+</li>
+<li>
+<p>opcache.memory_consumption=64 opcache 的共享内存大小，以兆字节为单位，默认64M</p>
+</li>
+<li>
+<p>opcache.interned_strings_buffer=4 用来存储临时字符串的内存大小，以兆字节为单位，默认4M</p>
+</li>
+<li>
+<p>opcache.max_wasted_percentage=5 浪费内存的上限，以百分比计。如果达到此上限，那么 opcache 将产生重新启动续发事件。默认5</p>
+</li>
+</ul>
+<br>
+<h2 id="62-允许缓存的文件数量以及大小">6.2 允许缓存的文件数量以及大小</h2>
+<ul>
+<li>
+<p>opcache.max_accelerated_files=2000 OPcache 哈希表中可存储的脚本文件数量上限。</p>
+</li>
+<li>
+<p>opcache.max_file_size=0 以字节为单位的缓存的文件大小上限。设置为 0 表示缓存全部文件。默认值0</p>
+</li>
+</ul>
+<br>
+<h2 id="63-注释相关的缓存">6.3 注释相关的缓存</h2>
+<ul>
+<li>
+<p>opcache.load_commentsboolean 如果禁用，则即使文件中包含注释，也不会加载这些注释内容。本选项可以和 opcache.save_comments 一起使用，以实现按需加载注释内容。</p>
+</li>
+<li>
+<p>opcache.fast_shutdown boolean 如果启用，则会使用快速停止续发事件。所谓快速停止续发事件是指依赖 Zend 引擎的内存管理模块 一次释放全部请求变量的内存，而不是依次释放每一个已分配的内存块。</p>
+</li>
+</ul>
+<br>
+<h2 id="64-二级缓存的设置">6.4 二级缓存的设置</h2>
+<ul>
+<li>
+<p>opcache.file_cache 配置二级缓存目录并启用二级缓存。启用二级缓存可以在 SHM 内存满了、服务器重启或者重置 SHM 的时候提高性能。默认值为空字符串 &quot;&quot;，表示禁用基于文件的缓存。</p>
+</li>
+<li>
+<p>opcache.file_cache_onlyboolean 启用或禁用在共享内存中的 opcode 缓存。</p>
+</li>
+<li>
+<p>opcache.file_cache_consistency_checksboolean 当从文件缓存中加载脚本的时候，是否对文件的校验和进行验证。</p>
+</li>
+<li>
+<p>opcache.file_cache_fallbackboolean 在 Windows 平台上，当一个进程无法附加到共享内存的时候， 使用基于文件的缓存，也即：opcache.file_cache_only=1。需要显示的启用文件缓存。</p>
+</li>
+</ul>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/shi-yong-yield-sheng-cheng-qi-lai-shan-dai-ni-de-nei-cun/" class="post-title gt-a-link">
+                    使用 Yield 生成器来善待你的内存（已迁移）
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

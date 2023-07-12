@@ -1,0 +1,432 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>数据结构学习之路(二)：哈希表 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    数据结构学习之路(二)：哈希表
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2021-09-17 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tags">
+                            # redis
+                        </a>
+                    
+                        <a href="http://mofish.pily.life/tag/J4LLJ1xJr/" class="post-tags">
+                            # 数据结构
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>👏 哈希表也叫散列表，这种数据结构提供了Key-Value 的映射关系，只要给出一个 Key ，就可以高效查找到它所匹配的 Value ，时间复杂度接近于 O(1)。</p>
+<p>👻 其实哈希表是基于数组的一种存储方式，它主要由哈希函数和数组构成，当要存储一个数据的时候，首先用一个函数计算数据的地址，然后再将数据存进指定地址位置的数组里面。这个函数就是哈希函数，而这个数组就是哈希表。</p>
+<!-- more -->
+<h2 id="哈希表的优势">哈希表的优势</h2>
+<p>相比于简单的数组以及链表，它能够根据元素本身在第一时间，也就是时间复杂度为0（1）内找到该元素的位置。这使得它在查询和删除、插入上会比数组和链表要快很多。</p>
+<p>时间复杂度在平均情况下，搜索、插入、删除都是O(1)；但在最差情况下，即有哈希冲突时，会退化成O(n)</p>
+<hr>
+<br>
+<h2 id="常见哈希算法">常见哈希算法</h2>
+<ol>
+<li>
+<p>直接定址法<br>
+取关键字或关键字的某个线性函数值为散列地址。<br>
+即 f(key) = key 或 f(key) = a * key + b，其中 a 和 b 为常数。</p>
+</li>
+<li>
+<p>除留余数法<br>
+取关键字被某个不大于散列表长度 m 的数 p 求余，得到的作为散列地址<br>
+即 f(key) = key % p，p &lt; m，这是最为常见的一种哈希算法。</p>
+</li>
+<li>
+<p>数学分析法<br>
+当关键字的位数大于地址的位数，对关键字的各位分布进行分析，选出分布均匀的任意几位作为散列地址。<br>
+仅适用于所有关键字都已知的情况下，根据实际应用确定要选取的部分，尽量避免发生冲突。</p>
+</li>
+<li>
+<p>平方取中法<br>
+先计算出关键字值的平方，然后取平方值中间几位作为散列地址。<br>
+随机分布的关键字，得到的散列地址也是随机分布的。</p>
+</li>
+<li>
+<p>随机数法<br>
+选择一个随机函数，把关键字的随机函数值作为它的哈希值。<br>
+通常当关键字的长度不等时用这种方法。</p>
+</li>
+</ol>
+<hr>
+<br>
+<h2 id="什么是哈希冲突">什么是哈希冲突</h2>
+<p>简单的说<code>哈希冲突</code>就是指<code>哈希函数</code>算出来的地址被<code>别的元素占用了</code>，而好的哈希函数会尽量避免哈希冲突。</p>
+<p>解决哈希冲突的办法有<code>开放定址法</code>（发生冲突，继续寻找下一块未被占用的存储地址），<code>再散列函数法</code>，<code>链地址法</code>。</p>
+<hr>
+<br>
+<h2 id="哈希冲突的解决方法">哈希冲突的解决方法</h2>
+<ol>
+<li><strong>开放寻址法</strong><br>
+开发地址法的做法是，当冲突发生时，使用某种探测算法在散列表中寻找下一个空的散列地址，只要散列表足够大，空的散列地址总能找到。按照探测序列的方法，一般将开放地址法区分为线性探查法、二次探查法、双重散列法等。</li>
+</ol>
+<p>这里为了更好的展示三种方法的效果，我们用以一个模为8的哈希表为例，采用除留余数法，往表中插入三个关键字分别为26，35，36的记录，分别除8取模后，在表中的位置如下：</p>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1632663018650.png" alt="" loading="lazy"></figure>
+<p>这个时候插入42，那么正常应该在地址为2的位置里，但因为关键字30已经占据了位置，所以就需要解决这个地址冲突的情况，接下来就介绍三种探测方法的原理，并展示效果图。</p>
+<p>1).  <strong>线性探查法</strong><br>
+函数：fi = (f(key) + i) % m，0 &lt;= i &lt;= m-1</p>
+<p>解释：探查时从地址 d 开始，首先探查 T[d]，然后依次探查 T[d+1]，…，直到 T[m-1]，此后又循环到 T[0]，T[1]，…，直到探查到有空余的地址或者到 T[d-1]为止。</p>
+<p>效果：插入42时，探查到地址2的位置已经被占据，接着下一个地址3，地址4，直到空位置的地址5，所以39应放入地址为5的位置。</p>
+<p>缺点：需要不断处理冲突，无论是存入还是査找效率都会大大降低。</p>
+<figure data-type="image" tabindex="2"><img src="http://mofish.pily.life/post-images/1632663580925.jpg" alt="" loading="lazy"></figure>
+<p>2). <strong>二次探查法</strong><br>
+函数：fi = (f(key) + di) % m，0 &lt;= i &lt;= m-1</p>
+<p>解释：探查时从地址 d 开始，首先探查 T[d]，然后依次探查 T[d+di]，di 为增量序列1<sup>2</sup>，2<sup>2</sup>，3<sup>2</sup>，……，q<sup>2</sup>， 且q≤1/2 (m-1)，直到探查到 有空余地址或者到 T[d-1]为止。</p>
+<p>效果：所以插入42时，探查到地址2被占据，就会探查T[2+1<sup>2</sup>]也就是地址3的位置，被占据后接着探查到地址T[2+1<sup>2</sup>+2<sup>2</sup>]=T[2+1+4]=7，然后插入。</p>
+<p>缺点：无法探查到整个散列空间。</p>
+<figure data-type="image" tabindex="3"><img src="http://mofish.pily.life/post-images/1632664605173.jpg" alt="" loading="lazy"></figure>
+<p>3). <strong>双重散列法等</strong><br>
+函数：fi = (f(key) + i*g(key)) % m，1 &lt;= i &lt;= m-1，其中 f(key) 和 g(key) 是两个不同的哈希函数，m 为哈希表的长度。</p>
+<p>解释：双哈希函数探测法，先用第一个函数 f(key) 对关键码计算哈希地址，一旦产生地址冲突，再用第二个函数 g(key) 确定移动的步长因子，最后通过步长因子序列由探测函数寻找空的哈希地址。</p>
+<p>效果：比如，f(key)=a 时产生地址冲突，就计算g(key)=b，则探测的地址序列为 f1=(a+b) mod m，f2=(a+2b) mod m，……，fm-1=(a+(m-1)b) % m，假设 b 为 3，那么关键字42应放在 “5” 的位置。</p>
+<figure data-type="image" tabindex="4"><img src="http://mofish.pily.life/post-images/1632665133792.jpg" alt="" loading="lazy"></figure>
+<hr>
+<ol start="2">
+<li>链地址法<br>
+前面我们谈到了散列冲突处理的开放定址法，它的思路就是一旦发生了冲突，就去寻找下一个空的散列地址。那么，有冲突就非要换地方呢，我们直接就在原地处理行不行呢？</li>
+</ol>
+<p>可以的，于是我们就有了<code>链地址法</code>，即将哈希值相同的数值链接在同一个链表中。</p>
+<figure data-type="image" tabindex="5"><img src="http://mofish.pily.life/post-images/1632669274252.png" alt="" loading="lazy"></figure>
+<pre><code>链地址法的优势：
+a. 链地址法处理冲突简单，且无堆积现象，即非同义词决不会发生冲突，因此平均查找长度较短；
+
+b. 链地址法中各链表上的结点空间是动态申请
+
+c. 开放定址法为减少冲突，要求装填因子α较小，故当结点规模较大时会浪费很多空间。
+   而 链地址法中可取α≥1，且结点较大时， 链地址法中增加的指针域可忽略不计，因此节省空间；
+
+d. 在用链地址法构造的散列表中，删除结点的操作易于实现。只要简单地删去链表上相应的结点即可。
+   而对开放地址法构造的散列表，删除结点不能简单地将被删，只能将结点的空间置为空，否则将截 
+   断在它之后填人散列表的同义词结点的查找路径。
+
+链地址法的缺点：
+a. 指针需要额外的空间（也可忽略不计），故当结点规模较小时，开放定址法较为节省空间，
+   而若将节省的指针空间用来扩大散列表的规模，可使装填因子变小，
+   这又减少了开放定址法中的冲突，从而提高平均查找速度。
+</code></pre>
+<hr>
+<ol start="3">
+<li>再哈希法<br>
+再哈希法其实很简单，就是再使用哈希函数去散列一个输入的时候，输出是同一个位置就再次哈希，直至不发生冲突位置</li>
+</ol>
+<p>缺点：每次冲突都要重新哈希，计算时间增加。</p>
+<hr>
+<h2 id="a-nameredis的数据底层原理的相关知识点redis的数据底层原理的相关知识点a"><a name="Redis的数据底层原理的相关知识点">Redis的数据底层原理的相关知识点</a></h2>
+<p>Redis中，<strong>Hash</strong>、<strong>ZSet</strong>和<strong>Set</strong>三种数据结构在满足一定条件下使用的底层结构都是<strong>字典(dict)</strong>，而字典数据结构的精华就是 <code>hashtable</code>，跟Java的HashMap几乎是一样的，都是通过分桶的方式解决hash冲突，即链地址法。</p>
+<blockquote>
+<p>ZSet比较特殊，当满足一定条件下，它使用的是一个复合结构，一方面它需要一个hash结构来存储value和score的对应关系，另一方面需要提供按照score排序的功能，还需要能够指定score的范围来获取value列表的功能，所有就需要另外一个结构”跳跃列表“</p>
+</blockquote>
+<pre><code class="language-c">struct zset {
+    dict *dict; // all values   value =&gt; score
+    zskiplist *zsl;
+}
+</code></pre>
+<blockquote>
+<p>Redis里面<strong>Set</strong>的结构底层实现也是字典，只不过所有的value都是Null</p>
+</blockquote>
+<p>第一维是<strong>数组</strong>，第二维是<strong>链表</strong>，数组中存储的是<code>第二维链表</code>的<code>第一个元素指针</code>：<br>
+<img src="http://mofish.pily.life/post-images/1641223956627.png" alt="" loading="lazy"></p>
+<h3 id="渐进式rehash">渐进式rehash</h3>
+<p>字典结构内部包含两个 hashtable，通常情况下只有一个 hashtable 是有值的，但是在字典扩容时，需要分配新的 hashtable，然后进行渐进式搬迁。</p>
+<p>这时候两个 hashtable 存储的分别是新旧的 hashtable，待搬迁结束后，旧的会被删除，新的则取而代之。<br>
+<img src="http://mofish.pily.life/post-images/1641228478093.png" alt="" loading="lazy"></p>
+<blockquote>
+<p>为了避免 rehash 对服务器性能造成影响， 服务器不是一次性将 ht[0]里面的所有键值对全部 rehash 到 ht[1]， 而是分多次、渐进式地将 ht[0]里面的键值对慢慢地 rehash 到 ht[1]。</p>
+</blockquote>
+<h4 id="步骤">步骤：</h4>
+<ol>
+<li>
+<p>为ht[1]分配空间，让dict字典同时持有 ht[0] 和 ht[1] 两个哈希表。</p>
+</li>
+<li>
+<p>在字典中维持一个索引计数器变量rehashidx，并将它的值设置为0，表示rehash工作正式开始。</p>
+</li>
+<li>
+<p>在rehash进行期间，每次对字典执行添加、删除、查找或者更新操作时，程序除了执行指定的操作以外，还会顺带将ht[0]哈希表在 rehashidx索引(table[rehashidx]桶上的链表)上的所有键值对rehash到ht[1]上，当rehash工作完成之后，将rehashidx属性的值增一，表示下一次要迁移链表所在桶的位置。</p>
+</li>
+<li>
+<p>随着字典操作的不断执行，最终在某个时间点上，ht[0]的所有桶对应的键值对都会被rehash至ht[1]，这时程序将rehashidx属性的值设为-1，表示rehash操作已完成。</p>
+</li>
+</ol>
+<blockquote>
+<p>注意点：<br>
+（1）删除和查找：在进行渐进式rehash的过程中，字典会同时使用ht[0]和ht[1]两个哈希表，所以在渐进式rehash进行期间，字典的删除、查找、更新等操作会在两个哈希表上进行。比如说，要在字典里面查找一个键的话，程序会先在ht[0]里面进行查找，如果没找到的话，就会继续到ht[1]里面进行查找，诸如此类。<br>
+（2）新增数据：在渐进式 rehash 执行期间，新添加到字典的键值对一律会被保存到ht[1]里面，而ht[0]则不再进行任何添加操作。这一措施保证了ht[0]包含的键值对数量会只减不增，并随着rehash操作的执行而最终变成空表。</p>
+</blockquote>
+<h3 id="扩容和缩容条件">扩容和缩容条件</h3>
+<ul>
+<li>
+<p>扩容<br>
+正常情况下，当hash表中的元素个数等于第一维数组的长度时，就会开始扩容，扩容的新数组是原数组的大小的2倍。<br>
+不过如果Redis正在做bgsave，为了减少内存页的过多分离（Copy On Write），Redis尽量不去扩容（dict_can_resize）。但是如果元素个数达到第一维数组长度的5倍（dict_force_resize_ratio），就会执行强制扩容。</p>
+</li>
+<li>
+<p>缩容<br>
+当hash表因为元素被删除主键变得稀疏时，Redis会对其进行缩容来减少 hash 表第一维数组的空间占用。缩容的条件是元素个数低于数组长度的10%。缩容不会考虑Redis是否正在做bgsave。</p>
+</li>
+</ul>
+<blockquote>
+<p>扩容时考虑 BGSAVE 是因为，扩容需要申请额外的很多内存，且会重新链接链表（如果会冲突的话）, 这样会造成很多内存碎片，也会占用更多的内存，造成系统的压力。</p>
+<p>而缩容过程中，由于申请的内存比较小，同时会释放掉一些已经使用的内存，不会增大系统的压力。因此不用考虑是否在进行 BGSAVE 操作。</p>
+</blockquote>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/data_structure_01/" class="post-title gt-a-link">
+                    数据结构学习之路(一)：数据结构基础
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

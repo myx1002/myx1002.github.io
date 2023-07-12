@@ -1,0 +1,907 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>MySql学习之路(十三)：InnoDB数据存储结构 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    MySql学习之路(十三)：InnoDB数据存储结构
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-12-12 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/YVLEbqd3K/" class="post-tags">
+                            # mysql
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>🤡索引结构给我们提供了高效数据索引方式，不过索引信息都是存储在文件上的，确切的说是存储在<code>页结构</code>中。</p>
+<p>👉由于如今<code>InnoDB</code>是 MySql的<code>默认存储引擎</code>，所以就学习记录一下InnoDB存储引擎的数据存储结构！</p>
+<!-- more -->
+<h1 id="目录">目录</h1>
+<ul>
+<li><a href='#一、数据库的存储结构：页'>一、数据库的存储结构：页</a>
+<ul>
+<li><a href='#1.1 磁盘与内存交互的基本单位：页'>1.1 磁盘与内存交互的基本单位：页</a></li>
+<li><a href='#1.2 页结构概述'>1.2 页结构概述</a></li>
+<li><a href='#1.3 页的大小'>1.3 页的大小</a></li>
+<li><a href='#1.4 页的上层结构'>1.4 页的上层结构</a></li>
+</ul>
+</li>
+<li><a href='#二、InnoDB数据页结构'>二、InnoDB数据页结构</a>
+<ul>
+<li><a href='#2.1 页结构'>2.1 页结构</a>
+<ul>
+<li><a href='#第一部分：File Header和File Trailer'>第一部分：File Header和File Trailer</a></li>
+<li><a href='#第二部分：User Records、Free Space和Infimum + Supremum'>第二部分：User Records、Free Space和Infimum + Supremum</a></li>
+<li><a href='#第三部分：Page Directory和Page Header'>第三部分：Page Directory和Page Header</a></li>
+</ul>
+</li>
+<li><a href='#2.2 从数据库页的角度看B+树如何查询'>2.2 从数据库页的角度看B+树如何查询</a></li>
+</ul>
+</li>
+<li><a href='#三、InnoDB行格式'>三、InnoDB行格式</a>
+<ul>
+<li><a href='#3.1 COMPACT行格式'>3.1 COMPACT行格式</a>
+<ul>
+<li><a href='#记录的额外信息'>记录的额外信息</a></li>
+<li><a href='#记录的真实数据'>记录的真实数据</a></li>
+<li><a href='#行溢出数据'>行溢出数据</a></li>
+</ul>
+</li>
+<li><a href='#3.2 Dynamic、Compressed行格式'>3.2 Dynamic、Compressed行格式</a></li>
+</ul>
+</li>
+<li><a href='#四、区、段与碎片区'>四、区、段与碎片区</a>
+<ul>
+<li><a href='#4.1 为什么要有区？'>4.1 为什么要有区？</a></li>
+<li><a href='#4.2 为什么要有段？'>4.2 为什么要有段？</a></li>
+<li><a href='#4.3 为什么要有碎片区？'>4.3 为什么要有碎片区？</a></li>
+<li><a href='#4.4 区的分类'>4.4 区的分类</a></li>
+</ul>
+</li>
+<li><a href='#五、表空间'>五、表空间</a>
+<ul>
+<li><a href='#5.1 独立表空间'>5.1 独立表空间</a></li>
+<li><a href='#5.2 系统表空间'>5.2 系统表空间</a></li>
+</ul>
+</li>
+</ul>
+<hr>
+<h1 id="a-name一-数据库的存储结构页一-数据库的存储结构页a"><a name='一、数据库的存储结构：页'>一、数据库的存储结构：页</a></h1>
+<p>在InnoDB中，数据会存储在磁盘上，在真正处理数据时需要先将数据加载到内存，表中读取某些记录时，InnoDB存储引擎不需要一条一条的把记录从磁盘中读取出来，接下来细细讲解！💃💃</p>
+<br>
+<!-- more -->
+<h2 id="a-name11-磁盘与内存交互的基本单位页11-磁盘与内存交互的基本单位页a"><a name='1.1 磁盘与内存交互的基本单位：页'>1.1 磁盘与内存交互的基本单位：页</a>👈</h2>
+<p>InnnoDB将数据划分为若干个页，以<code>页</code>作为磁盘和内存之间数据交互的<code>基本单位</code>，大小默认为<code>16K</code>！</p>
+<p>在数据库中，无论是读取一行还是多行，都是将<code>这行数据所在的页</code>进行加载。也就是说，数据库管理存储空间的基本单位是<code>页(Page)</code>，数据库 I/O 操作的最小单位是页。</p>
+<p>记录是按照行来存储的，一个页可以存储多行数据，而数据库的读取方式也是以页为单位，减少 I/O 次数。</p>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1671456819450.png" alt="" loading="lazy"></figure>
+<br>
+<!-- more -->
+<h2 id="a-name12-页结构概述12-页结构概述a"><a name='1.2 页结构概述'>1.2 页结构概述</a>👈</h2>
+<ul>
+<li>
+<p>页a、页b、页c...页n 这些页可以<code>不在物理结构上相连</code>，只要通过<code>双向链表</code>串联起来即可；</p>
+</li>
+<li>
+<p>每个数据页中的记录会按照主键升序组成一个<code>单向链表</code>；</p>
+</li>
+<li>
+<p>每个数据页都会为存储在它里面的记录生成一个<code>页目录</code>，再通过主键查找某条记录时，可以在页目录中使用二分法快速定位到对应的槽位，然后再遍历该槽位对应分组中的记录即可快速找到指定的记录。</p>
+</li>
+</ul>
+<br>
+<!-- more -->
+<h2 id="a-name13-页的大小13-页的大小a"><a name='1.3 页的大小'>1.3 页的大小</a></h2>
+<pre><code class="language-sql">## InnoDB存储引擎的默认页大小时 16KB
+show variables like '%innodb_page_size%'
+</code></pre>
+<br>
+<!-- more -->
+<h2 id="a-name14-页的上层结构14-页的上层结构a"><a name='1.4 页的上层结构'>1.4 页的上层结构</a></h2>
+<p>在数据库中，除了页（Page）之外，还存在着区（Extent）、段（Segment）和表空间（TableSpace）的概念，它们的关系如下：</p>
+<figure data-type="image" tabindex="2"><img src="http://mofish.pily.life/post-images/1671460346789.png" alt="" loading="lazy"></figure>
+<p><strong>区（Extent）</strong> 是比页大一级的存储结构，在 InnoDB 存储引擎中，一个区会分配<code>64个连续的页</code>，即一个区的大小是 64*16KB = <code>1MB</code>。</p>
+<p><strong>段（Segment）</strong> 由一个或多个区组成，段中<code>不要求区与区之间是相邻</code>的。段是数据库中的分配单位，不同类型的数据库对象以不同的段形式存在。比如创建一张表时会创建一个表段，创建一个索引时会创建一个索引段。</p>
+<p><strong>表空间（TableSpace）</strong> 是一个逻辑容器，表空间存储的对象是一个或多个段，而且一个段只能属于一个表空间。数据库由一个或多个表空间组成，表空间从管理上可划分为<code>系统表空间</code>、<code>用户表空间</code>、<code>撤销表空间</code>、<code>临时表空间</code>等。</p>
+<hr>
+<h1 id="a-name二-innodb数据页结构二-innodb数据页结构a"><a name='二、InnoDB数据页结构'>二、InnoDB数据页结构</a></h1>
+<p>页如果按照类型划分的话，常见的有<code>数据页、系统表、Undo页和事务数据页</code>等。数据页是我们最常使用的页。</p>
+<h2 id="a-name21-页结构21-页结构a"><a name='2.1 页结构'>2.1 页结构</a></h2>
+<p>数据页的<code>16KB</code>大小存储空间被划分为<code>7</code>个部分，分别是：<br>
+<img src="http://mofish.pily.life/post-images/1671601684093.png" alt="" loading="lazy"></p>
+<h3 id="a-name第一部分file-header和file-trailer第一部分file-header和file-trailera"><a name='第一部分：File Header和File Trailer'>第一部分：File Header和File Trailer</a></h3>
+<p><strong>File Header</strong></p>
+<blockquote>
+<p>大小：38字节</p>
+<p>作用：描述各种页的通用信息，如页的编号、上一页和下一页是谁等</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>占用空间</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FIL_PAGE_SPACE_OR_CHKSUM</td>
+<td>4字节</td>
+<td>页的校验和，检查页的数据是否完整</td>
+</tr>
+<tr>
+<td>FIL_PAGE_OFFSET</td>
+<td>4字节</td>
+<td>每一页都有一个独立的页号，InnoDB通过页号可以<code>唯一定位</code>一个页</td>
+</tr>
+<tr>
+<td>FIL_PAGE_PREV</td>
+<td>4字节</td>
+<td>上一页的页号，确保页之间逻辑上是连续的</td>
+</tr>
+<tr>
+<td>FIL_PAGE_NEXT</td>
+<td>4字节</td>
+<td>下一页的页号，确保页之间逻辑上是连续的</td>
+</tr>
+<tr>
+<td>FIL_PAGE_LSN</td>
+<td>8字节</td>
+<td>页面被最后修改时对应的日志序列位置</td>
+</tr>
+<tr>
+<td>FIL_PAGE_TYPE</td>
+<td>2字节</td>
+<td>标记当前页的类型，如Undo日志页、系统页、索引页等等</td>
+</tr>
+<tr>
+<td>FIL_PAGE_FILE_FLUSH_LSN</td>
+<td>8字节</td>
+<td>仅在系统表空间的一个页中定义，代表文件至少被刷新到了对应的LSN值</td>
+</tr>
+<tr>
+<td>FIL_PAGE_ARCH_LOG_NO_OR_SPACE_ID</td>
+<td>4字节</td>
+<td>页属于哪个表空间</td>
+</tr>
+</tbody>
+</table>
+<br>
+<p><strong>File Trailer</strong></p>
+<blockquote>
+<p>大小：8字节</p>
+<p>作用：校验页的完整性</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>占用空间</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FIL_PAGE_SPACE_OR_CHKSUM</td>
+<td>4字节</td>
+<td>这部分与File Header中的校验和相对应</td>
+</tr>
+<tr>
+<td>FIL_PAGE_FILE_FLUSH_LSN</td>
+<td>4字节</td>
+<td>也是为了校验页的完整性，如果首位的LSN值校验不成功，说明同步过程出现了问题，需要重新同步页数据</td>
+</tr>
+</tbody>
+</table>
+<br>
+<h3 id="a-name第二部分user-records-free-space和infimum-supremum第二部分user-records-free-space和infimum-supremuma"><a name='第二部分：User Records、Free Space和Infimum + Supremum'>第二部分：User Records、Free Space和Infimum + Supremum</a></h3>
+<p><strong>User Records</strong></p>
+<blockquote>
+<p>大小： 不确定</p>
+<p>作用： User Records中的这些记录按照指定的<code>行格式</code>一条一条摆在User Records部分，相互之间形成 <code>单链表</code>。</p>
+</blockquote>
+<br>
+<p><strong>Free Space</strong></p>
+<blockquote>
+<p>大小：不确定</p>
+<p>作用：一开始生成页的时候是没有User Records这个部分的，每当我们插入一条记录，都会从Free Space部分，也就是尚未使用的存储空间申请一个记录大小的空间划分到User Records部分。当Free Space的空间全部用完后，就需要去申请新的页。<br>
+<img src="http://mofish.pily.life/post-images/1671603539439.jpg" alt="" loading="lazy"></p>
+</blockquote>
+<br>
+<p><strong>Infimum + Supremum</strong></p>
+<blockquote>
+<p>大小：26字节</p>
+<p>作用：InnoDB规定的最小记录与最大记录这两条记录的构造十分简单，都是由5字节大小的记录头信息和8字节大小的一个固定的部分组成的（图一）。<br>
+而且这两条记录不是我们自己定义的记录 ，所以它们并不存放在页的User Records部分，他们被<code>单独</code>放在一个称为Infimum + Supremum的部分（图二）。<br>
+<img src="http://mofish.pily.life/post-images/1671605898419.jpg" alt="" loading="lazy"><br>
+<img src="http://mofish.pily.life/post-images/1671605903302.jpg" alt="" loading="lazy"></p>
+</blockquote>
+<br>
+<h3 id="a-name第三部分page-directory和page-header第三部分page-directory和page-headera"><a name='第三部分：Page Directory和Page Header'>第三部分：Page Directory和Page Header</a></h3>
+<p><strong>Page Directory（重点)</strong></p>
+<blockquote>
+<p>大小：不确定</p>
+<p>作用：在页中，记录是以<code>单向链表</code>的形式进行存储的，虽然单向链表插入、删除非常方便，但是检索的效率不高，最差的情况需要遍历整个链表。因此在页页结构中专门设计了页目录，专门给记录做一个目录，通过<code>二分查找法</code>的方法是进行检索，提升效率。</p>
+</blockquote>
+<blockquote>
+<p>问：页目录分组数是如何确定的？<br>
+答：<br>
+InnoDB规定对于最小记录所在的分组只能有1条记录，最大记录所在的分组拥有的记录条数只能在1~8条之间，剩下的分组中记录的条数范围只能在是 4~8 条之间。</p>
+<p>其步骤如下：</p>
+<ul>
+<li>
+<p>初始情况下一个数据页里只有最小记录和最大记录两条记录，它们分属于两个分组。</p>
+</li>
+<li>
+<p>之后每插入一条记录，都会从页目录中找到主键值比本记录的主键值大并且差值最小的槽，然后把该槽对应的记录的n_owned值加1，表示本组内又添加了一条记录，直到该组中的记录数等于8个。</p>
+</li>
+<li>
+<p>在一个组中的记录数等于8个后再插入一条记录时，会将组中的记录拆分成两个组，一个组中4条记录，另一个5条记录。这个过程会在页目录中新增一个槽来记录这个新增分组中最大的那条记录的偏移量。</p>
+</li>
+</ul>
+</blockquote>
+<br>
+<blockquote>
+<p>问：页目录结构下如何快速查找记录？<br>
+答：在一个数据页中查找指定主键值的记录的过程分为两步</p>
+<ul>
+<li>
+<p>通过二分法确定该记录所在的槽，并找到该槽所在分组中主键值最小的那条记录。</p>
+</li>
+<li>
+<p>通过记录的next_record属性遍历该槽所在的组中的各个记录。</p>
+</li>
+</ul>
+</blockquote>
+<br>
+<p><strong>Page Header</strong></p>
+<blockquote>
+<p>大小：56字节</p>
+<p>作用：为了能得到一个数据页中存储的记录的状态信息，比如本页中已经存储了多少条记录，第一条记录的地址是什么，页目录中存储了多少个槽等等，特意在页中定义了一个叫Page Header的部分，这个部分占用固定的56个字节，专门存储各种状态信息。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>占用空间</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PAGE_N_DIR_SLOTS</td>
+<td>2字节</td>
+<td>在页目录中的槽数量</td>
+</tr>
+<tr>
+<td>PAGE_HEAP_TOP</td>
+<td>2字节</td>
+<td>还未使用的地址最小空间，也就是说该地址之后就是Free Space</td>
+</tr>
+<tr>
+<td>PAGE_N_HEAP</td>
+<td>2字节</td>
+<td>本页中的记录的数量（包括最大、最小和标记为已删除的记录）</td>
+</tr>
+<tr>
+<td>PAGE_FREE</td>
+<td>2字节</td>
+<td>第一个已经标记为删除的记录地址（各个已删除的记录通过<code>next_record</code>也会组成一个单链表，这个单链表中的记录可以被重新利用）</td>
+</tr>
+<tr>
+<td>PAGE_GARBAGE</td>
+<td>2字节</td>
+<td>已删除记录占用的字节数</td>
+</tr>
+<tr>
+<td>PAGE_LAST_INSERT</td>
+<td>2字节</td>
+<td>最后插入记录的位置</td>
+</tr>
+<tr>
+<td>PAGE_DIRECTION</td>
+<td>2字节</td>
+<td>记录插入方向</td>
+</tr>
+<tr>
+<td>PAGE_N_DIRECTION</td>
+<td>2字节</td>
+<td>一个方向连续插入的记录数量</td>
+</tr>
+<tr>
+<td>PAGE_N_RECS</td>
+<td>2字节</td>
+<td>本页中的记录的数量（不包括最大、最小和标记为已删除的记录）</td>
+</tr>
+<tr>
+<td>PAGE_MAX_TRX_ID</td>
+<td>8字节</td>
+<td>修改当前页的最大事务ID，该值在二级索引中定义</td>
+</tr>
+<tr>
+<td>PAGE_LEVEL</td>
+<td>2字节</td>
+<td>当前页在B+树中所处的层数</td>
+</tr>
+<tr>
+<td>PAGE_INDEX_ID</td>
+<td>8字节</td>
+<td>索引ID，表示当前页属于哪个索引</td>
+</tr>
+<tr>
+<td>PAGE_BTR_SEG_LEAF</td>
+<td>10字节</td>
+<td>B+树叶子段的头部信息，仅在B+树的Root页定义</td>
+</tr>
+<tr>
+<td>PAGE_BTR_SEG_TOP</td>
+<td>10字节</td>
+<td>B+树非叶子段的头部信息，仅在B+树的Root页定义</td>
+</tr>
+</tbody>
+</table>
+<br>
+<!-- more -->
+<h2 id="a-name22-从数据库页的角度看b树如何查询22-从数据库页的角度看b树如何查询a"><a name='2.2 从数据库页的角度看B+树如何查询'>2.2 从数据库页的角度看B+树如何查询</a></h2>
+<p>一颗B+树按照节点类型可以分为两部分：</p>
+<ol>
+<li>叶子结点，B+树最底层的节点，存储具体行记录；</li>
+<li>非叶子节点，存储索引键和页面指针，并不存储行记录本身。<br>
+<img src="http://mofish.pily.life/post-images/1671527493775.png" alt="" loading="lazy"></li>
+</ol>
+<p>当我们从页结构来理解 B+ 树的结构的时候，可以帮我们理解一些通过索引进行检索的原理：</p>
+<blockquote>
+<p>问：B+树是如何进行记录检索的？</p>
+<p>答：从B+树的根开始，逐层检索，知道找到叶子节点，也就是找到对应的数据页为止，将数据页加载到内存中，页目录中的槽（slot）采用<code>二分查找</code>先找到一个粗略的记录分组，然后再在分组中通过<code>链表遍历</code>的方式查找记录。</p>
+</blockquote>
+<blockquote>
+<p>问：普通索引和唯一索引在查询效率上有什么不同？</p>
+<p>答：唯一索引就是在普通索引上增加了约束性，也就是关键字唯一，找到了关键字就停止检索。而普通索引会存在关键字相同的行记录，由于根据页结构的原理，磁盘把数据加载到内存是一页一页的加载的，而不是找到一行加载一行，而一页中可能包含上千条记录。因此在普通索引的字段上查找也就是在内存中多几次“判断下一条记录”的操作，对CPU来说这些操作的消耗可以忽略不计，因为这两种索引在查询效率上基本什么差别。</p>
+</blockquote>
+<hr>
+<h1 id="a-name三-innodb行格式三-innodb行格式a"><a name='三、InnoDB行格式'>三、InnoDB行格式</a></h1>
+<p>一行记录可以以不同的格式存在InnoDB中，行格式分别是：</p>
+<ul>
+<li>Redundant（5.0版本之前的默认行格式）</li>
+<li>Compact（5.1版本的默认行格式）</li>
+<li>Dynamic（5.7版本之后的默认行格式）</li>
+<li>Compressed（与Dynamic类似，不过会对存储在其中的行数据会以zlib的算法进行压缩）</li>
+</ul>
+<p>我们可以在创建或修改表的语句中指定行格式：</p>
+<pre><code class="language-sql">CREATE TABLE  (列的信息) ROW_FORMAT= 行格式名称
+ALTER TABLE   ROW_FORMAT= 行格式名称
+</code></pre>
+<br>
+<!-- more -->
+<h2 id="a-name31-compact行格式31-compact行格式a"><a name='3.1 COMPACT行格式'>3.1 COMPACT行格式</a></h2>
+<p>在MySQL 5.1版本中，默认设置为Compact行格式。一条完整的记录其实可以被分为两大部分：</p>
+<ul>
+<li><a name='记录的额外信息'>记录的额外信息</a>
+<ul>
+<li><a href='#变长字段长度列表'>变长字段长度列表</a></li>
+<li><a href='#NULL值列表'>NULL值列表</a></li>
+<li><a href='#记录头信息'>记录头信息</a></li>
+</ul>
+</li>
+<li><a href='#记录的真实数据'>记录的真实数据</a></li>
+</ul>
+<figure data-type="image" tabindex="3"><img src="http://mofish.pily.life/post-images/1671610436815.jpg" alt="" loading="lazy"></figure>
+<h3 id="a-name变长字段长度列表变长字段长度列表a"><a name='变长字段长度列表'>变长字段长度列表</a></h3>
+<p>MySQL支持一些变长的数据类型，比如VARCHAR(M)、VARBINARY(M)、TEXT类型，BLOB类型，这些数据类型修饰列称为<code>变长字段</code> ，变长字段中存储多少字节的数据不是固定的，所以我们在存储真实数据的时候需要顺便把这些数据占用的字节数也存起来。 <code>在Compact行格式中，把所有变长字段的真实数据占用的字节长度都存放在记录的开头部位，从而形成一个变长字段长度列表</code>。</p>
+<blockquote>
+<p>注意：这里面存储的变长长度和字段 顺序是反过来 的。比如两个varchar字段在表结构的顺序是a(10)，b(15)。那么在变长字段长度列表中存储的长度顺序就是15，10，是反过来的。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>列名</th>
+<th>存储内容</th>
+<th>内容长度（十进制）</th>
+<th>内容长度（十六进制）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>col1</td>
+<td>'zhangsan'</td>
+<td>8</td>
+<td>0x08</td>
+</tr>
+<tr>
+<td>col2</td>
+<td>'lisi'</td>
+<td>4</td>
+<td>0x04</td>
+</tr>
+<tr>
+<td>col3</td>
+<td>'songhk'</td>
+<td>6</td>
+<td>0x06</td>
+</tr>
+</tbody>
+</table>
+<p>把这个字节串组成的变长字段长度列表填入上边的示意图中的效果就是：<br>
+<img src="http://mofish.pily.life/post-images/1671853068510.jpg" alt="" loading="lazy"></p>
+<br>
+<h3 id="a-namenull值列表null值列表a"><a name='NULL值列表'>NULL值列表</a></h3>
+<p>Compact行格式会把可以为NULL的列统一管理起来，存在一个标记为NULL值列表中。<code>如果表中没有允许存储 NULL 的列，则 NULL值列表也不存在了</code>。</p>
+<ul>
+<li>二进制位的值为1时，代表该列的值为NULL</li>
+<li>二进制位的值位0时，代表该列的值不为NULL</li>
+</ul>
+<blockquote>
+<p>问：为什么要定义NULL值列表？<br>
+答：之所以要存储NULL是因为数据都是需要对齐的，如果<code>没有标注出来NULL值</code>的位置，那么就有可能在查询数据的时候出现混乱。而且如果是用<code>一个特定的符号</code>放到相应的数据为表示NULL的话，虽然达到效果，但是每个NULL值位都需要存在这个特定的符号，有点<code>浪费空间</code>，所以就直接在行数据的头部开辟出一块空间专门用来记录该行数据中哪些是非空数据。</p>
+</blockquote>
+<p>例如：字段col1、col2、col3、col4四个字段，其中col2是<code>IS NOT NULL</code>，其中col1=1、col3=null、col4=null。</p>
+<blockquote>
+<p>因为col2是非NULL，所以NULL值列表的数据就会跳过col2</p>
+</blockquote>
+<figure data-type="image" tabindex="4"><img src="http://mofish.pily.life/post-images/1671854663937.jpg" alt="" loading="lazy"></figure>
+<br>
+<h3 id="a-name记录头信息记录头信息a"><a name='记录头信息'>记录头信息</a></h3>
+<figure data-type="image" tabindex="5"><img src="http://mofish.pily.life/post-images/1671861061938.jpg" alt="" loading="lazy"></figure>
+<p>这些记录头信息中各个属性如下：</p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>大小（bit）</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>预留位1</td>
+<td>1</td>
+<td>没有使用</td>
+</tr>
+<tr>
+<td>预留位2</td>
+<td>1</td>
+<td>没有使用</td>
+</tr>
+<tr>
+<td>delete_mask</td>
+<td>1</td>
+<td>标记该记录是否被删除，0未删除，1已删除</td>
+</tr>
+<tr>
+<td>min_rec_mask</td>
+<td>1</td>
+<td>B+树的每层非叶子节点中的最小记录都会添加该标记</td>
+</tr>
+<tr>
+<td>n_owned</td>
+<td>4</td>
+<td>页目录Page Directory中每个组中最后一条记录的头信息中会存储该组一共有多少条记录，作为 n_owned 字段。</td>
+</tr>
+<tr>
+<td>heap_no</td>
+<td>13</td>
+<td>表示当前记录在记录堆中的位置</td>
+</tr>
+<tr>
+<td>record_type</td>
+<td>13</td>
+<td>表示当前记录的类型，0-普通记录，1-B+树非叶节点记录，2-最小记录，3-最大记录</td>
+</tr>
+<tr>
+<td>next_record</td>
+<td>16</td>
+<td>表示下一条记录的相对位置</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-sql">-- 插入数据： 
+IINSERT INTO page_demo
+VALUES (1, 100, 'song'),
+       (2, 200, 'tong'),
+       (3, 300, 'zhan'),
+       (4, 400, 'lisi');
+</code></pre>
+<figure data-type="image" tabindex="6"><img src="http://mofish.pily.life/post-images/1671861560809.jpg" alt="" loading="lazy"></figure>
+<blockquote>
+<p>问：delete_mask中，被删除的记录为什么还在页中存储呢？<br>
+答：你以为它删除了，可它还在真实的磁盘上。这些被删除的记录之所以不立即从磁盘上移除，是因为移除它们之后其他的记录在磁盘上需要<code>重新排列</code>，导致<code>性能消耗</code> 。所以只是打一个删除标记而已，所有被删除掉的记录都会组成一个所谓的<code>垃圾链表</code> ，在这个链表中的记录占用的空间称之为<code>可重用空间</code> ，之后如果有新记录插入到表中的话，可能把这些被删除的记录占用的存储空间覆盖掉。</p>
+</blockquote>
+<blockquote>
+<p>问：怎么不见heap_no值为0和1的记录呢？<br>
+答：MySQL会自动给每个页里加了两个记录，由于这两个记录并不是我们自己插入的，所以有时候也称为<code>伪记录</code>或者<code>虚拟记录</code> 。这两个伪记录一个代表<code>最小记录</code>，一个代表<code>最大记录</code>。最小记录和最大记录的heap_no值分别是0和1，也就是说它们的位置最靠前。</p>
+</blockquote>
+<br>
+<h3 id="a-name记录的真实数据记录的真实数据a"><a name='记录的真实数据'>记录的真实数据</a></h3>
+<p>记录的真实数据除了我们自己定义的列的数据以外，还会有三个隐藏列：</p>
+<table>
+<thead>
+<tr>
+<th>列名</th>
+<th>是否必须</th>
+<th>占用空间（字节）</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DB_ROW_ID</td>
+<td>否</td>
+<td>6</td>
+<td>行ID，唯一标识一条记录</td>
+</tr>
+<tr>
+<td>DB_TRX_ID</td>
+<td>是</td>
+<td>6</td>
+<td>事务ID</td>
+</tr>
+<tr>
+<td>DB_ROLL_PTR</td>
+<td>是</td>
+<td>7</td>
+<td>回滚指针</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>一个表没有手动定义主键，则会选取一个Unique键作为主键，如果连Unique键都没有定义的话，则会为表默认添加一个名为row_id的隐藏列作为主键。所以row_id是在没有自定义主键以及Unique键的情况下才会存在的。</p>
+</blockquote>
+<br>
+<h3 id="a-name行溢出数据行溢出数据a"><a name='行溢出数据'>行溢出数据</a></h3>
+<p>一个页的大小一般是16KB，也就是16384字节，而一个VARCHAR(M)类型的列就最多可以存储65533个字节，这样就可能出现一个页存放不了一条记录，这种现象成为<code>行溢出</code>。</p>
+<p>在<code>Compact</code>和<code>Reduntant</code>行格式中，对于占用存储空间非常大的列，在记录的真实数据处只会储存该列的一部分数据，把剩余的数据分散存储在几个其它的页中进行<code>分页存储</code>，然后记录的真实数据处用<code>20个字节</code>存储指向这些页的地址，从而可以找到剩余数据所在的页，这称为<code>页的扩展</code>。</p>
+<figure data-type="image" tabindex="7"><img src="http://mofish.pily.life/post-images/1671863432085.jpg" alt="" loading="lazy"></figure>
+<br>
+<h2 id="a-name32-dynamic-compressed行格式32-dynamic-compressed行格式a"><a name='3.2 Dynamic、Compressed行格式'>3.2 Dynamic、Compressed行格式</a></h2>
+<p>在MySQL5.7和8.0中，<code>默认行格式就是Dynamic</code>， Dynamic、Compressed行格式 和Compact行格式挺像，只不过在处理行溢出数据时有分歧：</p>
+<p>Compressed和Dynamic两种记录格式对于存放在BLOB中的数据采用了<code>完全的行溢出</code>的方式。如图，在<code>数据页中只存放20个字节的指针（溢出页的地址）</code>，<code>实际的数据都存放在Off Page（溢出页）中</code>。</p>
+<figure data-type="image" tabindex="8"><img src="http://mofish.pily.life/post-images/1671863984103.jpg" alt="" loading="lazy"></figure>
+<blockquote>
+<p>Compressed行记录格式的另一个功能就是，存储在其中的行数据会以zlib的算法进行压缩，因此对于BLOB、TEXT、VARCHAR这类大长度类型的数据能够进行非常有效的存储。</p>
+</blockquote>
+<hr>
+<h1 id="a-name四-区-段与碎片区四-区-段与碎片区a"><a name='四、区、段与碎片区'>四、区、段与碎片区</a></h1>
+<p>👇👇👇👇👇👇👇</p>
+<br>
+<h2 id="a-name41-为什么要有区41-为什么要有区a"><a name='4.1 为什么要有区？'>4.1 为什么要有区？</a></h2>
+<p><code>B+树</code>的每一层中的页都会形成一个<code>双向链表</code>，如果是以页为单位来分配存储空间的话，双向链表相邻的两个页之间的<code>物理位置可能离得非常远</code>，可能会导致所谓的<code>随机I/O</code>。</p>
+<p>而磁盘的速度和内存的速度差了好几个数量级，<code>随机I/O是非常慢</code>的，所以我们应该尽量让链表中相邻的页的<code>物理位置页相邻</code>，这样进行范围查询的时候就可以使用所谓的<code>顺序I/O</code>。</p>
+<p>引入区的概念，<code>一个区就是再物理的位置上连续的64页</code>。因为InnoDB中的页大小默认是16KB，所以一个区的大小是16*64=<code>1MB</code>。</p>
+<p>在表中<code>数据量大</code>的时候，为某个索引分配空间的时候就不再按照页为单位分配了，而是按照<code>区为单位分配</code>，甚至可以一次性分配多个连续的区。虽然可能造成<code>一点点空间的浪费</code>（数据不足以填充满整个区），但是从性能的角度来看，可以<code>消除很多的随机I/O</code>，功大于过！</p>
+<br>
+<h2 id="a-name42-为什么要有段42-为什么要有段a"><a name='4.2 为什么要有段？'>4.2 为什么要有段？</a></h2>
+<p>对于范围查询，其实是对B+树叶子节点中的记录进行顺序扫描，而如果不区分叶子节点和非叶子节点，通通把节点代表的页放到区中的话，进行范围扫描的效果就大打折扣了。</p>
+<p>所以InnoDB对B+树的<code>叶子节点和非叶子节点进行了区分</code>，也就是说叶子节点有自己独有的区，非叶子节点亦是。而存放叶子几点的区的集合就算是一个段，存放非叶子节点的区的集合也是一个段，也就是说<code>一个索引会生成两个段</code>，一个叶子节点段，一个非叶子节点段。</p>
+<p>除此之外，InnoDB中还有常见的<code>数据段</code>、<code>索引段</code>、<code>回滚段</code>。<code>数据段即为B+树的叶子节点，索引段即为B+树的非叶子节点</code>。</p>
+<p>在InnoDB存储引擎中，段其实不对应表空间中某一个连续的物理区域，而是一个逻辑上的概念，由<code>若干个零散的页面以及一些完整的区组成</code>。</p>
+<br>
+<h2 id="a-name43-为什么要有碎片区43-为什么要有碎片区a"><a name='4.3 为什么要有碎片区？'>4.3 为什么要有碎片区？</a></h2>
+<p>InnoDB存储引擎中，一个表只有一个聚簇索引，因此会生成<code>两个段</code>，而段是以区为单位申请的存储中间，一个区默认占用1MB，所以默认情况下一个只存了几条记录的小表页占据了<code>2M的存储空间</code>了。<code>那么以后每次添加一个索引都要多申请2M的存储空间么？</code>这必定是<code>空间的浪费</code>！</p>
+<p>为了考虑以完整的区为单位分配给某个段对于数据来较小的表太浪费存储空间的这种情况，InnoDB提出了一个碎片区的概念：<code>在一个碎片区中，并不是所有的页都是为了存储同一个段的数据而存在的，而是碎片区中的页可以用于不同的目的，比如有些页数据段A，有些页属于段B，有些也甚至哪个段都不属于</code>。</p>
+<blockquote>
+<p>碎片区直属于表空间，并不属于任何一个段。</p>
+</blockquote>
+<p>所以段的分配存储空间的策略是这样的：</p>
+<ul>
+<li>
+<p>在刚开始向表中插入数据时，段时从某个碎片区以页为单位来分配存储空间的</p>
+</li>
+<li>
+<p>当某个段已经占用了<code>32个碎片区</code>页面之后，就会申请以完整的区为单位来分配存储空间</p>
+</li>
+</ul>
+<blockquote>
+<p>所以现在段不能仅定义为某些区的集合，更准确来说应该时某些零散的页面以及一个完整的区的集合。</p>
+</blockquote>
+<br>
+<h2 id="a-name44-区的分类44-区的分类a"><a name='4.4 区的分类'>4.4 区的分类</a></h2>
+<ul>
+<li>
+<p>空闲的区（FREE）：现在还没有用到这个区中的任何页面</p>
+</li>
+<li>
+<p>有剩余空间的碎片区（FREE_FRAG）：表示碎片区中还有可用的页面</p>
+</li>
+<li>
+<p>没有剩余空间的碎片区（FULL_FRAG）：表示碎片区中的所有页面都被使用，没有空闲页面</p>
+</li>
+<li>
+<p>附属于某个段的区（FSEG）：每一个索引都可以分为叶子节点段和非叶子节点段</p>
+</li>
+</ul>
+<blockquote>
+<p>处于FREE、FREE_FRAG 以及 FULL_FRAG 这三种状态的区都是独立的，直属于表空间。而处于 FSEG 状态的区是附属于某个段的。</p>
+</blockquote>
+<hr>
+<h1 id="a-name五-表空间五-表空间a"><a name='五、表空间'>五、表空间</a></h1>
+<p>表空间可以看做事InnoDB存储引擎逻辑结构的<code>最高层</code>，所有的数据都存放在表空间中。</p>
+<p>表空间是一个逻辑容器，其存储的对象是段，在<code>一个表空间中可以有一个或多个段，但是一个段只能属于一个表空间</code>。</p>
+<p>表空间从管理上可以划分为<code>系统表空间</code>、<code>独立表空间</code>、<code>撤销表空间</code>、<code>临时表空间</code>等。</p>
+<br>
+<h2 id="a-name51-独立表空间51-独立表空间a"><a name='5.1 独立表空间'>5.1 独立表空间</a></h2>
+<p>独立表空间，即每张表有一个独立的表空间，也就是数据和索引信息都会保存在自己的表空间中。独立的表空间 (即：单表) 可以在不同的数据库之间进行 <code>迁移</code>。</p>
+<p>空间可以回收 (DROP TABLE 操作可自动回收表空间；其他情况，表空间不能自己回收) 。如果对于统计分析或是日志表，删除大量数据后可以通过：<code>alter table TableName engine=innodb; </code>回收不用的空间。对于使用独立表空间的表，不管怎么删除，表空间的碎片不会太严重的影响性能，而且还有机会处理。</p>
+<br>
+<h2 id="a-name52-系统表空间52-系统表空间a"><a name='5.2 系统表空间'>5.2 系统表空间</a></h2>
+<p>系统表空间的结构和独立表空间基本类似，只不过由于整个MySQL进程只有一个系统表空间，在系统表空间中会额外记录一些有关整个系统信息的页面，这部分是独立表空间中没有的。</p>
+<p>每当我们向一个表中插入一条记录时，MySQL都要校验相关信息是否符合插入条件：<br>
+先要校验一下插入语句对应的表存不存在，插入的列和表中的列是否符合，如果语法没有问题的话，还需要知道该表的聚簇索引和所有二级索引对应的根页面是哪个表空间的哪个页面，然后把记录插入对应索引的B+树中。所以说，MySQL除了保存着我们插入的用户数据之外，还需要保存许多额外的信息，比方说：</p>
+<blockquote>
+<ul>
+<li>某个表属于哪个表空间，表里边有多少列</li>
+<li>表对应的每一个列的类型是什么</li>
+<li>该表有多少索引，每个索引对应哪儿个字段，该索引对应的根页面在哪个表空间的哪个页面</li>
+<li>该表有哪些外键，外键对应哪个表的哪些列</li>
+<li>某个表空间对应文件系统上文件路径是什么</li>
+<li>...</li>
+</ul>
+</blockquote>
+<p>实际上是为了更好的管理我们这些用户数据而不得以引入的一些额外数据，这些数据页称为 元数据。InnoDB 存储引擎特意定义了一些列的 内部系统表 (internal system table) 来记录这些元数据：</p>
+<p>| 表名 | 描述 |<br>
+| <code>SYS_TABLES</code> | 整个InnoDB存储引擎中所有的表的信息 |<br>
+| <code>SYS_COLUMNS</code> | 整个InnoDB存储引擎中所有的列的信息 |<br>
+| <code>SYS_INDEXS</code> | 整个InnoDB存储引擎中所有的索引的信息 |<br>
+| <code>SYS_FIELDS</code> | 整个InnoDB存储引擎中所有的索引对应的列的信息 |<br>
+| SYS_FOREIGN | 整个InnoDB存储引擎中所有的外键的信息 |<br>
+| SYS_FOREIGN_COLS | 整个InnoDB存储引擎中所有的外键对应的列的信息 |<br>
+| SYS_TABLESPACES | 整个InnoDB存储引擎中所有表空间信息 |<br>
+| SYS_DATAFILES | 整个InnoDB存储引擎中所有表空间对应文件系统的文件路径信息 |<br>
+| SYS_VIRTUAL | 整个InnoDB存储引擎中所有的虚拟生成列的信息 |</p>
+<p>这些系统表也称为 <code>数据字典</code>，它们都是以 B+ 树的形式保存在系统表空间的某个页面中。其中 <code>SYS_TABLES、SYS_COLUMNS、SYS_INDEXES、SYS_FIELDS</code> 这四个表尤其重要，称之为基本系统表 (basic system tables) ：<br>
+<img src="http://mofish.pily.life/post-images/1672110484840.png" alt="" loading="lazy"></p>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/jiang-jie-laravel-kuang-jia-zhong-de-ioc-he-di/" class="post-title gt-a-link">
+                    讲解laravel框架中的控制反转（IoC）和依赖注入（DI）
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

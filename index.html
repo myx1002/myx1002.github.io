@@ -1,0 +1,510 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <div class="main-content">
+        <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+
+        <div class="post-list-container">
+    <div class="post-inner">
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                            <span class="sticky-top-flag gt-bg-accent-color-first">置顶</span>
+                        
+                        <a href="http://mofish.pily.life/post/hello-gridea/">
+                            <span class="post-title gt-c-content-color-first">个人声明</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>👏  欢迎光临 ！<br>
+✍️  下面的所有文章都仅作个人学习记录用途。</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2021-01-01 ·
+                        </time>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/mysql_learning_19/">
+                            <span class="post-title gt-c-content-color-first">MySql学习之路(十九)：数据库备份与恢复</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>在任何数据库环境中，总会有<code>不确定的意外</code>情况发生，比如例外的停电、计算机系统中的各种软硬件故障、人为破坏、管理员误操作等是不可避免的，这些情况可能会导致<code>数据的丢失</code>、<code>服务器瘫痪</code>等严重的后果。存在多个服务器时，会出现主从服务器之间的<code>数据同步问题</code>。</p>
+<p>为了有效防止数据丢失，并将损失降到最低，应<code>定期</code>对MySQL数据库服务器做<code>备份</code>。如果数据库中的数据丢失或者出现错误，可以使用备份的数据<code>进行恢复</code>。主从服务器之间的数据同步问题可以通过复制功能实现。</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2023-02-03 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/YVLEbqd3K/" class="post-tag">
+                                # mysql
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/mysql_learning_18/">
+                            <span class="post-title gt-c-content-color-first">MySql学习之路(十八)：数据库日志</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>🤤很多看似奇怪的问题，答案往往就藏在日志里。很多情况下，只有通过查看日志才 能发现问题的原因，真正解决问题。所以，一定要学会查看日志，养成检查日志的习惯，对提升你的数 据库应用开发能力至关重要。</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2023-02-01 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/YVLEbqd3K/" class="post-tag">
+                                # mysql
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/mysql_learning_17/">
+                            <span class="post-title gt-c-content-color-first">MySql学习之路(十七)：数据库的一些调优策略</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>🤗除了索引调优外，数据库还有一些别的调优策略，如分表、分库、读写分离、系统参数设置等等。</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2023-01-13 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/YVLEbqd3K/" class="post-tag">
+                                # mysql
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/mysql_learning_16/">
+                            <span class="post-title gt-c-content-color-first">MySql学习之路(十六)：join语句的原理</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>😏join方式连接多个表，本质就是各个表之间数据的循环匹配。</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2023-01-05 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/YVLEbqd3K/" class="post-tag">
+                                # mysql
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/mysql_learning_15/">
+                            <span class="post-title gt-c-content-color-first">MySql学习之路(十五)：慢查询日志</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>❄️慢查询日志，是用来记录MySql中响应时间超过阈值的语句，也是我们优化MySql的一个重要手段，接下来let's look look！</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2022-12-29 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/YVLEbqd3K/" class="post-tag">
+                                # mysql
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/mysql_learning_14/">
+                            <span class="post-title gt-c-content-color-first">MySql学习之路(十四)：性能分析工作的使用</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>在数据库调优中，我们的目标是 <code>响应时间更快, 吞吐量更大</code> 。利用宏观的监控工具和微观的日志分析可以帮我们快速找到调优的思路和方式。</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2022-12-28 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/YVLEbqd3K/" class="post-tag">
+                                # mysql
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/mysql_learning_13/">
+                            <span class="post-title gt-c-content-color-first">MySql学习之路(十三)：InnoDB数据存储结构</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>🤡索引结构给我们提供了高效数据索引方式，不过索引信息都是存储在文件上的，确切的说是存储在<code>页结构</code>中。</p>
+<p>👉由于如今<code>InnoDB</code>是 MySql的<code>默认存储引擎</code>，所以就学习记录一下InnoDB存储引擎的数据存储结构！</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2022-12-12 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/YVLEbqd3K/" class="post-tag">
+                                # mysql
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/jiang-jie-laravel-kuang-jia-zhong-de-ioc-he-di/">
+                            <span class="post-title gt-c-content-color-first">讲解laravel框架中的控制反转（IoC）和依赖注入（DI）</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>👏 之前已经讲过了 IoC 和 DI 的概念，这一章节虽然也是讲这两个，但是主要是结合 laravel框架来讲解，看看 laravel 中的 IoC 和 DI 是如何使用的。</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2022-09-02 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/qo6XPqkl5/" class="post-tag">
+                                # php
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/jiang-jiang-aop-yu-oop-you-shi-me-qu-bie/">
+                            <span class="post-title gt-c-content-color-first">讲讲AOP与OOP有什么区别？（已迁移）</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>🤡 面试常见问题了，因此记录一下AOP 和 OOP的相关知识。</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2022-09-02 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/qo6XPqkl5/" class="post-tag">
+                                # php
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+    </div>
+</div>
+
+        <div class="pagination-container">
+    
+    
+        <a href="http://mofish.pily.life/page/2" class="prev-page gt-a-link">下一页</a>
+    
+</div>
+
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

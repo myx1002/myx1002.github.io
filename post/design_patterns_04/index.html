@@ -1,0 +1,441 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>硬啃设计模式(四)：原型模式 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    硬啃设计模式(四)：原型模式
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2021-03-11 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/KmXvMvDsm/" class="post-tags">
+                            # 设计模式
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>👴👴 害，年后工作繁忙呀，都没事学习了，又得做新的项目了，只能硬挤一点时间出来整理😭</p>
+<p>行吧😤 废话不多数，今天整理的是创建型模式中的第四种：原型模式👏👏👏</p>
+<!-- more -->
+<h2 id="概念">概念👇👇</h2>
+<pre><code>原始模式属于`创建型模式`，是从一个对象，通过复制来创建一个相同或者类似的可定制的新对象，而不需要知道任何的创建细节。
+
+值得注意的是，通过克隆方式拷贝出来的对象是一个新的对象，对其修改不会影响原型对象的属性。
+</code></pre>
+<!-- more -->
+<h2 id="使用场景">使用场景👇👇</h2>
+<pre><code>其实原型模式的原理就类似我们程序员中的`复制`和`粘贴`，有时候需要写重复代码，但是有部分要改动的时候，就会复制粘贴，然后改动。
+
+例如下面简历的例子，通过深拷贝，在原本奖励的基础上重新修改工作经历，而不用重新填写用户的基本资料。
+</code></pre>
+<!-- more -->
+<h2 id="主要角色">主要角色👇👇</h2>
+<pre><code>🙈Prototype（抽象原型类）：它是声明克隆方法的接口，是所有具体原型类的公共父类，可以是抽象类、接口或者是具体实现类。
+
+🙉ConcretePrototype（具体原型类）：它实现在抽象原型类中声明的克隆方法，在克隆方法中返回自己的一个克隆对象。
+
+🙊Client（客户类）：使用原型对象的客户程序。
+</code></pre>
+<!-- more -->
+<h2 id="优缺点">优缺点👇👇</h2>
+<pre><code>优点⭕️：
+
+    1️⃣性能提高，规避了构造函数的约束
+
+    2️⃣辅助实现撤销操作
+
+    3️⃣简化对象的创建
+
+
+缺点❌：
+
+    1️⃣要为每一个类都配置一个 clone 方法
+
+    2️⃣clone 方法位于类的内部，当对已有类进行改造的时候，需要修改代码，违背了开闭原则
+
+    3️⃣当代码复杂，对象嵌套较多时，要实现深克隆较为复杂
+</code></pre>
+<!-- more -->
+<h2 id="原型模式uml图">“原型模式”UML图👇👇</h2>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1618453253585.png" alt="" loading="lazy"></figure>
+<!-- more -->
+<h2 id="原型模式代码实例">“原型模式”代码实例</h2>
+<pre><code class="language-php">&lt;?php
+
+/**
+ * 简历接口抽象类(抽象原型类)
+ * Class CloneResume
+ */
+abstract Class CloneResume
+{
+    public   $name;
+    public   $sex;
+    public   $age;
+    public   $work;
+
+    abstract function __clone();
+}
+
+/**
+ * 简历类(具体原型类)
+ * Class Resume
+ */
+class Resume extends CloneResume
+{
+    public function __construct($name)
+    {
+        $this-&gt;name = $name;
+        $this-&gt;work = new WorkExperience();
+    }
+
+    /**
+     * 设置个人信息
+     * @param string $sex
+     * @param string $age
+     */
+    public function setPersonalInfo($sex, $age)
+    {
+        $this-&gt;sex = $sex;
+        $this-&gt;age = $age;
+    }
+
+    /**
+     * 设置工作经历
+     * @param string $workData
+     * @param string $company
+     */
+    public function setWorkExperience($workData, $company)
+    {
+        $this-&gt;work-&gt;setCompany($company);
+        $this-&gt;work-&gt;setWorkDate($workData);
+    }
+
+    public function display()
+    {
+        echo $this-&gt;name . '-' . $this-&gt;sex . '-' . $this-&gt;age . PHP_EOL;
+        echo '工作经历：' . $this-&gt;work-&gt;getCompany() . '-' . $this-&gt;work-&gt;getWorkDate() . PHP_EOL;
+    }
+
+    /**
+     * 重新clone方法，实现深拷贝
+     */
+    public function __clone()
+    {
+        $this-&gt;work = clone $this-&gt;work;
+    }
+}
+
+/**
+ * 工作经历：一份简历可能包含多段工作经理
+ * Class WorkExperience
+ */
+class WorkExperience
+{
+    private  $workDate;  // 工作时间
+    private  $company;   // 公司名称
+
+    /**
+     * 设置工作时间
+     */
+    public function setWorkDate($workDate)
+    {
+        return $this-&gt;workDate = $workDate;
+    }
+
+    /**
+     * 设置公司名称
+     */
+    public function setCompany($company)
+    {
+        return $this-&gt;company = $company;
+    }
+
+    /**
+     * 获取工作时间
+     */
+    public function getWorkDate()
+    {
+        return $this-&gt;workDate;
+    }
+
+    /**
+     * 获取公司名称
+     */
+    public function getCompany()
+    {
+        return $this-&gt;company;
+    }
+}
+
+$resumeA = new Resume(&quot;小明&quot;);
+$resumeA-&gt;setPersonalInfo('男', '18');
+$resumeA-&gt;setWorkExperience('2019-7-1至2020-7-1', '牛皮科技有限公司');
+
+$resumeB = clone $resumeA;
+$resumeB-&gt;setWorkExperience('2020-8-1至2021-2-1', '瓜皮科技有限公司');
+
+$resumeA-&gt;display();
+$resumeB-&gt;display();
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="http://mofish.pily.life/post-images/1615885613653.png" alt="" loading="lazy"></figure>
+<center>图二：执行结果☝️☝️</center>
+<!-- more -->
+<h2 id="总结">总结👇👇</h2>
+<pre><code>👌至此，`原型模式`就介绍完毕啦，其实我们也可以把`原型模式`成为`克隆模式`，这样字面上的意思就更容易理解了，鸣人的`影分身`术都熟悉了吧😏
+</code></pre>
+<figure data-type="image" tabindex="3"><img src="http://mofish.pily.life/post-images/1615885976776.jpg" alt="" width="400" height="300" loading="lazy"></figure>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/design_patterns_03/" class="post-title gt-a-link">
+                    硬啃设计模式(三)：工厂模式之抽象工厂模式
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

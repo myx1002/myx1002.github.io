@@ -1,0 +1,369 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>计算机网络知识点(二)：常见的HTTP状态码（已迁移） | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    计算机网络知识点(二)：常见的HTTP状态码（已迁移）
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2021-11-14 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/k6ND9yEKgx/" class="post-tags">
+                            # 计算机网络
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>🤗 稍微记录一下</p>
+<!-- more -->
+<h2 id="1xxinformational信息性状态码接受的请求正在处理">1xx：Informational（信息性状态码）	接受的请求正在处理</h2>
+<ul>
+<li>
+<p>100（Continue）：继续。客户端应继续其请求。</p>
+</li>
+<li>
+<p>101（Switching Protocols）：切换协议。服务器根据客户端的请求切换协议。</p>
+</li>
+</ul>
+<h2 id="2xxsuccess成功状态码请求正常处理完毕">2xx：Success（成功状态码）请求正常处理完毕</h2>
+<ul>
+<li>
+<p>200（OK）：请求成功。</p>
+</li>
+<li>
+<p>201（Created）：已创建。成功请求并创建了新的资源。</p>
+</li>
+<li>
+<p>202（Accepted）：已接受，但未处理完成。</p>
+</li>
+<li>
+<p>204（No Content）：请求成功，但没有返回任何内容。</p>
+</li>
+<li>
+<p>205（Reset Content）：请求成功，用户终端（如浏览器）应该重置内容。</p>
+</li>
+<li>
+<p>206（Partial Content）：成功处理了部分 GET 请求。</p>
+</li>
+</ul>
+<h2 id="3xxredirection重定向状态码需要进行附加操作以完成请求">3xx：Redirection（重定向状态码）需要进行附加操作以完成请求</h2>
+<ul>
+<li>
+<p>300（Multiple Choices）：多种选择，服务器可执行多种操作，服务器可根据请求者(user agent)选择一项操作，或提供操作列表共请求者选择。</p>
+</li>
+<li>
+<p>301（Moved Permanently）：永久重定向，请求的资源已永久移动到新位置，服务器返回此响应时，会自动将请求转到新的位置。</p>
+</li>
+<li>
+<p>302（Found）：临时重定向，请求的资源只是临时被移动，客户端应继续使用原有的位置来进行请求。但是如果请求方法不是 GET 的话，请求方法和消息主体会发生变化，因为一些旧客户端会错误地将请求方法转换为 GET。</p>
+</li>
+<li>
+<p>303（See Other）：HTTP1.1新增的状态，是302的细化，303和302状态码有着相同的功能，但是303明确表示客户端应当采用get方法获取资源，比如，当使用post方法访问程序，其执行后的处理结果为希望客户端能以get方法重定向到另一个uri上去时。</p>
+</li>
+<li>
+<p>307（Temporary Redirect）：临时重定向，HTTP1.1新增的状态，是302的细化，唯一区别是可确保请求方法和消息主体不会发生变化，但是对于GET请求来说，两者没有啥区别。</p>
+</li>
+</ul>
+<h2 id="4xxclient-error客户端错误状态码服务器无法处理请求">4xx：Client Error（客户端错误状态码）服务器无法处理请求</h2>
+<ul>
+<li>
+<p>400（Bad Request）：客户端请求的语法错误，服务器无法理解。</p>
+</li>
+<li>
+<p>401（Unauthorized）：请求要求用户的身份认证。</p>
+</li>
+<li>
+<p>403（Forbidden）：服务器拒绝请求。</p>
+</li>
+<li>
+<p>404（Not Found）：服务器找不到请求的网页。</p>
+</li>
+<li>
+<p>405（Method Not Allowed）：禁用请求中指定的方法。</p>
+</li>
+<li>
+<p>408（Request Time-out）：服务器等候请求时发生超时。</p>
+</li>
+<li>
+<p>410（Gone）：客户端请求的资源已经不存在。410不同于404，如果资源以前有现在被永久删除了可使用410代码。</p>
+</li>
+<li>
+<p>411（	Length Required）：服务器无法处理客户端发送的不带Content-Length的请求信息</p>
+</li>
+</ul>
+<h2 id="5xxserver-error服务器错误状态码服务器处理请求出错">5xx：Server Error（服务器错误状态码）服务器处理请求出错</h2>
+<ul>
+<li>
+<p>500（Internal Server Error）：	服务器内部错误，无法完成请求。</p>
+</li>
+<li>
+<p>501（Not Implemented）：服务器不具备完成请求的功能。例如，服务器无法识别请求方法时可能会返回此代码。</p>
+</li>
+<li>
+<p>502（Bad Gateway）：服务器作为网关或代理，从上游服务器收到无效响应。</p>
+</li>
+<li>
+<p>503（Service Unavailable）：服务器目前无法使用(由于超载或停机维护)。</p>
+</li>
+<li>
+<p>504（Gateway Time-out）：充当网关或代理的服务器，未及时从远端服务器获取请求。</p>
+</li>
+<li>
+<p>505（HTTP Version not supported）：服务器不支持请求中所用的 HTTP 协议版本。</p>
+</li>
+</ul>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/redis_learning_15/" class="post-title gt-a-link">
+                    Redis学习之路(十五)：Redis分布式锁
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

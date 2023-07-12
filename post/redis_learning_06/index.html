@@ -1,0 +1,366 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>Redis学习之路(六)：管道Pipeline | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Redis学习之路(六)：管道Pipeline
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2021-08-26 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tags">
+                            # redis
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>⏩ 一直以来，很多同学都对Redis 管道有一个误解，以为这是Redis服务器提供的一种特别的技术，从而可以加速Redis的存取效率，但是实际上并不是。<br>
+🆗 这个技术本质上是由客户端提供的，与服务器并有没有什么直接的关系，下面我们来整理一下知识点。</p>
+<!-- more -->
+<h2 id="目录">目录</h2>
+<ul>
+<li><a href="#Redis的消息交互">Redis的消息交互</a></li>
+<li><a href="#管道简述">管道简述</a></li>
+<li><a href="#压力测试">压力测试</a></li>
+<li><a href="#深入理解管道本质">深入理解管道本质</a></li>
+<li><a href="#总结">总结</a><br>
+<br></li>
+</ul>
+<h2 id="a-nameredis的消息交互redis的消息交互a"><a name="Redis的消息交互">Redis的消息交互🤣</a></h2>
+<p>当我们使用客户端对Redis进行一次操作时，步骤如下：</p>
+<ul>
+<li>客户端将请求传送给服务器</li>
+<li>服务器处理完毕后</li>
+<li>将响应回复给客户端</li>
+</ul>
+<p>按照这样描述，每个命令执行的时间 = 客户端发送时间 + 服务器处理和返回时间 + 一个网络来回的时间</p>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1630380791354.png" alt="" loading="lazy"></figure>
+<p>其中一个网络来回的时间是不固定的，它的决定因素有很多，不如客户端到服务端要经过多少跳、网络是否拥堵等等。</p>
+<p>但是这个时间的量级也是最大的，也就是说一个命令的完成时间长度很多程度商取决于网络开销，即使服务器每秒可处理10万个请求，但是网络开销如果需要250ms时，1s也只能处理4个请求了。</p>
+<figure data-type="image" tabindex="2"><img src="http://mofish.pily.life/post-images/1630394902573.png" alt="" loading="lazy"></figure>
+<p>如上图所示：客户端是经历了一读一写一读一写四个操作才完整执行两条指令。</p>
+<h2 id="a-name管道简述管道简述a"><a name="管道简述">管道简述🤣</a></h2>
+<p>为了解决这个问题，Redis在很早就支持了管道技术。也就是说客户端可以一次发送多条命令，不用逐条等待命令的返回值，而是到最后一起读取返回结果，这样就只需要一次网络开销，速度也就得到了明显的提示。</p>
+<figure data-type="image" tabindex="3"><img src="http://mofish.pily.life/post-images/1630394913044.png" alt="" loading="lazy"></figure>
+<p>这便是管道操作的本质，服务器根本没有任务区别对待，还是走着接收一条信息、执行一条信息、回复一条信息的正常流程。</p>
+<p>客户端则通过对管道中的指令列表改变读写顺序就可以大幅节省IO时间。</p>
+<blockquote>
+<p>Ps：当然，管道中的命令数量并不是越多越好，毕竟该操作会消耗一定内存，太多命令会把内存撑爆。</p>
+</blockquote>
+</br>
+<h2 id="a-name压力测试压力测试a"><a name="压力测试">压力测试🤣</a></h2>
+<p>接下来我们实践一下管道的力量，我门使用Redis自带的一个压力测试工具<code>redis-benchmark</code>。</p>
+<p>首先我们对一个普通的<code>set</code>指令进行压测，QPS大概10w/s。</p>
+<pre><code class="language-redis">ultraman@ultraman-PC:~$ redis-benchmark -t set -q
+SET: 125628.14 requests per second
+</code></pre>
+<p>接下来我们加个管道选项P参数，它表示单个管道内并行的请求数量，当P=2时，QPS提升到了24w/s。</p>
+<pre><code class="language-redis">ultraman@ultraman-PC:~$ redis-benchmark -t set -P 2 -q
+SET: 240963.86 requests per second
+</code></pre>
+<p>再看看当P=24时，QPS到达了270w/s。</p>
+<pre><code class="language-redis">ultraman@ultraman-PC:~$ redis-benchmark -t set -P 24 -q
+SET: 2777778.00 requests per second
+</code></pre>
+<p>当然，P不是无限大的，当你提升到一直数值时，会发现QPS上不去了，是因为这里CPU处理能力已经到顶了，无法再提升了。</p>
+</br>
+<h2 id="a-name深入理解管道本质深入理解管道本质a"><a name="深入理解管道本质">深入理解管道本质🤣</a></h2>
+<p>接下来，我们深入分析一下请求交互的流程，以下是完整的请求交互流程图：</p>
+<figure data-type="image" tabindex="4"><img src="http://mofish.pily.life/post-images/1630921175050.png" alt="" loading="lazy"></figure>
+<blockquote>
+<p>这里用文字来仔细描述一遍流程</p>
+<ol>
+<li>
+<p>客户端进程调用 write 将消息写到操作系统内核为套接字分配的发送缓冲区 send buffer 中。</p>
+</li>
+<li>
+<p>客户端操作系统内核将发送缓冲区的内容发送到网卡，网卡硬件将数据通过“网际路由”送到服务器网卡。</p>
+</li>
+<li>
+<p>服务器操作系统内核将网卡的数据放到内核为套接字分配的接收缓冲区 recv beffer 中。</p>
+</li>
+<li>
+<p>服务器进程调用 read 从接收缓冲区中取出消息进行处理。</p>
+</li>
+<li>
+<p>服务器进程调用 write 将响应消息写到内核为套接字分配的发送缓冲区 send buffer 中。</p>
+</li>
+<li>
+<p>服务器操作系统内核将发生缓冲区的内容发送到网卡，网卡将数据通过“网际路由”送到客户端网卡。</p>
+</li>
+<li>
+<p>客户端操作系统内核将网卡的数据放到内核为套接字分配的接收缓冲区 recv buffer 中。</p>
+</li>
+<li>
+<p>客户端进程调用 read 从接受缓冲区中取出消息返回给上层业务逻辑进行处理。</p>
+</li>
+<li>
+<p>结束</p>
+</li>
+</ol>
+</blockquote>
+<p>其中步骤(5)<sub>(8)和(1)</sub>(4)是一样的，只不过方向返回来而已，一个是请求，一个是响应。</p>
+<p>我们开始以为 write 操作是要等到对方收到信息后才返回的，但是实际上 write 操作只负责将数据写到本地操作系统内核的发送缓冲中就立即返回了，剩下的事就交给操作系统内核异步将数据发送到目标机器。</p>
+<p>但是如果发送缓冲区满了，那么就需要等待缓冲区空出空闲空间来，这个就是写操作IO操作的真正耗时。</p>
+<p>我们开始以为 read 操作是从目前机器拉取数据，但是实际上 read 操作只负责将数据从本地操作系统内核的接受缓冲区中取出来就完事了。</p>
+<p>但是如果缓冲区是空的，那么就需要等待数据到来，这个就是 read 操作IO操作的真正耗时。</p>
+<p>所以，对于 get 这样一个简单的请求来说，write 操作几乎没有耗时，直接写到发送缓冲区中就返回了，而 read 就比较耗时了，因为它要等待消息经过网络路由到目标机器处理后的响应消息，再回送到当前的内核读缓冲区才可以返回。这才是一个网络来回的真正开销。</p>
+<p>而对于管道来说，连续的 write 操作根本没多少耗时，之后第一个 read 操作会等待一个网络的来回开销，然后所有的响应信息就都送回到内核的读缓冲区中了，后续的 read 操作直接就可以从缓冲区中拿到结果，瞬间就返回了。</p>
+<br>
+<h2 id="a-name总结总结a"><a name="总结">总结🤣</a></h2>
+<p>这就是<code>管道</code>的本质，它并不是服务器的什么特性，而是客户端通过改变了读写的顺序带来的性能的巨大提升。</p>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/redis_learning_05/" class="post-title gt-a-link">
+                    Redis学习之路(五)：事务和PubSub
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

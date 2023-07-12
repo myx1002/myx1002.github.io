@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>http://mofish.pily.life</id>
+    <title>鸡毛蒜皮事(●&apos;◡&apos;●)</title>
+    <updated>2023-07-12T07:32:55.233Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="http://mofish.pily.life"/>
+    <link rel="self" href="http://mofish.pily.life/atom.xml"/>
+    <subtitle>打工人！打工魂！我爱打工！</subtitle>
+    <logo>http://mofish.pily.life/images/avatar.png</logo>
+    <icon>http://mofish.pily.life/favicon.ico</icon>
+    <rights>All rights reserved 2023, 鸡毛蒜皮事(●&apos;◡&apos;●)</rights>
+    <entry>
+        <title type="html"><![CDATA[MySql学习之路(十九)：数据库备份与恢复]]></title>
+        <id>http://mofish.pily.life/post/mysql_learning_19/</id>
+        <link href="http://mofish.pily.life/post/mysql_learning_19/">
+        </link>
+        <updated>2023-02-03T08:28:57.000Z</updated>
+        <summary type="html"><![CDATA[<p>在任何数据库环境中，总会有<code>不确定的意外</code>情况发生，比如例外的停电、计算机系统中的各种软硬件故障、人为破坏、管理员误操作等是不可避免的，这些情况可能会导致<code>数据的丢失</code>、<code>服务器瘫痪</code>等严重的后果。存在多个服务器时，会出现主从服务器之间的<code>数据同步问题</code>。</p>
+<p>为了有效防止数据丢失，并将损失降到最低，应<code>定期</code>对MySQL数据库服务器做<code>备份</code>。如果数据库中的数据丢失或者出现错误，可以使用备份的数据<code>进行恢复</code>。主从服务器之间的数据同步问题可以通过复制功能实现。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>在任何数据库环境中，总会有<code>不确定的意外</code>情况发生，比如例外的停电、计算机系统中的各种软硬件故障、人为破坏、管理员误操作等是不可避免的，这些情况可能会导致<code>数据的丢失</code>、<code>服务器瘫痪</code>等严重的后果。存在多个服务器时，会出现主从服务器之间的<code>数据同步问题</code>。</p>
+<p>为了有效防止数据丢失，并将损失降到最低，应<code>定期</code>对MySQL数据库服务器做<code>备份</code>。如果数据库中的数据丢失或者出现错误，可以使用备份的数据<code>进行恢复</code>。主从服务器之间的数据同步问题可以通过复制功能实现。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[MySql学习之路(十八)：数据库日志]]></title>
+        <id>http://mofish.pily.life/post/mysql_learning_18/</id>
+        <link href="http://mofish.pily.life/post/mysql_learning_18/">
+        </link>
+        <updated>2023-02-01T07:03:00.000Z</updated>
+        <summary type="html"><![CDATA[<p>🤤很多看似奇怪的问题，答案往往就藏在日志里。很多情况下，只有通过查看日志才 能发现问题的原因，真正解决问题。所以，一定要学会查看日志，养成检查日志的习惯，对提升你的数 据库应用开发能力至关重要。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>🤤很多看似奇怪的问题，答案往往就藏在日志里。很多情况下，只有通过查看日志才 能发现问题的原因，真正解决问题。所以，一定要学会查看日志，养成检查日志的习惯，对提升你的数 据库应用开发能力至关重要。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[MySql学习之路(十七)：数据库的一些调优策略]]></title>
+        <id>http://mofish.pily.life/post/mysql_learning_17/</id>
+        <link href="http://mofish.pily.life/post/mysql_learning_17/">
+        </link>
+        <updated>2023-01-13T06:48:00.000Z</updated>
+        <summary type="html"><![CDATA[<p>🤗除了索引调优外，数据库还有一些别的调优策略，如分表、分库、读写分离、系统参数设置等等。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>🤗除了索引调优外，数据库还有一些别的调优策略，如分表、分库、读写分离、系统参数设置等等。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[MySql学习之路(十六)：join语句的原理]]></title>
+        <id>http://mofish.pily.life/post/mysql_learning_16/</id>
+        <link href="http://mofish.pily.life/post/mysql_learning_16/">
+        </link>
+        <updated>2023-01-05T06:31:06.000Z</updated>
+        <summary type="html"><![CDATA[<p>😏join方式连接多个表，本质就是各个表之间数据的循环匹配。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>😏join方式连接多个表，本质就是各个表之间数据的循环匹配。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[MySql学习之路(十五)：慢查询日志]]></title>
+        <id>http://mofish.pily.life/post/mysql_learning_15/</id>
+        <link href="http://mofish.pily.life/post/mysql_learning_15/">
+        </link>
+        <updated>2022-12-29T09:37:09.000Z</updated>
+        <summary type="html"><![CDATA[<p>❄️慢查询日志，是用来记录MySql中响应时间超过阈值的语句，也是我们优化MySql的一个重要手段，接下来let's look look！</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>❄️慢查询日志，是用来记录MySql中响应时间超过阈值的语句，也是我们优化MySql的一个重要手段，接下来let's look look！</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[MySql学习之路(十四)：性能分析工作的使用]]></title>
+        <id>http://mofish.pily.life/post/mysql_learning_14/</id>
+        <link href="http://mofish.pily.life/post/mysql_learning_14/">
+        </link>
+        <updated>2022-12-28T06:39:57.000Z</updated>
+        <summary type="html"><![CDATA[<p>在数据库调优中，我们的目标是 <code>响应时间更快, 吞吐量更大</code> 。利用宏观的监控工具和微观的日志分析可以帮我们快速找到调优的思路和方式。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>在数据库调优中，我们的目标是 <code>响应时间更快, 吞吐量更大</code> 。利用宏观的监控工具和微观的日志分析可以帮我们快速找到调优的思路和方式。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[MySql学习之路(十三)：InnoDB数据存储结构]]></title>
+        <id>http://mofish.pily.life/post/mysql_learning_13/</id>
+        <link href="http://mofish.pily.life/post/mysql_learning_13/">
+        </link>
+        <updated>2022-12-12T14:44:35.000Z</updated>
+        <summary type="html"><![CDATA[<p>🤡索引结构给我们提供了高效数据索引方式，不过索引信息都是存储在文件上的，确切的说是存储在<code>页结构</code>中。</p>
+<p>👉由于如今<code>InnoDB</code>是 MySql的<code>默认存储引擎</code>，所以就学习记录一下InnoDB存储引擎的数据存储结构！</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>🤡索引结构给我们提供了高效数据索引方式，不过索引信息都是存储在文件上的，确切的说是存储在<code>页结构</code>中。</p>
+<p>👉由于如今<code>InnoDB</code>是 MySql的<code>默认存储引擎</code>，所以就学习记录一下InnoDB存储引擎的数据存储结构！</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[讲解laravel框架中的控制反转（IoC）和依赖注入（DI）]]></title>
+        <id>http://mofish.pily.life/post/jiang-jie-laravel-kuang-jia-zhong-de-ioc-he-di/</id>
+        <link href="http://mofish.pily.life/post/jiang-jie-laravel-kuang-jia-zhong-de-ioc-he-di/">
+        </link>
+        <updated>2022-09-02T09:34:22.000Z</updated>
+        <summary type="html"><![CDATA[<p>👏 之前已经讲过了 IoC 和 DI 的概念，这一章节虽然也是讲这两个，但是主要是结合 laravel框架来讲解，看看 laravel 中的 IoC 和 DI 是如何使用的。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>👏 之前已经讲过了 IoC 和 DI 的概念，这一章节虽然也是讲这两个，但是主要是结合 laravel框架来讲解，看看 laravel 中的 IoC 和 DI 是如何使用的。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[讲讲AOP与OOP有什么区别？（已迁移）]]></title>
+        <id>http://mofish.pily.life/post/jiang-jiang-aop-yu-oop-you-shi-me-qu-bie/</id>
+        <link href="http://mofish.pily.life/post/jiang-jiang-aop-yu-oop-you-shi-me-qu-bie/">
+        </link>
+        <updated>2022-09-02T01:55:36.000Z</updated>
+        <summary type="html"><![CDATA[<p>🤡 面试常见问题了，因此记录一下AOP 和 OOP的相关知识。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>🤡 面试常见问题了，因此记录一下AOP 和 OOP的相关知识。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[一文读懂CGI、FastCGI、php-cgi、php-fpm的区别（已迁移）]]></title>
+        <id>http://mofish.pily.life/post/yi-wen-du-dong-cgifastcgiphp-cgiphp-fpm-de-qu-bie/</id>
+        <link href="http://mofish.pily.life/post/yi-wen-du-dong-cgifastcgiphp-cgiphp-fpm-de-qu-bie/">
+        </link>
+        <updated>2022-08-27T09:22:42.000Z</updated>
+        <summary type="html"><![CDATA[<p>😣 经典面试问题了，所以简单记录一下。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>😣 经典面试问题了，所以简单记录一下。</p>
+]]></content>
+    </entry>
+</feed>

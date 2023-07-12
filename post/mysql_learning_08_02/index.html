@@ -1,0 +1,451 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>MySql学习之路(九)：事务及其四个隔离级别之MVCC | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    MySql学习之路(九)：事务及其四个隔离级别之MVCC
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-04-15 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/YVLEbqd3K/" class="post-tags">
+                            # mysql
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>上一章节我们讲了MySql的事务，这章节我们就说说RC和RR级别下能够解决可重复读和幻读的原理是什么！</p>
+<!-- more -->
+<h1 id="一-概述">一、概述📑</h1>
+<p>MVCC，中文叫多版本并发控制，它是通过读取历史版本的数据，来降低并发事务冲突，从而提高并发性能的一种机制。它的实现依赖于隐式字段、undo日志、快照读&amp;当前读、Read View。</p>
+<h2 id="11-mvcc带来的好处是">1.1 MVCC带来的好处是？🤤</h2>
+<p>多版本并发控制（MVCC）是一种用来解决读-写冲突的无锁并发控制，也就是为事务分配单向增长的时间戳，为每个修改保存一个版本，版本与事务时间戳关联，读操作只读该事务开始前的数据库的快照。</p>
+<p>所以MVCC可以为数据库解决以下问题 在并发读写数据库时，可以做到在读操作时不用阻塞写操作，写操作也不用阻塞读操作，提高了数据库并发读写的性能同时还可以解决脏读，不可重复读和幻读等事务隔离问题，但不能解决更新丢失问题</p>
+<blockquote>
+<p>MVCC是采用无锁的形式解决读-写冲突问题。这里的读是指的快照读。即MVCC实现的快照读！！！</p>
+</blockquote>
+<br>
+<h2 id="12-mvcc和间隙锁">1.2 MVCC和间隙锁😵</h2>
+<p><strong>MVCC无锁解决了读-写冲突的问题</strong>，并且解决了不可重复读和部分解决了幻读问题，从而实现了RC和RR两个隔离级别。</p>
+<p>**而间隙锁本质上依旧是锁，会阻塞两个并发事务的执行。**在一定程度上可以解决幻读的问题，也是为了解决binlog日志中statement模式带来的bug。</p>
+<blockquote>
+<p>mysql数据库的主从复制依靠的是binlog。而在mysql5.0之前，binlog模式只有statement格式。这种模式的特点：binlog的记录顺序是按照数据库事务commit顺序为顺序的。</p>
+</blockquote>
+<p>当不存在间隙锁的情况下，会有如下场景：</p>
+<ol>
+<li>事务a先删除订购日期  &lt; 2021-01-01 的数据；</li>
+<li>事务b把其中一条数据 id = 6 的订购日期设为 2020-12-12日，并且commit；</li>
+<li>事务a进行commit。</li>
+</ol>
+<p>此时由于<code>statement</code>日志是按照commit顺序记录的，导致事务b先执行，然后事务a执行的时候，把事务把更新的那条数据也删除了。</p>
+<p>这就导致了主库是有id = 6的这条数据的，但是从库的日志是先更新后删除的，就没有id = 6这边数据了，导致主从不一样。</p>
+<p>所以为了解决这个bug，才在RR级别引入了间隙锁，使得更新id = 6时被锁住，需要等事务a提交后，才能更新成功。</p>
+<hr>
+<!-- more -->
+<h1 id="二-实现原理️">二、实现原理⚙️</h1>
+<p>MVCC的目的就是多版本并发控制，在数据库中的实现，就是为了解决读写冲突，它的实现原理主要是依赖记录中的快照读&amp;当前读、 3个隐式字段、 undo日志、Read View 来实现的，undo日志保存了历史快照，而Read View规则帮我们判断当前版本的数据是否可见。</p>
+<h2 id="21-快照读当前读">2.1 快照读&amp;当前读🖨</h2>
+<h4 id="当前读">当前读👇👇</h4>
+<p>以下的操作都属于当前读，那什么是当前读？那就是它读取的是记录的最新版本，读取和操作时还需要保证并发事务不会同步操作该记录，会对该行记录进行加锁。</p>
+<pre><code class="language-sql">-- 共享锁
+select ... lock in share mode;
+
+-- 排它锁
+select ... for update;
+
+-- 更新、插入删除
+update ....;
+insert ...;
+delete ...;
+</code></pre>
+<br>
+<h4 id="快照读">快照读👇👇</h4>
+<p>普通不加锁的<code>select</code>操作就是<code>快照读</code>，即不加锁的非阻塞读。</p>
+<blockquote>
+<p>快照读的前提是隔离级别不是串行级别，串行级别下都是属于当前读。</p>
+</blockquote>
+<p>之所以出现快照读，是基于提高并发性能的考虑，快照读的实现是基于多版本并发控制实现的，即MVCC。因此快照读读到的并不一定是数据的最新版本，而有可能是之前的历史版本。</p>
+<br>
+<h4 id="总结">总结👇👇</h4>
+<p>说白了MVCC就是为了实现读-写冲突不加锁，而这个读指的就是快照读, 而非当前读，当前读实际上是一种加锁的操作，是悲观锁的实现</p>
+<hr>
+<h2 id="22-隐式字段">2.2 隐式字段🛡</h2>
+<p>每行记录处理记录我们定义的字段外，数据库还隐式定义了row_id、roll_pointer、trx_id等字段。<br>
+<img src="http://mofish.pily.life/post-images/1651068903248.png" alt="" loading="lazy"></p>
+<ul>
+<li>
+<p>row_id（6 byte）：当不存在主键和非Null唯一索引时，InooDB会自动以row_id生成一个聚簇索引。</p>
+</li>
+<li>
+<p>roll_pointer（7 byte）：回滚指针，指向这条记录的上一个版本，每次对记录进行改动时，都会把旧的版本写入到undo日志中，然后这个隐藏列就相当于一个指针，可以通过它来找到该记录修改前的信息。</p>
+</li>
+<li>
+<p>trx_id（6 byte）：存储这条记录最后一次修改/插入事务id</p>
+</li>
+</ul>
+<hr>
+<h2 id="23-undo-log">2.3 undo log📃</h2>
+<p>InnoDB把这些为了事务回滚而记录的数据称之为<code>undo log</code>，其主要分为3种：</p>
+<ul>
+<li>
+<p>Insert undo log：插入记录时，至少把记录的主键值记录下来，便于回滚时直接根据主键删除即可；</p>
+</li>
+<li>
+<p>Update undo log：更新记录时，至少把记录修改前的旧值都记录下来，便于回滚时把记录恢复为旧值；</p>
+</li>
+<li>
+<p>Delete undo log：删除记录时，至少把记录内容记录下来，便于回滚时把记录重新插会表中</p>
+<ul>
+<li>删除操作其实只是设置以下记录中的一个隐藏字段：<code>deleted_bit</code>，并不是真正的记录删除</li>
+<li>为了节省磁盘空间，InnoDB有专门的<code>purge线程</code>来清理 <code>deleted_bit</code> 为true的记录。为了不影响MVCC的正常工作，purge线程自己也会维护一个<code>read view</code>，并且DB_TRX_ID相对于purge线程的read view可见，那么这条记录一定是可以被安全清除的。</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>对MVCC有帮助的实质是undo log，其实际上就是存在rollback segment回滚段中旧记录链。</p>
+</blockquote>
+<ol>
+<li>
+<p>比如有一个事务插入了一条新纪录，其隐式主键为1，事务ID和回滚指针为null：<br>
+<img src="http://mofish.pily.life/post-images/1651070819726.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>现在来了第二个事务B需要修改这行记录的name。<br>
+①对改行数据加排它锁<br>
+②把该行数据的原始值记录到undo log，作为回滚的旧记录；<br>
+③记录完成后，修改行记录的name；修改隐藏字段trx_id为当前事务的id，假设默认从1开始，后续递增；修改隐藏字段roll_pointer指向undo log中的副本记录，表示当前记录的上一个版本是它；<br>
+④事务提交，释放行锁。</p>
+</li>
+</ol>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1651071074006.png" alt="" loading="lazy"></figure>
+<blockquote>
+<p>不同事务或者相同事务在对同一条记录进行修改时，会导致该记录的undo log成为一条记录版本线性表，即链表。<br>
+链首就是最新的旧记录，链尾就是最早的旧纪录。此外还要主要的是，如果事务提交之后，那么undo log种这条记录就会被清理掉。</p>
+</blockquote>
+<hr>
+<h2 id="24-read-view读视图">2.4 Read View（读视图）📊</h2>
+<p>Read View就是事务进行快照读操作的时候生产的读视图(Read View)，在该事务执行的快照读的那一刻，会生成数据库系统当前的一个快照，记录并维护系统当前活跃事务的ID(当每个事务开启时，都会被分配一个ID, 这个ID是递增的，所以最新的事务，ID值越大)。</p>
+<p>为了方面理解Read View的可见性规则，先定义几个变量：</p>
+<ul>
+<li><code>m_ids</code>：当前系统种那些活跃的读写事务ID，数据结构为一个list；</li>
+<li><code>min_limit_id</code>：m_ids事务列表中，最小的事务id；</li>
+<li><code>max_limit_id</code>：m_ids事务列表中，最大的事务id。</li>
+</ul>
+<figure data-type="image" tabindex="2"><img src="http://mofish.pily.life/post-images/1651076880693.png" alt="" loading="lazy"></figure>
+<ul>
+<li>
+<p>如果 trx_id &lt; min_limit_id，表明生成该版本的事务在生成ReadView前已经提交(因为事务ID是递增的)，所以该版本可以被当前事务访问。</p>
+</li>
+<li>
+<p>如果 trx_id &gt; m_ids列表中最大的事务id，表明生成该版本的事务在生成ReadView后才生成，所以该版本不可以被当前事务访问。</p>
+</li>
+<li>
+<p>如果 min_limit_id =&lt; trx_id &lt;= max_limit_id,需要判断m_ids.contains(DB_TRX_ID)</p>
+<ul>
+<li>如果在，则代表Read View生成时刻，这个事务还在活跃，还没有Commit，你修改的数据，当前事务也是看不见的，所以该版本不可以被当前事务访问。；</li>
+<li>如果不在，则说明，你这个事务在Read View生成之前就已经Commit了，修改的结果，当前事务是能看见的，所以该版本可以被当前事务访问。。</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>注意：RR跟RC隔离级别，最大的区别就是：RC每次读取数据前都生成一个ReadView，而RR只在第一次读取数据时生成一个ReadView。</p>
+</blockquote>
+<br>
+<h2 id="25-mvcc整体操作流程">2.5 MVCC整体操作流程📈</h2>
+<p>了解了这些概念之后，我们来看下当查询一条记录的时候，系统如何通过MVCC找到它：</p>
+<ol>
+<li>首先获取事务自己的版本号，也就是事务 ID；</li>
+<li>获取 ReadView；</li>
+<li>查询得到的数据，然后与 ReadView 中的事务版本号进行比较；</li>
+<li>如果不符合 ReadView 规则，就需要从 Undo Log 中获取历史快照；</li>
+<li>最后返回符合规则的数据。</li>
+</ol>
+<hr>
+<!-- more -->
+<h1 id="mvcc相关问题">MVCC相关问题</h1>
+<h2 id="rcrr级别下的innodb快照读有什么不同rr是如何在rc级的基础上解决不可重复读的">RC，RR级别下的InnoDB快照读有什么不同？RR是如何在RC级的基础上解决不可重复读的？</h2>
+<p>当前读和快照读在RR级别下的区别：</p>
+<p>表1：<br>
+<img src="http://mofish.pily.life/post-images/1651851300668.png" alt="" loading="lazy"></p>
+<p>表2：<br>
+<img src="http://mofish.pily.life/post-images/1651851314681.png" alt="" loading="lazy"></p>
+<p>所以我们知道事务中快照读的结果是非常依赖该事务首次出现快照读的地方，即某个事务中首次出现快照读的地方非常关键，它有决定该事务后续快照读结果的能力 我们这里测试的是更新，同时删除和更新也是一样的，如果事务B的快照读是在事务A操作之后进行的，事务B的快照读也是能读取到最新的数据的。</p>
+<p>正是Read View生成时机的不同，从而造成RC,RR级别下快照读的结果的不同：</p>
+<ul>
+<li>
+<p>RR级别下，快照读生成Read View时，Read View会记录此时所有其他活动事务的快照，这些事务的修改对于当前事务都是不可见的。而早于Read View创建的事务所做的修改均是可见，此后在调用快照读的时候，还是使用的是同一个Read View。</p>
+</li>
+<li>
+<p>在RC级别下的，事务中，每次快照读都会新生成一个快照和Read View, 这就是我们在RC级别下的事务中可以看到别的事务提交的更新的原因</p>
+</li>
+</ul>
+<blockquote>
+<p>总之在RC隔离级别下，是每个快照读都会生成并获取最新的Read View；而在RR隔离级别下，则是同一个事务中的第一个快照读才会创建Read View, 之后的快照读获取的都是同一个Read View。</p>
+</blockquote>
+<br>
+<h2 id="如何解决幻读">如何解决幻读</h2>
+<ul>
+<li>
+<p>已提交读存在幻读分析<br>
+RC隔离级别下，加锁的select, update, delete等语句，使用的是记录锁，其他事务的插入依然可以执行，因此会存在幻读</p>
+</li>
+<li>
+<p>可重复读存在幻读分析<br>
+RR隔离级别下，加锁的select, update, delete等语句，会使用间隙锁+ 临键锁，锁住索引记录之间的范围，避免范围间插入记录，以避免产生幻读行记录。</p>
+</li>
+</ul>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/mysql_learning_08_01/" class="post-title gt-a-link">
+                    MySql学习之路(八)：事务及其四个隔离级别之基础知识
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

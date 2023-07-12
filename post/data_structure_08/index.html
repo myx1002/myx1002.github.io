@@ -1,0 +1,474 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>数据结构学习之路(八)：B和B+树 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    数据结构学习之路(八)：B和B+树
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-03-10 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/J4LLJ1xJr/" class="post-tags">
+                            # 数据结构
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>该篇文章内容来源于B站的一个咖喱味视频<a href="https://www.bilibili.com/video/BV1UC4y1p7zm">《彻底理解B树和B+树！为何它们常用在数据库中？》</a>，从磁盘结构、数据如何存储到磁盘到索引的由来，再由此引入了搜索树、B-树以及B+树，以便大家一步一步的由浅至深的理解为何要使用B-树和B+树。</p>
+<!-- more -->
+<h1 id="目录">目录：</h1>
+<ul>
+<li><a href="#磁盘">一、磁盘</a>
+<ul>
+<li><a href="#磁盘结构">1.1 磁盘结构</a></li>
+<li><a href="#磁盘读写">1.2 磁盘读写</a></li>
+</ul>
+</li>
+<li><a href="#索引">二、索引</a>
+<ul>
+<li><a href="#对象存储">2.1 对象存储</a></li>
+<li><a href="#稠密索引">2.2 稠密索引</a></li>
+<li><a href="#稀疏索引">2.3 稀疏索引</a></li>
+</ul>
+</li>
+<li><a href="#搜索树">三、搜索树</a>
+<ul>
+<li><a href="#二叉搜索树">3.1 BST-二叉搜索树</a></li>
+<li><a href="#多路搜索树">3.2 多路搜索树</a></li>
+<li><a href="#B-Tree">3.3 B树</a></li>
+<li><a href="#B+Tree">3.4 B+树</a></li>
+</ul>
+</li>
+</ul>
+<hr>
+<!-- more -->
+<h1 id="a-name磁盘一-磁盘a"><a name="磁盘">一、磁盘</a></h1>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1646979827949.png" alt="" loading="lazy"></figure>
+<h2 id="a-name磁盘结构11-磁盘结构a"><a name="磁盘结构">1.1 磁盘结构</a></h2>
+<ul>
+<li>
+<p>逻辑圈：磁盘（图中蓝色圈）是同心圆，从外向内为第一、第二、第N分区，逻辑上是连续的但物理上不连续。</p>
+</li>
+<li>
+<p>第一磁道：最外面的蓝色圈</p>
+</li>
+<li>
+<p>扇区：磁盘和扇形区域相交的位置，如第0磁道和扇形0区相交的区域（绿色），扇区是磁盘的基本读写单位，通常是512字节，但是因厂商不同可能也会有差异，接下来的我们都以512字节为标准，因此如上图一共有24个扇区（4磁道*6扇形），共可存储12k的数据。</p>
+</li>
+</ul>
+<h2 id="a-name磁盘读写12-磁盘读写a"><a name="磁盘读写">1.2 磁盘读写</a></h2>
+<p>区图中的扇区（绿色）为例：<br>
+<img src="http://mofish.pily.life/post-images/1646980602100.png" alt="" loading="lazy"></p>
+<ul>
+<li>0 ~ 511：假定每个扇区的大小是 512 byte</li>
+<li>offset：内存地址偏移量</li>
+<li>内存地址：通过磁道号、扇区号和内存地址偏移量才能定位到对应的内存地址</li>
+<li>数据读写：数据无法在磁盘上直接进行计算和处理，必须将其放入到主存中，当计算和处理完毕后再放回磁盘<br>
+<img src="http://mofish.pily.life/post-images/1646981989331.png" alt="" width="400" height="400" loading="lazy"></li>
+</ul>
+<hr>
+<h1 id="a-name索引二-索引a"><a name="索引">二、索引</a></h1>
+<p>对磁盘的结构有个大概了解后，接下来我们看一下如何将数据存储在磁盘上。</p>
+<h2 id="a-name对象存储21-对象存储a"><a name="对象存储">2.1 对象存储</a></h2>
+<figure data-type="image" tabindex="2"><img src="http://mofish.pily.life/post-images/1646987414643.png" alt="" loading="lazy"></figure>
+<ol>
+<li>
+<p><code>Employee</code>对象：首先我们建立了一个<code>Employee</code>对象，里面有eid、name、dept等属性，假设每个<code>Employee</code>对象占用<code>128byte</code>，其中eid占<code>10byte</code>；</p>
+</li>
+<li>
+<p><code>Employee</code>数据表：假设表中有100行数据，每行数据占<code>128byte</code>；</p>
+</li>
+<li>
+<p>磁盘：每个扇区能够存储<code>512byte</code>数据</p>
+</li>
+</ol>
+<blockquote>
+<p>则100行数据需要 100 * 128 / 512 = 25个扇区来存储，所以当我们需要查询数据时，<code>最多</code>需要访问25个扇区才能找到对应的数据。</p>
+</blockquote>
+<h2 id="a-name稠密索引22-稠密索引a"><a name="稠密索引">2.2 稠密索引</a></h2>
+<p>😣我们思考一下，如果不止100行，而是100万行数据呢，那是不是最坏的情况下需要访问10000个扇区才能找到对应的数据？</p>
+<p>那有没有办法可以<code>减少</code>扇区的访问数量呢？那就是增加<code>索引</code>🤓。<br>
+<img src="http://mofish.pily.life/post-images/1646987516937.png" alt="" loading="lazy"></p>
+<ol>
+<li>
+<p>Index数据表：假如我们只用eid来作为索引，那么index每行都由eid（10byte）和pointer指针（假设6byte）组成，每行占16byte，共100行。</p>
+</li>
+<li>
+<p>index占用扇区：index占用的扇区数量为 16 * 100 / 512 = 3.125，需要4个扇区存储（每块可以存储516/16=32条记录）</p>
+</li>
+</ol>
+<blockquote>
+<p>因此，100行数据需要25块扇区来存储，而100行数据使用稠密索引的话，稠密索引需要4块扇区来存储，此时先通过索引最坏情况下需要访问4个扇区找到对应的数据，再通过索引访问指定的那1快扇区找到所需的数据，一共需要<code>4+1=5</code>次IO就能拿到数据😌。</p>
+</blockquote>
+<h2 id="a-name稀疏索引23-稀疏索引a"><a name="稀疏索引">2.3 稀疏索引</a></h2>
+<p>但是😲，如果是100万行数据的时候呢？那么100万行索引就需要31250个扇区来存储，导致最坏的情况下需要<code>31250+1=31251</code>次IO才能拿到数据了😭导致数据量一大，IO的次数又增多了！</p>
+<p>因此在数据量增长的情况下，索引的IO次数也会增加，此时我们就需要增加<code>稀疏索引</code>，即<code>多级索引</code>来解决这一问题👏<br>
+<img src="http://mofish.pily.life/post-images/1646988670237.png" alt="" loading="lazy"></p>
+<p>假设此时有1000个employee对象存到数据表中：</p>
+<ol>
+<li>
+<p>数据占用扇区 : 每行数据占用 128 bytes，数据一共需要 1000 * 128 / 512 = 250 个扇区</p>
+</li>
+<li>
+<p>稠密索引表 : 每个索引行占用 16 bytes， 稠密索引表一共需要 1000 * 16 / 512 = 31.25 ≈ 32 个扇区，此时搜索速度下降，需要更高级的索引</p>
+</li>
+<li>
+<p>稀疏索引表 : 每个索引行占用 16 bytes， 其中每行的索引范围为 32，1000个稠密索引需要 1000 / 32 = 31.25 ≈ 32 行稀疏索引行，而32行 16 bytes的稀疏索引刚好为一个扇区</p>
+</li>
+</ol>
+<blockquote>
+<p>此时，我们查找ID为50的数据时，则从<code>稀疏索引</code>扇区33~64的索引行获取到<code>稠密索引所在扇区的指针</code>，从<code>稠密索引</code>处获取指向ID为50的<code>具体数据记录内存地址的指针</code>，再访问该<code>数据扇区</code>，共<strong>3</strong>次IO。</p>
+</blockquote>
+<blockquote>
+<p>稀疏索引，即多级索引，简单的可以理解为索引的索引，但数据的量级比较大的时候，可通过多级索引来减少搜索IO次数，以空间换时间。</p>
+</blockquote>
+<hr>
+<!-- more -->
+<h1 id="a-name搜索树三-搜索树a"><a name="搜索树">三、搜索树</a></h1>
+<p>当索引的层级越来越高时，一翻转90°，我们看到的是什么🙀？</p>
+<p>没错，就是树，就是一颗多路搜索树，这也是B树和B+树的由来，但是在讲它们时，我们先简单了解一下<a  href="#">二叉树</a>和<a  href="#">多路搜索树</a>。<br>
+<img src="http://mofish.pily.life/post-images/1646992099548.png" alt="" loading="lazy"></p>
+<h2 id="a-name二叉搜索树31-bst-二叉搜索树a"><a name="二叉搜索树">3.1 BST-二叉搜索树</a></h2>
+<figure data-type="image" tabindex="3"><img src="http://mofish.pily.life/post-images/1647157142480.png" alt="" loading="lazy"></figure>
+<ul>
+<li><code>左子树</code>上的所有节点的值均<code>小于或等于</code>它的<code>根节点</code>的值</li>
+<li><code>右子树</code>上的所有节点的值均<code>大于或等于</code>它的<code>根节点</code>的值</li>
+<li><code>左右子树</code>都是一个<code>二叉搜索树</code></li>
+<li>每个<code>节点</code>只有<code>一个key</code>，有<code>两个子节点</code></li>
+</ul>
+<blockquote>
+<p>这里我们可以看到虽然二叉搜索树的值是一个有序的状态，查找起来效率也不错，但是当数据量庞大的时候，树高度的增加导致了IO次数的增加，从而影响了查找效率，那么有木有方法可以减少树的高度或者说能够减少IO次数增加查找效率呢🤔🤔？</p>
+</blockquote>
+<br>
+<h2 id="a-name多路搜索树32-多路搜索树a"><a name="多路搜索树">3.2 多路搜索树</a></h2>
+<p>多路查找树(muitl-way search tree)也成m路搜索树，有m个children，m-1个key，其每一个节点的孩子数可以多于两个，且每一个节点处可以存储多个元素。主要有4中特殊形式：2-3树、2-3-4树、B树和B+树。</p>
+<p>M路搜索树主要用于解决数据量大无法全部加载到内存的数据存储。通过增加每层节点的个数和在每个节点存放更多的数据来在一层中存放更多的数据，从而降低树的高度，在数据查找时减少磁盘访问次数。</p>
+<ul>
+<li>2-3树<br>
+<img src="http://mofish.pily.life/post-images/1647270551750.png" alt="" loading="lazy"></li>
+</ul>
+<blockquote>
+<p>定义：<br>
+1、2-3树中每一个节点都具有两个孩子(我们称它为2节点)或三个孩子(我们称它为3节点)；</p>
+<p>2、一个2节点包含一个元素和两个孩子，且与二叉排序树类似，左子树包含的元素小于该元素，右子树包含的元素大于该元素；</p>
+<p>3、一个3节点包含一小一大两个元素和三个孩子。如果某个3节点有孩子，左子树包含小于较小元素的元素，右子树包含大于较大元素的元素，中间子树包含介于两元素之间的元素。</p>
+</blockquote>
+<ul>
+<li>2-3-4树<br>
+<img src="http://mofish.pily.life/post-images/1647271059545.png" alt="" loading="lazy"></li>
+</ul>
+<blockquote>
+<p>定义：<br>
+1、2-3-4搜索树是2-3搜索树的概念扩展，包括了4个节点的使用；</p>
+<p>2、一个4节点中包含小中大三个元素和四个孩子；</p>
+<p>3、如果某个4节点有孩子的话，左子树包含小于最小元素的元素；第二子树包含大于最小元素，小于第二元素的元素；第三子树包含大于第二元素，小于最大元素的元素；右子树包含大于最大元素的元素。</p>
+</blockquote>
+<p>此时，我们利用一下<code>用多路搜索树</code>的结构来构建一下索引：</p>
+<figure data-type="image" tabindex="4"><img src="http://mofish.pily.life/post-images/1647272008193.png" alt="" loading="lazy"></figure>
+<blockquote>
+<p>4-way搜索树中有3个key，每个key字都有对应指向记录的指针rp<br>
+4-way搜索树中有4个children，有4个指向子节点的指针</p>
+</blockquote>
+<p>此时，使用多路搜索树，变成在减少IO次数的情况下，快速拿到对应的索引，以及该索引指向的源数据。但是多路搜索树还有一个问题，就是缺少了某些限制条件，导致如果一直是有序添加key时，会退化成链表，导致搜索效率降低。</p>
+<figure data-type="image" tabindex="5"><img src="http://mofish.pily.life/post-images/1647273930596.png" alt="" loading="lazy"></figure>
+<p>所以，为了防止这种情况出现，必须加上限制条件，而加上限制条件后，就变成我们熟知的B-Tree。</p>
+<hr>
+<!-- more -->
+<h2 id="a-nameb-tree33-b树a"><a name="B-Tree">3.3 B树</a></h2>
+<p><code>B树</code>是一种<code>m路搜索树</code>，B树主要用于<code>解决</code>m路搜索树的<code>不平衡</code>导致树的<code>高度变高</code>，跟二叉树<code>退化</code>为<code>链表</code>导致性能问题一样。B树通过对每层的节点进行<code>控制</code>、<code>调整</code>，如节点分离，节点合并，一层满时<code>向上分裂父节点</code>来增加新的层等操作来<code>保证</code>该m路搜索树的<code>平衡</code>。</p>
+<p><strong>具体规则如下：</strong><br>
+1、如果根节点不是叶子节点，则至少有两棵子树<br>
+2、每一个非根的分支节点都有k-1个元素和k和孩子，其中[m/2]&lt;=k&lt;=m<br>
+3、每个叶子节点都有k-1个元素，其中[m/2]&lt;=k&lt;=m<br>
+4、所有叶子节点都位于同一层<br>
+5、创建过程是<code>自下而上</code></p>
+<br>
+<p><strong>创建过程：</strong>（m为4）<br>
+①插入10、20、30<br>
+<img src="http://mofish.pily.life/post-images/1647356772074.png" alt="" loading="lazy"></p>
+<p>②插入50、60，因为节点元素个数&gt;=m，所以需要把中间节点20向上提，形成根节点<br>
+<img src="http://mofish.pily.life/post-images/1647357118484.png" alt="" loading="lazy"></p>
+<p>③插入70、80，因为右子节点元素个数&gt;=m，而父节点的孩子个数还&lt;m，所以需要分裂节点，并把中间节点往上提<br>
+<img src="http://mofish.pily.life/post-images/1647358091007.png" alt="" loading="lazy"></p>
+<br>
+<p><strong>特点：</strong></p>
+<ul>
+<li>每个叶子节点都存储key和data</li>
+<li>非叶子节点还存储了指向子节点的指针，但叶子节点的该指针指向null<br>
+<img src="http://mofish.pily.life/post-images/1647359069717.png" alt="" loading="lazy"></li>
+</ul>
+<blockquote>
+<p>此时，通过构建B树，我们发现在大量的索引中想要获取指定的数据，IO的次数已经大量减少，查找效率已经大大的提升。</p>
+<p>但是现在还有2个问题：<br>
+1、如果每个节点都有指向数据记录的指针的话，那么每个节点占用的空间会比较大，那有没有办法减少每个节点的空间，让每个节点可以存放更多的key，减少获取节点时的IO次数？</p>
+<p>2、如果需要范围搜索时，B树似乎不太友好，需要中序遍历，较为复杂，那有没有办法可以让范围搜索更加简单呢？</p>
+</blockquote>
+<hr>
+<!-- more -->
+<h2 id="a-namebtree34-b树a"><a name="B+Tree">3.4 B+树</a></h2>
+<p>相较于B树，B+树增加了如下规则：<br>
+1、B+树中，<code>非叶子节点</code>中的key<code>没有</code>指向data的指针，仅<code>叶子节点</code>的key<code>有</code>指向data的指针</p>
+<blockquote>
+<p>该规则解决了上述问题1，由于只有叶子节点有指向data的指针，因此减少了非叶子节点的占用空间大小，一次性可读取更多的节点数据，减少IO次数。</p>
+</blockquote>
+<p>2、B+树中，每个key在叶子节点都有其副本</p>
+<p>3、B+树中，叶子节点之间有指向下个节点的兄弟指针（链表-稠密索引）</p>
+<blockquote>
+<p>规则2和3该规则解决了上述问题2，由于有指向下个节点的兄弟指针，并且叶子节点都有副本，因为在范围搜索是，只需要定位到边界值，就能通过链表在叶子节点直接获取范围内的数据。</p>
+</blockquote>
+<figure data-type="image" tabindex="6"><img src="http://mofish.pily.life/post-images/1647363338435.png" alt="" loading="lazy"></figure>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/rabbitmq_learning_03/" class="post-title gt-a-link">
+                    RabbitMq学习之路(三)：4种交换机模式和5种工作模式
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

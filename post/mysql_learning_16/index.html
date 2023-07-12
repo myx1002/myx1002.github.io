@@ -1,0 +1,393 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>MySql学习之路(十六)：join语句的原理 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    MySql学习之路(十六)：join语句的原理
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2023-01-05 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/YVLEbqd3K/" class="post-tags">
+                            # mysql
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>😏join方式连接多个表，本质就是各个表之间数据的循环匹配。</p>
+<!-- more -->
+<p>MySql5.5版本之前，只支持一种表间关联方式，就是<code>嵌套循环（Nested Loop Join）</code>。如果关联表的数据量较大，则join关联的执行时间会很长。而在MySql5.5版本之后，通过引入了<code>BNLJ算法</code>来优化嵌套执行。</p>
+<!-- more -->
+<h1 id="1-驱动表和被驱动表">1. 驱动表和被驱动表</h1>
+<p>驱动表就是主表，被驱动表是从表。</p>
+<ul>
+<li>对于内连接来说：</li>
+</ul>
+<pre><code class="language-sql">SELECT * FROM A JOIN B ON ...
+</code></pre>
+<p>A一定是驱动表吗？不一定，优化器会根据你查询语句做优化，决定先查哪张表。先查询的那张表就是驱动表，反之就是被驱动表。通过explain关键字可以查看。</p>
+<ul>
+<li>对于外连接来说：</li>
+</ul>
+<pre><code class="language-sql">SELECT * FROM A LEFT JOIN B ON ...
+# 或
+SELECT * FROM B RIGHT JOIN A ON ... 
+</code></pre>
+<p>通常，大家会认为A就是驱动表，B就是被驱动表。但也未必。测试如下：</p>
+<pre><code class="language-sql">CREATE TABLE a(f1 INT, f2 INT, INDEX(f1)) ENGINE=INNODB;
+CREATE TABLE b(f1 INT, f2 INT) ENGINE=INNODB;
+
+INSERT INTO a VALUES(1,1),(2,2),(3,3),(4,4),(5,5),(6,6);
+INSERT INTO b VALUES(3,3),(4,4),(5,5),(6,6),(7,7),(8,8);
+
+SELECT * FROM b;
+
+# 测试1
+EXPLAIN SELECT * FROM a LEFT JOIN b ON(a.f1=b.f1) WHERE (a.f2=b.f2);
++----+-------------+-------+------------+------+---------------+------+---------+------------+------+----------+-------------+
+| id | select_type | table | partitions | type | possible_keys | key  | key_len | ref        | rows | filtered | Extra       |
++----+-------------+-------+------------+------+---------------+------+---------+------------+------+----------+-------------+
+|  1 | SIMPLE      | b     | NULL       | ALL  | NULL          | NULL | NULL    | NULL       |    6 |   100.00 | Using where |
+|  1 | SIMPLE      | a     | NULL       | ref  | f1            | f1   | 5       | study.b.f1 |    1 |    16.67 | Using where |
++----+-------------+-------+------------+------+---------------+------+---------+------------+------+----------+-------------+
+2 rows in set, 1 warning (0.00 sec)
+
+# 测试2
+EXPLAIN SELECT * FROM a LEFT JOIN b ON(a.f1=b.f1) AND (a.f2=b.f2);
++----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+--------------------------------------------+
+| id | select_type | table | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra                                      |
++----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+--------------------------------------------+
+|  1 | SIMPLE      | a     | NULL       | ALL  | NULL          | NULL | NULL    | NULL |    6 |   100.00 | NULL                                       |
+|  1 | SIMPLE      | b     | NULL       | ALL  | NULL          | NULL | NULL    | NULL |    6 |   100.00 | Using where; Using join buffer (hash join) |
++----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+--------------------------------------------+
+</code></pre>
+<h1 id="2-simple-nested-loop-join-简单嵌套循环连接">2. Simple Nested-Loop Join (简单嵌套循环连接)</h1>
+<p>算法相当简单，从表A中取出一条数据1，遍历表B，将匹配到的数据放到result.. 以此类推，驱动表A中的每一条记录与被驱动表B的记录进行判断：<br>
+<img src="http://mofish.pily.life/post-images/1672905992865.png" alt="" loading="lazy"></p>
+<p>可以看到这种方式效率是非常低的，以上述表A数据100条，表B数据1000条计算，则A*B=10万次。开销统计如下:<br>
+<img src="http://mofish.pily.life/post-images/1672906019981.png" alt="" loading="lazy"></p>
+<p>当然mysql肯定不会这么粗暴的去进行表的连接，所以就出现了后面的两种对Nested-Loop Join优化算法。</p>
+<h1 id="3-index-nested-loop-join-索引嵌套循环连接">3. Index Nested-Loop Join （索引嵌套循环连接）</h1>
+<p>Index Nested-Loop Join其优化的思路主要是为了<code>减少内存表数据的匹配次数</code>，所以要求被驱动表上必须<code>有索引</code>才行。通过外层表匹配条件直接与内层表索引进行匹配，避免和内存表的每条记录去进行比较，这样极大的减少了对内存表的匹配次数。<br>
+<img src="http://mofish.pily.life/post-images/1672906210680.png" alt="" loading="lazy"></p>
+<p>驱动表中的每条记录通过被驱动表的索引进行访问，因为索引查询的成本是比较固定的，故mysql优化器都倾向于使用记录数少的表作为驱动表（外表）。<br>
+<img src="http://mofish.pily.life/post-images/1672906394138.png" alt="" loading="lazy"></p>
+<p>如果被驱动表加索引，效率是非常高的，但如果索引不是主键索引，所以还得进行一次回表查询。相比，被驱动表的索引是主键索引，效率会更高。</p>
+<h1 id="4-block-nested-loop-join块嵌套循环连接">4. Block Nested-Loop Join（块嵌套循环连接）</h1>
+<p>如果存在索引，那么会使用index的方式进行join，如果join的列没有索引，被驱动表要扫描的次数太多了。每次访问被驱动表，其表中的记录都会被加载到内存中，然后再从驱动表中取一条与其匹配，匹配结束后清除内存，然后再从驱动表中加载一条记录，然后把被驱动表的记录在加载到内存匹配，这样周而复始，大大增加了IO的次数。</p>
+<p>为了减少被驱动表的IO次数，就出现了<code>Block Nested-Loop Join</code>的方式。不再是逐条获取驱动表的数据，而是一块一块的获取，引入了join buffer缓冲区，将驱动表join相关的部分数据列（大小受join buffer的限制）缓存到join buffer中，然后全表扫描被驱动表，被驱动表的每一条记录一次性和join<br>
+buffert中的所有驱动表记录进行匹配（内存中操作），将简单嵌套循环中的多次比较合并成一次，降低了被驱动表的访问频率。</p>
+<blockquote>
+<p>举例来说，外层循环的结果集是100行，使用NLJ 算法需要扫描内部表100次，如果使用BNL算法，先把对Outer Loop表(外部表)每次读取的10行记录放到join buffer,然后在InnerLoop表(内部表)中直接匹配这10行数据，内存循环就可以一次与这10行进行比较, 这样只需要比较10次，对内部表的扫描减少了9/10。所以BNL算法就能够显著减少内层循环表扫描的次数.</p>
+</blockquote>
+<blockquote>
+<p>注意：<br>
+这里缓存的不只是关联表的列，select后面的列也会缓存起来。<br>
+在一个有N个join关联的sql中会分配N-1个join buffer。所以查询的时候尽量减少不必要的字段，可以让join buffer中可以存放更多的列。<br>
+<img src="http://mofish.pily.life/post-images/1672906792685.png" alt="" loading="lazy"><br>
+<img src="http://mofish.pily.life/post-images/1672906814266.png" alt="" loading="lazy"></p>
+</blockquote>
+<p>参数设置：</p>
+<ul>
+<li>block_nested_loop</li>
+</ul>
+<p>通过<code>show variables like '%optimizer_switch%</code> 查看 <code>block_nested_loop</code>状态。默认是开启的。</p>
+<ul>
+<li>join_buffer_size</li>
+</ul>
+<p>驱动表能不能一次加载完，要看join buffer能不能存储所有的数据，默认情况下<code>join_buffer_size=256k</code>。</p>
+<pre><code class="language-mysql">mysql&gt; show variables like '%join_buffer%';
+</code></pre>
+<p>join_buffer_size的最大值在32位操作系统可以申请4G，而在64位操作系统下可以申请大于4G的Join Buffer空间（64位Windows除外，其大值会被截断为4GB并发出警告）。</p>
+<h1 id="5-join小结">5. Join小结</h1>
+<ul>
+<li>
+<p>整体效率比较：INLJ &gt; BNLJ &gt; SNLJ</p>
+</li>
+<li>
+<p>永远用小结果集驱动大结果集（其本质就是减少外层循环的数据数量）（小的度量单位指的是表行数 * 每行大小）</p>
+</li>
+<li>
+<p>为被驱动表匹配的条件增加索引(减少内存表的循环匹配次数)</p>
+</li>
+<li>
+<p>增大join buffer size的大小（一次索引的数据越多，那么内层包的扫描次数就越少）</p>
+</li>
+<li>
+<p>减少驱动表不必要的字段查询（字段越少，join buffer所缓存的数据就越多）</p>
+</li>
+</ul>
+<h1 id="6-hash-join">6. Hash Join</h1>
+<blockquote>
+<p>从MySQL的8.0.20版本开始将废弃BNLJ，因为从MySQL8.0.18版本开始就加入了hash join默认都会使用hash join</p>
+</blockquote>
+<ul>
+<li>
+<p>Nested Loop:</p>
+<p>对于被连接的数据子集较小的情况，Nested Loop是个较好的选择。</p>
+</li>
+<li>
+<p>Hash Join是做<code>大数据集连接</code>时的常用方式，优化器使用两个表中较小（相对较小）的表利用Join Key在内存中建立<code>散列表</code>，然后扫描较大的表并探测散列表，找出与Hash表匹配的行。</p>
+<ul>
+<li>这种方式适合于较小的表完全可以放于内存中的情况，这样总成本就是访问两个表的成本之和。</li>
+<li>在表很大的情况下并不能完全放入内存，这时优化器会将它分割成<code>若干不同的分区</code>，不能放入内存的部分就把该分区写入磁盘的临时段，此时要求有较大的临时段从而尽量提高I/O的性能。</li>
+<li>它能够很好的工作于没有索引的大表和并行查询的环境中，并提供最好的性能。大多数人都说它是Join的重型升降机。Hash Join只能应用于等值连接（如WHERE A.COL1 = B.COL2），这是由Hash的特点决定的。</li>
+</ul>
+</li>
+</ul>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1672909355405.png" alt="" loading="lazy"></figure>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/mysql_learning_15/" class="post-title gt-a-link">
+                    MySql学习之路(十五)：慢查询日志
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

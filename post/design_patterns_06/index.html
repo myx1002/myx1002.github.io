@@ -1,0 +1,496 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>硬啃设计模式(六)：适配器模式 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    硬啃设计模式(六)：适配器模式
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2021-04-09 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/KmXvMvDsm/" class="post-tags">
+                            # 设计模式
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>😈 上班摸鱼更新中.........看到了千万不要告诉我领导😭，因为安排的工作都弄完了，而且今天也是周五！<br>
+👏 从这篇开始，就为大家带来<code>结构型模式</code>的学习啦，这一章介绍的就是比较简单的<code>适配器模式</code></p>
+<!-- more -->
+<h2 id="简述">简述👇👇</h2>
+<pre><code>在日常生活中，我们常常遇到下面这些场景，外交官发言时需要一名翻译官为记者翻译，电脑要读取SD卡的内容时需要有个读卡器等等
+
+而在程序设计中，需要开发的具有某种业务功能的组件在现有的组件库中已经存在，
+
+但它们与当前系统的接口规范不兼容，而重新开发所需的成本又比较高的时候，就可以使用适配器模式来解决。
+
+简单的说，就是需要的东西在面前，但却不能使用，而短时间又无法改造它，于是得想办法适配它。
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1618191731171.jpg" alt="" loading="lazy"></figure>
+<!-- more -->
+<h2 id="概念">概念👇👇</h2>
+<pre><code>适配器模式(Adapter)，将一个类的接口转化成客户希望的另外一个接口，使得原本由于接口不兼容而不能一起工作的类可以一起工作
+
+适配器模式分为类适配器模式和对象适配器模式，由于类适配器模式通过多重继承对一个类与另外一个接口进行匹配
+
+而C#、Java等语言都不支持多重集成也就是一个类只有一个父类，
+
+并且对象适配器模式使用频率更多，所以我们这里主要讲的是对象适配器模式。
+</code></pre>
+<br>
+<!-- more -->
+<h2 id="应用场景">应用场景👇👇</h2>
+<pre><code>1️⃣以前开发的系统存在满足新系统功能需求的类，但其接口同新系统的接口不一致。
+
+2️⃣使用第三方提供的组件，但组件接口定义和自己要求的接口定义不同。
+</code></pre>
+<br>
+<!-- more -->
+<h2 id="主要角色">主要角色👴👵</h2>
+<pre><code>🕴目标（Target）接口：当前系统业务所期待的接口，它可以是抽象类或接口
+
+💃适配者（Adaptee）类：它是被访问和适配的现存组件库中的组件接口
+
+🕺适配器（Adapter）类：它是转换器，通过继承或引用适配者对象，把适配者接口转换成目标接口，让客户按目标接口格式访问适配者
+</code></pre>
+<br>
+<!-- more -->
+<h2 id="优缺点️">优缺点❌✔️</h2>
+<pre><code>✔️优点：
+
+    1️⃣客户端通过适配器可以透明地调用目标接口
+    
+    2️⃣复用了现存的类，在不需要修改原有代码的前提下重用现有的适配者类
+    
+    3️⃣将目标类和适配者类解耦，解决了目标类和适配者类接口不一致的问题
+    
+    4️⃣在很多业务场景中符合开闭原则
+    
+❌缺点：
+
+    1️⃣适配器编写过程需要结合业务场景全面考虑，可能会增加系统的复杂性
+    
+    2️⃣增加代码阅读难度，降低代码可读性，过多使用适配器会使系统代码变得凌乱
+</code></pre>
+<br>
+<!-- more -->
+<h2 id="适配器模式uml图"><code>适配器</code>模式UML图👇👇</h2>
+<figure data-type="image" tabindex="2"><img src="http://mofish.pily.life/post-images/1618194017393.png" alt="" loading="lazy"></figure>
+<br>
+<!-- more -->
+<h2 id="适配器模式代码示例"><code>适配器</code>模式代码示例👇👇</h2>
+<p>Player.php</p>
+<pre><code class="language-php">&lt;?php
+
+
+/**
+ * 球员抽象类
+ * Class player
+ */
+abstract class player
+{
+    protected $name;
+
+    public function __construct(string $name)
+    {
+        $this-&gt;name = $name;
+    }
+
+    // 进攻
+    public abstract function Attack();
+
+    // 防守
+    public abstract function Defense();
+}
+
+/**
+ * 前锋
+ * Class Forwards
+ */
+class Forwards extends player
+{
+
+    public function Attack()
+    {
+        echo '前锋' . $this-&gt;name . '进攻' . PHP_EOL;
+    }
+
+    public function Defense()
+    {
+        echo '前锋' . $this-&gt;name . '防守' . PHP_EOL;
+    }
+}
+
+/**
+ * 后卫
+ * Class Guards
+ */
+class Guards extends player
+{
+    public function Attack()
+    {
+        echo '后卫' . $this-&gt;name . '进攻' . PHP_EOL;
+    }
+
+    public function Defense()
+    {
+        echo '后卫' . $this-&gt;name . '防守' . PHP_EOL;
+    }
+}
+
+/**
+ * 中锋
+ * Class Center
+ */
+class Center extends player
+{
+    public function Attack()
+    {
+        echo '中锋' . $this-&gt;name . '进攻' . PHP_EOL;
+    }
+
+    public function Defense()
+    {
+        echo '中锋' . $this-&gt;name . '防守' . PHP_EOL;
+    }
+}
+</code></pre>
+<br>
+Adapter.php
+<pre><code class="language-php">&lt;?php
+
+include_once &quot;./Player.php&quot;;
+
+
+/**
+ * 外国中锋(Adaptee适配者)
+ * Class ForeignCenter
+ */
+class ForeignCenter
+{
+    private $name;
+
+    public function __construct(string $name)
+    {
+        $this-&gt;name = $name;
+    }
+
+    public function ForeignAttack()
+    {
+        echo '外籍中锋' . $this-&gt;name . '进攻' . PHP_EOL;
+    }
+
+    public function ForeignDefense()
+    {
+        echo '外籍中锋' . $this-&gt;name . '防守' . PHP_EOL;
+    }
+}
+
+/**
+ * 翻译官（Adepter适配器）
+ * Class Translator
+ */
+class Translator extends player
+{
+    private $foreignCenter;
+
+    public function __construct(string $name)
+    {
+       $this-&gt;foreignCenter = new ForeignCenter($name);
+    }
+
+    public function Attack()
+    {
+        $this-&gt;foreignCenter-&gt;ForeignAttack();
+    }
+
+    public function Defense()
+    {
+        $this-&gt;foreignCenter-&gt;ForeignDefense();
+    }
+}
+
+
+$forwards = new Forwards('詹姆斯');
+$forwards-&gt;Attack();
+$guards   = new Guards('艾佛森');
+$guards-&gt;Attack();
+
+$center   = new Translator('姚明');
+$center-&gt;Attack();
+$center-&gt;Defense();
+</code></pre>
+<br>
+<h2 id="执行结果">执行结果：</h2>
+<pre><code>&gt; php Adapter.php
+&gt; 前锋詹姆斯进攻
+&gt; 后卫艾佛森进攻
+&gt; 外籍中锋姚明进攻
+&gt; 外籍中锋姚明防守
+</code></pre>
+<br>
+<!-- more -->
+<h2 id="总结">总结💯</h2>
+<pre><code>前面也说过`适配器模式`的使用场景，这里再强调一遍，就是`适配器模式`尽量不要滥用，模式乱用不如不用，
+
+如果在程序开发中，能够及早、提前的规划，事先预防接口不同、不匹配的问题，
+
+在有小的接口不统一时能够及早发现，及时重构，不让问题继续扩大，而当碰到无法改变原有设计和代码的情况时，才考虑去适配，
+
+这样就能做到事后控制不如事中控制，事中控制不如事前控制。
+</code></pre>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/design_patterns_principle/" class="post-title gt-a-link">
+                    硬啃设计模式：七大设计原则
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

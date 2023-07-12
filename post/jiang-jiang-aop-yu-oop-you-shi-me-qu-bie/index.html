@@ -1,0 +1,333 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>讲讲AOP与OOP有什么区别？（已迁移） | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    讲讲AOP与OOP有什么区别？（已迁移）
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-09-02 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/qo6XPqkl5/" class="post-tags">
+                            # php
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>🤡 面试常见问题了，因此记录一下AOP 和 OOP的相关知识。</p>
+<!-- more -->
+<h1 id="一-aop概念">一、AOP概念</h1>
+<p>AOP（Aspect Oriented Programming），意为<code>面向切面编程</code>，通过预编译方式和运行期动态代理实现程序功能的统一维护的一种技术。</p>
+<p><strong>AOP 是 OOP 的延续</strong>，是函数式编程的一种衍生泛型。利用 AOP 可以对业务逻辑的各个部分进行<strong>隔离</strong>，从而使得业务逻辑各个部分之间<strong>耦合度降低</strong>，提高程序的<strong>可重用性</strong>，提高<strong>开发效率</strong>。</p>
+<hr>
+<h1 id="二-aop-和-oop-的关系">二、AOP 和 OOP 的关系</h1>
+<p>OOP（面向对象编程），是针对业务处理过程中的<strong>实体及其属性和行为</strong>进行<strong>抽象封装</strong>，以获得更加清晰高效的逻辑单元划分。</p>
+<p>而 OOP 有一个<strong>明显的缺点</strong>就是关注点聚焦时，面向对象无法解决这个问题，一个关注点时面向所有而不是单一的类，不受类的边界的约束，因为OOP无法将关注点聚焦来解决，只能<strong>分散</strong>到各个类中。</p>
+<p>AOP（面向切面编程）则是针对业务处理过程中的切面进行<strong>提取</strong>，它所面对的是处理过程中的某个步骤或阶段，以获得逻辑过程中各部分之间<strong>低耦合性的隔离效果</strong>。</p>
+<blockquote>
+<p>这两种设计思想在目标上有着本质的差异。AOP并不是与OOP对立的，而是为了弥补OOP的不足。OOP解决了竖向的问题，AOP解决了横向的问题。<br>
+简单的讲，AOP是一种在不改变原来代码的基础上，通过”动态注入“代码，来改变原来执行结果的技术。</p>
+</blockquote>
+<p>OOP 抽象的是对象，AOP 抽象的是场景</p>
+<hr>
+<h1 id="三-aop的主要应用场景">三、AOP的主要应用场景</h1>
+<p>日志记录、性能统计、安全控制、事务处理、异常处理等等。</p>
+<hr>
+<h1 id="四-主要目标">四、主要目标</h1>
+<p>将日志记录，性能统计，安全控制，事务处理，异常处理等代码从业务逻辑代码中划分出来，通过对这些行为的分离，我们希望可以将它们独立到非指导业务逻辑的方法中，进而改变这些行为的时候不影响业务逻辑的代码。</p>
+<blockquote>
+<p>如Laravel中路由中间件的使用。</p>
+</blockquote>
+<hr>
+<h1 id="五-对比">五、对比</h1>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>AOP（面向切面编程）</th>
+<th>OOP（面向对象编程）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>定义</td>
+<td>通过预编译方式和运行期动态代理实现程序功能的统一维护的一种技术。</td>
+<td>针对业务处理过程的实体及其属性和行为进行抽象封装，以获得更加清晰高效的逻辑单元划分。</td>
+</tr>
+<tr>
+<td>注重方面不同</td>
+<td>AOP偏重业务处理过程的某个步骤或阶段。</td>
+<td>OOP注重业务逻辑单元的划分。</td>
+</tr>
+<tr>
+<td>使用方式</td>
+<td>AOP在运行时动态地将代码切入到类的指定方法、指定位置上，从而提高了代码的实用性。</td>
+<td>OOP面向对象的三大特征：封装,继承,多态。将功能分散到不同的对象中去，让不同的类设计不同的方法，降低代码的复杂程度，提高类的复用性，但也增加了代码的重复性。</td>
+</tr>
+<tr>
+<td>面向目标不同</td>
+<td>AOP希望能够将通用需求功能从不相关的类当中分离出来，能够使得很多类共享一个行为，一旦发生变化，不必修改很多类，而只需要修改这个行为即可。</td>
+<td>OOP关注将需求功能划分为不同的并且相对独立，封装良好的类，并让它们有着属于自己的行为，依靠继承和多态等来定义彼此的关系。</td>
+</tr>
+<tr>
+<td>总结</td>
+<td>封装的是业务，将主业务和通用业务区分开，将通用业务划分为切面，切面又划分为通知和切入点。</td>
+<td>封装的是方法和属性，以对象为最小操作单元，属性和方法都要通过对象才能调用。</td>
+</tr>
+</tbody>
+</table>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/yi-wen-du-dong-cgifastcgiphp-cgiphp-fpm-de-qu-bie/" class="post-title gt-a-link">
+                    一文读懂CGI、FastCGI、php-cgi、php-fpm的区别（已迁移）
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

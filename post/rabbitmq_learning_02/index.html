@@ -1,0 +1,649 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>RabbitMq学习之路(二)：如何保证消息消息不丢失，进行可靠性传输？ | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    RabbitMq学习之路(二)：如何保证消息消息不丢失，进行可靠性传输？
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-02-23 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/jVr0D8ZT0/" class="post-tags">
+                            # rabbitMq
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>该章节主要从生产者到RabbitMq、RabbitMq自身以及RabbitMq到消费者三个方面来整理使用RabbitMq时，如何保证消息的可靠性以及防止消息丢失的问题。</p>
+<!-- more -->
+<h2 id="目录">目录</h2>
+<ul>
+<li><a href="#生产者到RabbitMq">一、生产者到RabbitMq</a>
+<ul>
+<li><a href="#生产者事务机制">1.1 事务机制</a></li>
+<li><a href="#生产者确认机制">1.2 确认机制</a></li>
+<li><a href="#信息补偿机制">1.3 信息补偿机制</a></li>
+</ul>
+</li>
+<li><a href="#RabbitMq自身">二、RabbitMq自身</a></li>
+<li><a href="#RabbitMq到消费者">三、RabbitMq到消费者</a>
+<ul>
+<li><a href="#消费者手动确认机制">3.1 手动确认机制</a></li>
+<li><a href="#消费者死信队列">3.2 死信队列DLX<code>(dead-letter-exchange)</code></a></li>
+<li><a href="#延迟队列">3.3 延迟队列(补充知识点)</a></li>
+</ul>
+</li>
+</ul>
+<h1 id="a-name生产者到rabbitmq一-生产者到rabbitmqa"><a name="生产者到RabbitMq">一、生产者到RabbitMq</a></h1>
+<p>这个方面是为了确认生产者能把消息投送到broker代理服务器，只有到达了服务器，才能进行信息持久化存储，因为为了确保消息投递的可靠性，RabbitMq为我们提供了事务机制和Confirm确认机制（信息补偿机制是对机制上的一种完善）。</p>
+<h2 id="a-name生产者事务机制11-事务机制a"><a name="生产者事务机制">1.1 事务机制</a></h2>
+<h3 id="简述">简述：</h3>
+<p>类似Mysql的事务机制，在通开启事务之后，我们便可以发布消息给broker代理服务器了，如果提交成功了，则消息一定到达了broker了，如果在提交执行之前broker异常崩溃或者由于其他原因抛出异常，这个时候我们便可以捕获异常通过Rollback回滚事务了。</p>
+<br>
+<h3 id="实现方式">实现方式：</h3>
+<pre><code class="language-php">&lt;?php
+// Producer 生产者
+$config = [
+    'host' =&gt; '127.0.0.1',
+    'vhost' =&gt; '/',
+    'port' =&gt; 5672,
+    'login' =&gt; 'guest',
+    'password' =&gt; 'guest'
+];
+$connection = new \AMQPConnection($config);
+
+if (!$connection-&gt;connect()) {
+    return ['code' =&gt; 600, 'data' =&gt; '连接失败'];
+}
+
+$channel = new \AMQPChannel($connection);
+$exchange = new \AMQPExchange($channel);
+
+//消息的路由键，一定要和消费者端一致
+$routingKey = 'key_1';
+//交换机名称，一定要和消费者端一致，
+$exchangeName = 'exchange_1';
+
+$exchange-&gt;setName($exchangeName);
+$exchange-&gt;setType(AMQP_EX_TYPE_DIRECT);
+$exchange-&gt;setFlags(AMQP_DURABLE);
+$exchange-&gt;declareExchange();
+
+//创建10个消息
+$logs = [];
+try {
+    $channel-&gt;startTransaction();
+    //消息内容
+    for ($i=1;$i&lt;=10;$i++){
+        $msg = array(
+            'data'  =&gt; 'message_'.$i,
+            'hello' =&gt; 'world',
+        );
+        if ($i == 5) {
+            $msg['data'] = 'message_' . $i/0;
+        }
+        //发送消息到交换机，并返回发送结果
+        //delivery_mode:2声明消息持久，持久的队列+持久的消息在RabbitMQ重启后才不会丢失
+        $logs[] =  &quot;Send Message:&quot;.$exchange-&gt;publish(json_encode($msg), $routingKey, AMQP_NOPARAM, array('delivery_mode' =&gt; 2)).&quot;\n&quot;;
+    }
+
+    //代码执行完毕后进程会自动退出
+    $channel-&gt;commitTransaction();
+    echo &quot;全部发送成功&quot;;
+
+} catch (\Exception $e) {
+    $channel-&gt;rollbackTransaction();
+    echo &quot;全部失败&quot; . $e-&gt;getMessage();
+}
+</code></pre>
+<pre><code class="language-php">&lt;?php
+// Consumer 消费者
+//声明连接参数
+$config = array(
+    'host' =&gt; '127.0.0.1',
+    'vhost' =&gt; '/',
+    'port' =&gt; 5672,
+    'login' =&gt; 'guest',
+    'password' =&gt; 'guest'
+);
+//连接broker
+$cnn = new \AMQPConnection($config);
+if (!$cnn-&gt;connect()) {
+    echo &quot;Cannot connect to the broker&quot;;
+    exit();
+}
+//在连接内创建一个通道
+$ch = new \AMQPChannel($cnn);
+//创建一个交换机
+$ex = new \AMQPExchange($ch);
+//声明路由键
+$routingKey = 'key_1';
+//声明交换机名称
+$exchangeName = 'exchange_1';
+//设置交换机名称
+$ex-&gt;setName($exchangeName);
+//设置交换机类型
+//AMQP_EX_TYPE_DIRECT:直连交换机
+//AMQP_EX_TYPE_FANOUT:扇形交换机
+//AMQP_EX_TYPE_HEADERS:头交换机
+//AMQP_EX_TYPE_TOPIC:主题交换机
+$ex-&gt;setType(AMQP_EX_TYPE_DIRECT);
+//设置交换机持久
+$ex-&gt;setFlags(AMQP_DURABLE);
+//声明交换机
+$ex-&gt;declareExchange();
+//创建一个消息队列
+$q = new \AMQPQueue($ch);
+//设置队列名称
+$q-&gt;setName('queue_1');
+//设置队列持久
+$q-&gt;setFlags(AMQP_DURABLE);
+//声明消息队列
+$q-&gt;declareQueue();
+//交换机和队列通过$routingKey进行绑定
+$q-&gt;bind($ex-&gt;getName(), $routingKey);
+//接收消息并进行处理的回调方法
+function receive($envelope, $queue) {
+    //休眠两秒，
+    sleep(2);
+    //echo消息内容
+    echo $envelope-&gt;getBody().&quot;\n&quot;;
+    //显式确认，队列收到消费者显式确认后，会删除该消息
+    $queue-&gt;ack($envelope-&gt;getDeliveryTag());
+}
+//设置消息队列消费者回调方法，并进行阻塞
+$q-&gt;consume(&quot;receive&quot;);
+//$q-&gt;consume(&quot;receive&quot;, AMQP_AUTOACK);//隐式确认,不推荐
+</code></pre>
+<br>
+<h3 id="不足之处">不足之处：</h3>
+<p>开启-提交-回滚，每次操作都相当于一次请求，降低了消息的吞吐量，另外因为走的通信太多，大量消息就会大量请求服务器，增加耗时。</p>
+<br>
+<h3 id="总结">总结：</h3>
+<p>事务确实能够解决producer与broker之间消息确认的问题，只有消息成功被broker接受，事务提交才能成功，否则我们便可以在捕获异常进行事务回滚操作同时进行消息重发，但是使用事务机制的话会降低RabbitMq的消息吞吐量。</p>
+<br>
+<h2 id="a-name生产者确认机制12-确认机制a"><a name="生产者确认机制">1.2 确认机制</a></h2>
+<h3 id="简述-2">简述：</h3>
+<p>Producer 将信道设置成 confirm 模式，一旦信道进入 confirm 模式，所有在该信道上面发布的消息都会被指派一个唯一的ID，一旦消息被投递到匹配的队列后，broker 就会发送一个 ack 给 Producer，这就使得Producer知道消息已经正确到达目的队列了。</p>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1646120719126.png" alt="" loading="lazy"></figure>
+<blockquote>
+<p>注意：已经在transaction事务模式的channel是不能再设置成confirm模式的，即这两种模式是不能共存的。</p>
+</blockquote>
+<br>
+<h3 id="实现方式-2">实现方式</h3>
+<p>对于客户端来说，要实现 Producer 的 confirm 模式通过调用<code>confirm_select()</code>开启，一共有三种方式：普通模式、批量模式和异步模式。</p>
+<ul>
+<li><strong>普通confirm模式</strong></li>
+</ul>
+<blockquote>
+<p>原理：publish一条消息后，调用<code>wait_for_pending_acks()</code>等待服务器端confirm,如果服务端返回false或者超时时间内未返回，客户端进行消息重传。</p>
+<p>缺点：如果需要批量推送消息时，效率低。</p>
+</blockquote>
+<ul>
+<li><strong>批量confirm模式</strong></li>
+</ul>
+<blockquote>
+<p>原理：客户端程序需要定期（每隔多少秒）或者定量（达到多少条）或者两则结合起来 publish 消息，然后调用<code>wait_for_pending_acks()</code>等待服务器端 confirm。<br>
+优点：相比普通 confirm 模式，批量极大提升 confirm 效率。<br>
+缺点：问题在于一旦出现 confirm 返回false或者超时的情况时，客户端需要将这一批次的消息全部重发，这会带来明显的重复消息数量，并且，当消息经常丢失时，批量 confirm 性能应该是不升反降的。</p>
+</blockquote>
+<ul>
+<li><strong>异步confirm模式</strong></li>
+</ul>
+<blockquote>
+<p>原理：提供一个回调方法，服务端 confirm 了一条或者多条消息后客户端会回调这个方法。<br>
+优点：异步、非阻塞的、性能好，所以比较常用。<br>
+缺点：复杂度增加。</p>
+</blockquote>
+<br>
+<h3 id="优点">优点</h3>
+<ul>
+<li>保证消息的准确到达broker服务器</li>
+<li>相较于<code>事务模式</code>，confirm模式是异步的，性能更好、更高效</li>
+</ul>
+<br>
+<h3 id="总结-2">总结</h3>
+<p>confirm 模式最大的好处在于他是异步的，一旦发布一条消息，生产者应用程序就可以在等信道返回确认的同时继续发送下一条消息，当消息最终得到确认<code>ack</code>之后，生产者应用便可以通过回调方法来处理该确认消息，如果RabbitMq因为自身内部错误导致消息丢失，就会发送一条<code>nack</code>消息，生产者应用程序同样可以在回调方法中处理该<code>nack</code>消息。</p>
+<br>
+<h2 id="a-name信息补偿机制13-信息补偿机制a"><a name="信息补偿机制">1.3 信息补偿机制</a></h2>
+<p>关于 Producer 的可靠性投递，我们思考一下，一共有如下要求：</p>
+<ul>
+<li>保证消息的成功发出</li>
+<li>保证Mq节点的成功接收</li>
+<li>发送端收到Mq节点(broker)确认应答</li>
+</ul>
+<p>但是在实际生产中，很难保障这三点的完全可靠，比如在极端环境中，生产者发送消息失败了，发送端在接受确认应答时网络闪断等等情况，很难保证可靠性投递，因此就需要有完善的消息补偿机制。</p>
+<figure data-type="image" tabindex="2"><img src="http://mofish.pily.life/post-images/1646122803301.png" alt="" loading="lazy"></figure>
+<p>简单的说，就是将消息<code>持久化到DB</code>并设置状态值，当收到 ack 应答时就改变当前记录的状态，除此之外再通过定时脚本轮询检查还木有收到 ack 应答的消息，在重试次数范围内进行重新推送。</p>
+<hr>
+<h1 id="a-namerabbitmq自身二-rabbitmq自身a"><a name="RabbitMq自身">二、RabbitMq自身</a></h1>
+<p>处理消息队列丢失数据的方式，一般都是<code>开启持久化磁盘</code>。</p>
+<p>持久化配置可以和生产者的 confirm 机制配合使用，在消息持久化磁盘后，再给生产者发送一个Ack信号。这样的话，如果消息持久化磁盘之前，即使 RabbitMQ 挂掉了，生产者也会因为收不到Ack信号而再次重发消息。</p>
+<blockquote>
+<p>持久化设置如下（必须同时设置以下 2 个配置）：</p>
+<ol>
+<li>创建queue的时候，将queue的持久化标志durable在设置为true，代表是一个持久的队列，这样就可以保证 rabbitmq 持久化 queue 的元数据，但是不会持久化queue里的数据；</li>
+</ol>
+<p>2.发送消息的时候将 deliveryMode 设置为 2，将消息设置为持久化的，此时 RabbitMQ 就会将消息持久化到磁盘上去。</p>
+</blockquote>
+<p>这样设置以后，即使rabbitMQ挂了，重启后也能恢复数据。</p>
+<hr>
+<h1 id="a-namerabbitmq到消费者三-rabbitmq到消费者a"><a name="RabbitMq到消费者">三、RabbitMq到消费者</a></h1>
+<p>消费者丢数据<code>默认</code>因为采用了<code>自动确认消息模式</code>。该模式下，虽然消息还在处理中，但是消费中者会<code>自动发送一个确认</code>，通知 RabbitMq 已经收到消息了，这时 RabbitMq 就会<code>立即将消息删除</code>。这种情况下，如果消费者出现异常而<code>未能处理消息</code>，那就会<code>丢失该消息</code>。</p>
+<br>
+<h2 id="a-name消费者手动确认机制31-手动确认机制a"><a name="消费者手动确认机制">3.1 手动确认机制</a></h2>
+<p>解决方案就是采用<code>手动确认</code>消息，设置 <code>autoAck = False</code>，等到消息被真正消费之后，再<code>手动发送一个确认信号</code>，即使中途消息没处理完，但是服务器宕机了，那 RabbitMq 就<code>收不到</code>发的ack，然后 RabbitMq 就会将这条消息<code>重新分配</code>给其他的消费者去处理。</p>
+<blockquote>
+<p>值得注意的是，只有消费者确认了消息，RabbitMq才能安全地把消息从队列中删除。这里并没有用到超时机制，RabbitMq仅通过Consumer的连接中断来确认是否需要重新发送消息。也就是说，只要连接不中断，RabbitMq给了Consumer足够长的时间来处理消息，但是下面有两种特殊情况：</p>
+<ol>
+<li>如果消费者接收到消息，在确认之前断开了连接或取消订阅，RabbitMQ会认为消息没有被分发，然后重新分发给下一个订阅的消费者。（可能存在消息重复消费的隐患，需要根据业务Id去重）；</li>
+<li>如果消费者接收到消息却没有确认消息，连接也未断开，则RabbitMQ认为该消费者繁忙，将不会给该消费者分发更多的消息。</li>
+</ol>
+</blockquote>
+<br>
+<h2 id="a-name消费者死信队列32-死信队列dlxa"><a name="消费者死信队列">3.2 死信队列DLX</a></h2>
+<h3 id="简述-3">简述</h3>
+<p>DLX也是一个正常的Exchange，和一般的Exchange没有任何区别。能在任何的队列上被指定，实际上就是设置某个队列的属性。当这个队列出现死信（dead message，就是没有任何消费者消费）的时候，RabbitMQ就会自动将这条消息重新发布到Exchange上去，进而被路由到另一个队列。可以监听这个队列中的消息作相应的处理。</p>
+<blockquote>
+<p>消息队列中的消息会在一下几种情况下变成死信</p>
+<ul>
+<li>消息被拒绝(basic.reject / basic.nack)，并且requeue = false；</li>
+<li>消息TTL过期；</li>
+<li>队列达到最大长度；</li>
+</ul>
+</blockquote>
+<br>
+<h3 id="实现方式-3">实现方式</h3>
+<pre><code class="language-php">&lt;?php
+// Producer 生产者
+$config = [
+    'host' =&gt; '127.0.0.1',
+    'vhost' =&gt; '/',
+    'port' =&gt; 5672,
+    'login' =&gt; 'guest',
+    'password' =&gt; 'guest'
+];
+$connection = new \AMQPConnection($config);
+
+if (!$connection-&gt;connect()) {
+    return ['code' =&gt; 600, 'data' =&gt; '连接失败'];
+}
+
+$channel = new \AMQPChannel($connection);
+
+/**  创建一个存放死信的交换机和队列  **/
+$deadExchangeName = 'dead_exchange_1';
+$deadQueueName = 'dead_queue_1';
+$deadKeyName = 'dead_key_1';
+
+$deadExchange = new AMQPExchange($channel);
+$deadExchange-&gt;setName($deadExchangeName);
+$deadExchange-&gt;setType(AMQP_EX_TYPE_DIRECT);
+$deadExchange-&gt;setFlags(AMQP_DURABLE);
+$deadExchange-&gt;declareExchange();
+
+$deadQueue = new AMQPQueue($channel);
+$deadQueue-&gt;setName($deadQueueName);
+$deadQueue-&gt;setFlags(AMQP_DURABLE);
+$deadQueue-&gt;declareQueue();
+$deadQueue-&gt;bind($deadExchange-&gt;getName(), $deadKeyName);
+
+/**  创建一个普通的交换机和队列  **/
+$routingKey = 'key_1';
+$exchangeName = 'exchange_1';
+$queueName = 'queue_1';
+
+$exchange = new \AMQPExchange($channel);
+$exchange-&gt;setName($exchangeName);
+$exchange-&gt;setType(AMQP_EX_TYPE_DIRECT);
+$exchange-&gt;setFlags(AMQP_DURABLE);
+$exchange-&gt;declareExchange();
+
+$queue = new AMQPQueue($channel);
+$queue-&gt;setName($queueName);
+$arguments = [
+    'x-message-ttl' =&gt; 5000,
+    'x-dead-letter-exchange' =&gt; $deadExchangeName, //死信发送的交换机
+    'x-dead-letter-routing-key' =&gt; $deadKeyName, //死信routeKey
+];
+$queue-&gt;setFlags(AMQP_DURABLE); // 设置队列持久性
+$queue-&gt;setArguments($arguments);
+$queue-&gt;declareQueue();
+$queue-&gt;bind($exchange-&gt;getName(), $routingKey);
+
+//创建10个消息
+$logs = [];
+try {
+    //消息内容
+    for ($i=1;$i&lt;=10;$i++){
+        $msg = array(
+            'data'  =&gt; 'message_'.$i,
+            'hello' =&gt; 'world',
+        );
+        //发送消息到交换机，并返回发送结果
+        //delivery_mode:2声明消息持久，持久的队列+持久的消息在RabbitMQ重启后才不会丢失
+        $logs[] =  &quot;Send Message:&quot;.$exchange-&gt;publish(json_encode($msg), $routingKey, AMQP_NOPARAM, array('delivery_mode' =&gt; 2)).&quot;\n&quot;;
+    }
+
+    //代码执行完毕后进程会自动退出
+    echo &quot;全部发送成功&quot;;
+
+} catch (\Exception $e) {
+    echo &quot;全部失败&quot; . $e-&gt;getMessage();
+}
+</code></pre>
+<pre><code class="language-php">&lt;?php
+$config = array(
+    'host' =&gt; '127.0.0.1',
+    'vhost' =&gt; '/',
+    'port' =&gt; 5672,
+    'login' =&gt; 'guest',
+    'password' =&gt; 'guest'
+);
+//连接broker
+$cnn = new \AMQPConnection($config);
+if (!$cnn-&gt;connect()) {
+    echo &quot;Cannot connect to the broker&quot;;
+    exit();
+}
+//在连接内创建一个通道
+$ch = new \AMQPChannel($cnn);
+//创建一个交换机
+$ex = new \AMQPExchange($ch);
+//声明路由键
+$routingKey = 'dead_key_1';
+//声明交换机名称
+$exchangeName = 'dead_exchange_1';
+//设置交换机名称
+$ex-&gt;setName($exchangeName);
+//设置交换机类型
+//AMQP_EX_TYPE_DIRECT:直连交换机
+//AMQP_EX_TYPE_FANOUT:扇形交换机
+//AMQP_EX_TYPE_HEADERS:头交换机
+//AMQP_EX_TYPE_TOPIC:主题交换机
+$ex-&gt;setType(AMQP_EX_TYPE_DIRECT);
+//设置交换机持久
+$ex-&gt;setFlags(AMQP_DURABLE);
+//声明交换机
+$ex-&gt;declareExchange();
+//创建一个消息队列
+$q = new \AMQPQueue($ch);
+//设置队列名称
+$q-&gt;setName('dead_queue_1');
+//设置队列持久
+$q-&gt;setFlags(AMQP_DURABLE);
+//声明消息队列
+$q-&gt;declareQueue();
+//交换机和队列通过$routingKey进行绑定
+$q-&gt;bind($ex-&gt;getName(), $routingKey);
+//接收消息并进行处理的回调方法
+function receive($envelope, $queue) {
+    //休眠两秒，
+    sleep(2);
+    //echo消息内容
+    echo '死信队列：' . $envelope-&gt;getBody().&quot;\n&quot;;
+    //显式确认，队列收到消费者显式确认后，会删除该消息
+    $queue-&gt;ack($envelope-&gt;getDeliveryTag());
+}
+//设置消息队列消费者回调方法，并进行阻塞
+$q-&gt;consume(&quot;receive&quot;);
+//$q-&gt;consume(&quot;receive&quot;, AMQP_AUTOACK);//隐式确认,不推荐
+</code></pre>
+<br>
+<h3 id="a-name延迟队列33-延时队列额外知识点a"><a name="延迟队列">3.3 延时队列(额外知识点)</a></h3>
+<p>存储对应的延迟消息，当消息被发送以后，并不想让消费者立刻拿到消息，而是<code>等待特定时间后</code>，消费者才能拿到这个消息进行消费。在 RabbitMQ 中并不存在延迟队列，但我们可以通过设置<code>消息的过期时间</code>和<code>死信队列</code>来实现延迟队列，消费者<code>监听死信交换器绑定的队列</code>，而不要监听消息发送的队列。</p>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/rabbitmq_learning_01/" class="post-title gt-a-link">
+                    RabbitMq学习之路(一)：基础简介和零碎知识点
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

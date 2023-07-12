@@ -1,0 +1,478 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>MySql学习之路(十五)：慢查询日志 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    MySql学习之路(十五)：慢查询日志
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-12-29 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/YVLEbqd3K/" class="post-tags">
+                            # mysql
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>❄️慢查询日志，是用来记录MySql中响应时间超过阈值的语句，也是我们优化MySql的一个重要手段，接下来let's look look！</p>
+<!-- more -->
+<p>上面提到的<code>响应时间超过的阈值</code>，具体指☞运行时间超过<code>long_query_time</code>值的SQL，则会被记录到慢查询日志中，其默认值为<code>10</code>。</p>
+<p>它的主要作用是帮助我们发现哪些执行时间特别长的SQL查询，并且有针对性地优化，从而提高系统的整体效率。当我们的数据库服务器发生阻塞、运行变慢的时候，检查一下慢查询日志，结合一下<code>explain</code>进行全面分析。</p>
+<hr>
+<h1 id="一-开启慢查询日志参数">一、开启慢查询日志参数</h1>
+<p>默认情况下，MySql是<code>没有开启慢查询日志</code>的，需要我们手动来设置这个参数。<code>如果不是调优需要，一般不建议启动该参数</code>，因为开启慢查询日志或多或少会带来一定的性能影响。</p>
+<pre><code class="language-sql">-- 开启慢查询日志，OFF-关闭，ON-开启
+mysql&gt; set global slow_query_log='ON';
+
+-- 检查是否开启慢查询日志及日志位置
+mysql&gt; show variables like '%slow_query_log%';
++---------------------+---------------------------------+
+| Variable_name       | Value                           |
++---------------------+---------------------------------+
+| slow_query_log      | ON                              |
+| slow_query_log_file | /www/server/data/mysql-slow.log |
++---------------------+---------------------------------+
+
+-- 设置慢查询时间阈值
+#测试发现：设置global的方式对当前session的long_query_time失效。对新连接的客户端有效。所以可以一并
+
+mysql &gt; set global long_query_time = 1;
+mysql&gt; show global variables like '%long_query_time%';
+
+mysql&gt; set long_query_time=1;
+mysql&gt; show variables like '%long_query_time%';
+
+-- 查询当前系统中有多少条慢查询记录
+mysql&gt; SHOW GLOBAL STATUS LIKE '%Slow_queries%';
+</code></pre>
+<p>除此之外，还可以直接设置my.cnf文件，然后重启MySql服务器使配置生效：</p>
+<pre><code class="language-sql">[mysqld]
+slow_query_log=ON  # 开启慢查询日志开关
+slow_query_log_file=/var/lib/mysql/atguigu-low.log  # 慢查询日志的目录和文件名信息
+long_query_time=3  # 设置慢查询的阈值为3秒，超出此设定值的SQL即被记录到慢查询日志
+log_output=FILE
+</code></pre>
+<hr>
+<h1 id="二-案例演示">二、案例演示</h1>
+<p>首先创建一下演示的数据表，然后填充一下数据。</p>
+<pre><code class="language-sql">-- 建表
+CREATE TABLE `student` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `stuno` INT NOT NULL ,
+    `name` VARCHAR(20) DEFAULT NULL,
+    `age` INT(3) DEFAULT NULL,
+    `classId` INT(11) DEFAULT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+-- 设置参数 log_bin_trust_function_creators（This function has none of DETERMINISTIC......）
+set global log_bin_trust_function_creators=1; # 不加global只是当前窗口有效。
+
+-- 随机产生字符串：
+DELIMITER //
+CREATE FUNCTION rand_string(n INT)
+    RETURNS VARCHAR(255) #该函数会返回一个字符串
+BEGIN
+    DECLARE chars_str VARCHAR(100) DEFAULT
+'abcdefghijklmnopqrstuvwxyzABCDEFJHIJKLMNOPQRSTUVWXYZ';
+    DECLARE return_str VARCHAR(255) DEFAULT '';
+    DECLARE i INT DEFAULT 0;
+    WHILE i &lt; n DO
+        SET return_str =CONCAT(return_str,SUBSTRING(chars_str,FLOOR(1+RAND()*52),1));
+        SET i = i + 1;
+    END WHILE;
+    RETURN return_str;
+END //
+DELIMITER ;
+
+# 测试
+SELECT rand_string(10);
+
+-- 产生随机数值：
+DELIMITER //
+CREATE FUNCTION rand_num (from_num INT ,to_num INT) RETURNS INT(11)
+BEGIN
+    DECLARE i INT DEFAULT 0;
+    SET i = FLOOR(from_num +RAND()*(to_num - from_num+1)) ;
+    RETURN i;
+END //
+DELIMITER ;
+
+#测试：
+SELECT rand_num(10,100);
+
+-- 创建存储过程
+DELIMITER //
+CREATE PROCEDURE insert_stu1( START INT , max_num INT )
+BEGIN
+DECLARE i INT DEFAULT 0;
+    SET autocommit = 0; #设置手动提交事务
+    REPEAT #循环
+    SET i = i + 1; #赋值
+    INSERT INTO student (stuno, NAME ,age ,classId ) VALUES
+    ((START+i),rand_string(6),rand_num(10,100),rand_num(10,1000));
+    UNTIL i = max_num
+    END REPEAT;
+    COMMIT; #提交事务
+END //
+DELIMITER ;
+
+-- 调用刚刚写好的函数, 8000000条记录,从100001号开始
+CALL insert_stu1(100001,8000000);
+</code></pre>
+<hr>
+<h1 id="三-测试及分析">三、测试及分析</h1>
+<pre><code class="language-sql">mysql&gt; SELECT * FROM student WHERE stuno = 3455655;
++---------+---------+--------+------+---------+
+| id      | stuno   | name   | age  | classId |
++---------+---------+--------+------+---------+
+| 3355654 | 3455655 | wIYWKN |   70 |      58 |
++---------+---------+--------+------+---------+
+1 row in set (2.16 sec)
+
+mysql&gt; SELECT * FROM student WHERE name = 'oQmLUr';
++---------+---------+--------+------+---------+
+| id      | stuno   | name   | age  | classId |
++---------+---------+--------+------+---------+
+|  608599 |  708600 | OQMlUR |   54 |     916 |
+| 1320974 | 1420975 | OQMlUR |   56 |      57 |
+| 1646809 | 1746810 | Oqmlur |   57 |     596 |
+| 1733845 | 1833846 | Oqmlur |   53 |     382 |
+| 1878203 | 1978204 | oqMLuR |   11 |     546 |
+| 2209155 | 2309156 | Oqmlur |   56 |     531 |
+| 2408935 | 2508936 | oQmLUr |   96 |     782 |
+| 4425349 | 4525350 | Oqmlur |   50 |     252 |
+| 5053772 | 5153773 | oqMLuR |   10 |     494 |
+| 5065961 | 5165962 | oQmLUr |   96 |     780 |
+| 5074254 | 5174255 | oQmLUr |   98 |     866 |
+| 5980254 | 6080255 | oqMLuR |   11 |     551 |
+| 6114492 | 6214493 | oQmLUr |   10 |      30 |
+| 6909435 | 7009436 | oQmLUr |   98 |     853 |
+| 7073314 | 7173315 | Oqmlur |   51 |     309 |
++---------+---------+--------+------+---------+
+15 rows in set (2.28 sec)
+</code></pre>
+<p>上面的查询结果已经超过<code>long_query_time</code>的阈值时间<code>1s</code>，那么应该当记录进慢查询日志中。</p>
+<blockquote>
+<p>注意：<br>
+除了上述变量外，控制慢查询日志的还有一个系统变量：<code>min_examined_row_limit</code>，<code>指的是扫描过的最少记录数</code>。这个变量和查询执行时间，共同组成判断一个查询是否是慢查询的条件。<br>
+如果查询扫描过的记录数大于等于这个变量的值，并且查询执行时间超过<code>long_query_time</code>的值，那么，这个查询就被记录到慢查询日志中，反之则不会被记录下来。</p>
+</blockquote>
+<pre><code class="language-sql">-- 查询扫描最少记录数
+mysql&gt; show variables like 'min%';
++------------------------+-------+
+| Variable_name          | Value |
++------------------------+-------+
+| min_examined_row_limit | 0     |
++------------------------+-------+
+
+-- 设置扫描最少记录📖
+mysql&gt; set min_examined_row_limit=1; 
+</code></pre>
+<blockquote>
+<p>这个值默认为0，与<code>long_query_time=1</code>组合在一起，表示只要查询的执行时间查过1秒，哪怕一个记录页没有扫描过，都要被记录到慢查询日志中。</p>
+</blockquote>
+<hr>
+<h1 id="四-慢查询分析工具mysqldumpslow">四、慢查询分析工具：mysqldumpslow</h1>
+<p>在生产环境中，如果要手工分析日志，查找、分析SQL，显然是个体力活，MySQL提供了日志分析工具 <code>mysqldumpslow</code> 。</p>
+<p>mysqldumpslow 命令的具体参数如下：</p>
+<ul>
+<li>-a: 不将数字抽象成N，字符串抽象成S</li>
+<li>-s: 是表示按照何种方式排序：
+<ul>
+<li>c: 访问次数</li>
+<li>l: 锁定时间</li>
+<li>r: 返回记录</li>
+<li>t: 查询时间</li>
+<li>al:平均锁定时间</li>
+<li>ar:平均返回记录数</li>
+<li>at:平均查询时间 （默认方式）</li>
+<li>ac:平均查询次数</li>
+</ul>
+</li>
+<li>-t: 即为返回前面多少条的数据；</li>
+<li>-g: 后边搭配一个正则匹配模式，大小写不敏感的；</li>
+</ul>
+<pre><code class="language-properties">举例：我们想要按照查询时间排序，查看前五条 SQL 语句，这样写即可：
+mysqldumpslow -s t -t 5 /usr/local/mysql/data/moyuxingdeiMac-slow.log
+
+Reading mysql slow query log from /usr/local/mysql/data/moyuxingdeiMac-slow.log
+Count: 1  Time=2.26s (2s)  Lock=0.00s (0s)  Rows=15.0 (15), root[root]@localhost
+  SELECT * FROM student WHERE name = 'S'
+
+Count: 1  Time=2.14s (2s)  Lock=0.00s (0s)  Rows=1.0 (1), root[root]@localhost
+  SELECT * FROM student WHERE stuno = N
+
+Died at ./mysqldumpslow line 162, &lt;&gt; chunk 2.
+</code></pre>
+<p><strong>工作常用参考：</strong></p>
+<pre><code class="language-properties">#得到返回记录集最多的10个SQL
+mysqldumpslow -s r -t 10 /var/lib/mysql/atguigu-slow.log
+
+#得到访问次数最多的10个SQL
+mysqldumpslow -s c -t 10 /var/lib/mysql/atguigu-slow.log
+
+#得到按照时间排序的前10条里面含有左连接的查询语句
+mysqldumpslow -s t -t 10 -g &quot;left join&quot; /var/lib/mysql/atguigu-slow.log
+
+#另外建议在使用这些命令时结合 | 和more 使用 ，否则有可能出现爆屏情况
+mysqldumpslow -s r -t 10 /var/lib/mysql/atguigu-slow.log | more
+
+# 删除慢查询日志
+mysqladmin -uroot -p flush-logs slow
+</code></pre>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/mysql_learning_14/" class="post-title gt-a-link">
+                    MySql学习之路(十四)：性能分析工作的使用
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,417 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>MySql学习之路(二)：组合索引的最左匹配原则 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    MySql学习之路(二)：组合索引的最左匹配原则
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-03-21 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/YVLEbqd3K/" class="post-tags">
+                            # mysql
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>😉 上一章节我们讲到了索引，其中一个索引类型是<code>组合索引</code>，本章节就整理一下该索引的最左匹配原则，以便更加了解如何正确的使用该索引。</p>
+<!-- more -->
+<h1 id="一-定义">一、定义</h1>
+<p>最左前缀匹配原则：在MySQL建立联合索引时会遵守最左前缀匹配原则，即最左优先，在检索数据时从联合索引的最左边开始匹配。</p>
+<p>下面我们建立一个数据表来演示：</p>
+<pre><code class="language-sql">-- 建立数据表
+CREATE TABLE staffs(
+	id INT PRIMARY KEY AUTO_INCREMENT,
+	`name` VARCHAR(24) NOT NULL DEFAULT'' COMMENT'姓名',
+	`age` INT NOT NULL DEFAULT 0 COMMENT'年龄',
+	`position` VARCHAR(20) NOT NULL DEFAULT'' COMMENT'职位',
+	`create_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT'入职时间'
+)CHARSET utf8 COMMENT'员工记录表';
+
+-- 插入数据
+INSERT INTO staffs(`name`,`age`,`position`,`create_time`) VALUES('Amy',22,'manager',NOW());
+INSERT INTO staffs(`name`,`age`,`position`,`create_time`) VALUES('July',23,'dev',NOW());
+INSERT INTO staffs(`name`,`age`,`position`,`create_time`) VALUES('Sara',23,'dev',NOW());
+
+-- 建立联合索引，顺序是name-&gt;age-&gt;position
+ALTER TABLE staffs ADD INDEX idx_list(name,age,position);
+
+-- 查看索引
+show index from staffs;
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1647930120604.png" alt="" loading="lazy"></figure>
+<hr>
+<!-- more -->
+<h1 id="二-全索引顺序">二、全索引顺序</h1>
+<p>首先我们使用全部字段，通过不同顺序来看看索引的使用情况：</p>
+<ul>
+<li>
+<p><code>explain select *from staffs where name='Amy'and age=22 and position='manager'</code>;<br>
+<img src="http://mofish.pily.life/post-images/1647930420587.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p><code>explain select *from staffs where age=22 and name='Amy' and position='manager'</code>;<br>
+<img src="http://mofish.pily.life/post-images/1647930565813.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p><code>explain select *from staffs where position='manager' and age=22 and name='Amy' </code>;<br>
+<img src="http://mofish.pily.life/post-images/1647930582789.png" alt="" loading="lazy"></p>
+</li>
+</ul>
+<p>我们可以看到，无论怎么<code>颠倒</code>这三个字段的<code>顺序</code>都用到了<code>联合索引</code>，最重要的原因是因为Mysql中有<code>查询优化器</code>，它会判断纠正这条sql语句以什么样的方式执行效率最高，最后才生成真正的执行计划，所以sql语句中对的字段顺序不需要和联合索引定义的顺序相同。</p>
+<blockquote>
+<p>总的来说，如果sql语句中的查询条件用来了联合索引的所有列，那么不论以何种顺序都可使用到联合索引。</p>
+</blockquote>
+<hr>
+<!-- more -->
+<h1 id="三-部分索引顺序">三、部分索引顺序</h1>
+<ul>
+<li>只查第一个索引：<code>explain select * from staffs where name = 'Amy';</code><br>
+<img src="http://mofish.pily.life/post-images/1647934114306.png" alt="" loading="lazy"></li>
+</ul>
+<blockquote>
+<p>因为<code>name</code> 是联合索引的正序第一个，所以这里可以正常使用联合索引。</p>
+</blockquote>
+<ul>
+<li>只查前两个索引：<code>explain select * from staffs where name = 'Amy' and age =22;</code><br>
+<img src="http://mofish.pily.life/post-images/1647934117085.png" alt="" loading="lazy"></li>
+</ul>
+<blockquote>
+<p>因为<code>name</code> 和<code>age</code>是联合索引的正序前两个，所以这里可以正常使用联合索引。</p>
+</blockquote>
+<ul>
+<li>跳过中间的索引：<code>explain select * from staffs where name = 'Amy' and position = 'manager';</code><br>
+<img src="http://mofish.pily.life/post-images/1647934456134.png" alt="" loading="lazy"></li>
+</ul>
+<blockquote>
+<p>因为<code>name</code> 是联合索引的正序第一个，所以这里可以正常使用联合索引，但是因为<code>position</code>是正序的第三个，跳过了第二个<code>age</code>，导致使用联合索引查询时，只有<code>name</code>这个索引有效，导致查询时把符合name条件的数据拿出来后，再进行二次匹配。</p>
+</blockquote>
+<ul>
+<li>跳过第一个索引：<code>explain select * from staffs where position = 'manager' and age =22;</code><br>
+<img src="http://mofish.pily.life/post-images/1647934511907.png" alt="" loading="lazy"></li>
+</ul>
+<blockquote>
+<p>因为联合索引是按照顺序来建立索引的，当跳过了正序索引第一个<code>name</code>，就导致了整个联合索引失效。</p>
+</blockquote>
+<hr>
+<!-- more -->
+<h1 id="四-模糊搜索">四、模糊搜索</h1>
+<p>模糊索引就会使用到<code>like</code>的语句，如果复合最左前缀的话，会使用到range或者是index的类型进行索引。</p>
+<ul>
+<li>
+<p>右模糊搜索，最左前缀索引，类型为index或者range：<br>
+<code>explain select *from staffs where name like 'Am%';</code><br>
+<img src="http://mofish.pily.life/post-images/1647938976162.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>左右模糊搜索，类型为all，全表查询：<br>
+<code>explain select *from staffs where name like '%Am%';</code><br>
+<img src="http://mofish.pily.life/post-images/1647938988995.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>左模糊搜索，类型为all，全表查询：<br>
+<code>explain select *from staffs where name like '%Am';</code><br>
+<img src="http://mofish.pily.life/post-images/1647938991897.png" alt="" loading="lazy"></p>
+</li>
+</ul>
+<blockquote>
+<p>因为<code>右模糊搜索</code>明确了是以**'Am'**开头，所以可以使用索引来检索'Am'开头的数据。类似于查字典，知道开头的拼音在目录很快就能定位到，但是只知道中间或者结尾的，就不好确定了。</p>
+</blockquote>
+<hr>
+<!-- more -->
+<h1 id="五-范围搜索">五、范围搜索</h1>
+<p>mysql 会一直向右匹配直到遇到范围查询（&gt;、&lt;、between、like）就停止匹配。范围列可以用到索引，但是范围列后面的列无法用到索引。即，索引最多用于一个范围列，因此如果查询条件中有两个范围列则无法全用到索引。</p>
+<ul>
+<li>
+<p>联合索引支取第一个索引列，看看key_len长度：74<br>
+<code>explain select * from staffs where name='Amy';</code><br>
+<img src="http://mofish.pily.life/post-images/1647942853962.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>根据联合索引，取前两个字段，其中<code>age</code>进行范围搜索，key_len长度为：78<br>
+<code>explain select * from staffs where name='Amy' and  age &gt; 22;</code><br>
+<img src="http://mofish.pily.life/post-images/1647942899915.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>根据联合索引，取所有字段，其中<code>age</code>进行范围搜索，key_len长度也为：78<br>
+<code>explain select * from staffs where name='Amy' and  age &gt; 22  and position = 'dev';</code></p>
+</li>
+<li>
+<p>根据联合索引，取所有字段，key_len长度也为：140<br>
+<code>explain select * from staffs where name='Amy' and  age = 22  and position = 'dev';</code></p>
+</li>
+</ul>
+<blockquote>
+<p>可以看到当聚合索引的中间索引使用了范围搜索时，后面的索引就会失效，因此可以调整索引的顺序，把<code>age</code>放到最后。</p>
+</blockquote>
+<hr>
+<!-- more -->
+<h1 id="六-联合索引结构">六、联合索引结构</h1>
+<p>很多博客中都是说：联合索引在B+树上的 非叶子节点 中只会存储 联合索引 中的第一个索引字段 的值，联合索引的其余索引字段的值只会出现在 B+树 的 叶子节点 中 。</p>
+<p>如下图：就是<code>错误的</code>联合索引B+树存储结构图：<br>
+<img src="http://mofish.pily.life/post-images/1647936992635.png" alt="" loading="lazy"></p>
+<p>实际上，在联合索引的B+树中，非叶子节点是会存储联合索引的多个字段的值的，如在此数据表的前提下建立一个(b,c,d)的联合索引<br>
+<img src="http://mofish.pily.life/post-images/1647937608378.png" alt="" loading="lazy"></p>
+<p>则每个节点都会存在(b,c,d)的值，并依次排序，其存储结构图如下：<br>
+<img src="http://mofish.pily.life/post-images/1647937513989.png" alt="" loading="lazy"></p>
+<p>查找步骤如下：</p>
+<ol>
+<li>从根节点查找第一个索引值，第一个索引的第一个索引列为1，12大于1，第二个索引的第一个索引列为56，12小于56，因此读取下个节点；</li>
+<li>找到第一个索引为12的值，如果有多个12的值，再判断第二个索引，以此类推；</li>
+<li>一直找到最后一层时，得到主键ID，回表再冲主键索引树找到行记录。</li>
+</ol>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/mysql_learning_01/" class="post-title gt-a-link">
+                    MySql学习之路(一)：索引及其实现原理
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

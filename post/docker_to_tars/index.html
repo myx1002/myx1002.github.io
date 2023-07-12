@@ -1,0 +1,391 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>docker搭建tars环境 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    docker搭建tars环境
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-08-12 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/NogaBGJSK/" class="post-tags">
+                            # docker
+                        </a>
+                    
+                        <a href="http://mofish.pily.life/tag/Vvy0msssJk/" class="post-tags">
+                            # tars
+                        </a>
+                    
+                        <a href="http://mofish.pily.life/tag/62-1bH5aj/" class="post-tags">
+                            # linux
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <h1 id="一-部署lnmp环境">一、部署Lnmp环境</h1>
+<h2 id="1-创建网段">1、创建网段</h2>
+<pre><code># 创建一个名为tars的桥接(bridge)虚拟网络，网关172.25.0.1，网段为172.25.0.0
+docker network create -d bridge --subnet=172.25.0.0/16 --gateway=172.25.0.1 tars
+</code></pre>
+<br>
+<h2 id="2-拉取lnmp镜像">2、拉取lnmp镜像</h2>
+<pre><code>地址：https://hub.docker.com/r/2233466866/lnmp
+docker pull 2233466866/lnmp:1.13-nosql
+</code></pre>
+<br>
+<h2 id="3-创建映射文件并拷贝映射文件">3、创建映射文件并拷贝映射文件</h2>
+<h3 id="1随便run一下生成一个容器">①随便run一下生成一个容器</h3>
+<pre><code>docker run -dit -p 80:80 -p 443:443 -p 3306:3306 -p 9000:9000 -p 6379:6379 
+--privileged=true --name=test
+--net=tars --ip=&quot;172.25.0.2&quot; 2233466866/lnmp:1.13-nosql
+</code></pre>
+<h3 id="2创建映射文件夹自行创建需要的">②创建映射文件夹（自行创建需要的）</h3>
+<pre><code>ocker container cp containeID:/usr/local/nginx/conf .
+
+docker复制文件，把容器中的文件复制到本地当前位置，防止映射时覆盖为空
+注意不要漏了那个 .
+</code></pre>
+<h3 id="3启动容器">③启动容器</h3>
+<pre><code>docker run -dit -p 80:80 -p 443:443 -p 3306:3306 -p 9000:9000 -p 6379:6379 
+-v /home/dockerServer/www:/www 
+-v /home/dockerServer/mysql/data:/data/mysql  
+-v /home/dockerServer/php/etc:/usr/local/php7/etc 
+-v /home/dockerServer/nginx/conf:/usr/local/nginx/conf 
+-v /home/dockerServer/nginx/logs:/usr/local/nginx/logs 
+--privileged=true --name=lnmp 
+--net=tars --ip=&quot;172.25.0.2&quot; 2233466866/lnmp:1.13-nosql
+</code></pre>
+<h3 id="4mysql配置">④mysql配置</h3>
+<pre><code>1.修改配置文件
+--- vim /etc/my.cnf
+在 [mysqld] 的段中加上一句：skip-grant-tables
+
+2.重启mysql
+--- systemctl restart mysqld
+
+3.修改密码
+--- SHOW VARIABLES LIKE 'validate_password%';
+--- set global validate_password_policy=LOW;
+--- set global validate_password_length=6;
+--- alter user user() identified by '941002';
+--- use mysql;
+--- update user set authentication_string=password('941002') where user = 'root';
+--- grant all privileges on *.* to root@&quot;%&quot; identified by '941002';
+--- grant all privileges on *.* to root@'%' identified by '941002' with grant option;
+--- flush privileges;
+
+4.还原配置文件
+--- vim /etc/my.cnf
+</code></pre>
+<h1 id="二-tar-framework安装">二、tar-framework安装</h1>
+<pre><code>docker pull tarscloud/framework:v3.0.10
+
+# 挂载的/etc/localtime是用来设置容器时区的，若没有可以去掉
+# 3000端口为web程序端口
+# 3001端口为web授权相关服务端口(docker&gt;=v2.4.7可以不暴露该端口)
+docker run -d \
+    --name=tars-framework \
+    --net=tars \
+    -e MYSQL_HOST=&quot;172.25.0.2&quot; \
+    -e MYSQL_ROOT_PASSWORD=&quot;941002&quot; \
+    -e MYSQL_USER=root \
+    -e MYSQL_PORT=3306 \
+    -e REBUILD=false \
+    -e INET=eth0 \
+    -e SLAVE=false \
+    --ip=&quot;172.25.0.3&quot; \
+    -v /home/dockerServer/tars/framework:/data/tars \
+    -v /etc/localtime:/etc/localtime \
+    -p 3000:3000 \
+    -p 3001:3001 \
+    tarscloud/framework:v3.0.10
+
+
+检查mysql连接是否正常
+docker exec -it tars-framework /bin/bash
+
+cd /usr/local/tars/cpp/deploy/
+
+./mysql-tool --host=172.25.0.2 --user=&quot;root&quot; --pass=&quot;123456&quot; --port=3306 --check
+</code></pre>
+<h1 id="三-部署-tars-应用节点">三、部署 tars 应用节点</h1>
+<pre><code>docker pull tarscloud/tars-node:latest
+
+docker run -d --name=tars-node --net=tars 
+-e INET=eth0 -e WEB_HOST=&quot;http://172.25.0.3:3000&quot; 
+--ip=&quot;172.25.0.5&quot;  
+-v /data/tars:/data/tars 
+-v /etc/localtime:/etc/localtime 
+-p 9010-9020:9010-9020 
+tarscloud/tars-node:latest
+</code></pre>
+<h1 id="四-清理日志文件">四、清理日志文件</h1>
+<pre><code>sudo du -h -m --max-depth=1 /usr/local/app/tars/app_log
+
+find /usr/local/app/tars/app_log/hlyun/ -name '*.log' | xargs rm
+</code></pre>
+<h1 id="yum-修改源">yum 修改源</h1>
+<pre><code>mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.bak
+
+curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo
+
+yum clean all &amp;&amp; yum makecache
+
+</code></pre>
+<h1 id="git">git</h1>
+<p>git config --global credential.helper store</p>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/wsl2_configure/" class="post-title gt-a-link">
+                    wsl2环境搭建及常用命令（已迁移）
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

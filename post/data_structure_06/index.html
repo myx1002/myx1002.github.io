@@ -1,0 +1,458 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>数据结构学习之路(六)：QuickList快速列表 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    数据结构学习之路(六)：QuickList快速列表
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-01-11 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tags">
+                            # redis
+                        </a>
+                    
+                        <a href="http://mofish.pily.life/tag/J4LLJ1xJr/" class="post-tags">
+                            # 数据结构
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>在 <code>Redis 3.2</code> 版本之后，为了进一步提升 Redis 的性能，统一采用了<code>quicklist</code>来存储<code>列表对象</code>。</p>
+<!-- more -->
+<h1 id="1-简述">1. 简述</h1>
+<p><code>quicklist</code>存储了一个双向列表，每个列表的节点是一个<code>ziplist</code>，所以实际上<code>quicklist</code>并不是一个新的数据结构，它就是<code>linkedlist</code>和<code>ziplist</code>的结合。</p>
+<blockquote>
+<p>为什么这么设计呢？</p>
+<ul>
+<li>
+<p>双向链表在插入节点上复杂度很低，但它的内存开销很大，每个节点的地址不连续，会加剧内存的碎片化，影响内存管理效率。</p>
+</li>
+<li>
+<p><code>ziplist</code>是存储在一段连续的内存上，存储效率高，但是它不利于修改操作，插入和删除的复杂度相对较高，而且需要频繁的申请释放内存，特别是<code>ziplist</code>数据较多的情况下，搬移内存数据太费时。</p>
+</li>
+</ul>
+</blockquote>
+<hr>
+<h1 id="2-基本结构">2. 基本结构</h1>
+<p><code>quicklist</code> 是<code>ziplist</code>和<code>linkedlist</code>的混合体，它将<code>linkedlist</code>按段切分，每一段使用 <code>ziplist</code>来紧凑存储，多个<code>ziplist</code>之间使用双向指针串接起来。</p>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1642338303001.png" alt="" loading="lazy"></figure>
+<h2 id="21-quicklist结构定义">2.1 quicklist结构定义</h2>
+<pre><code class="language-c">strcut quicklist {
+    quicklistNode* head;    // 指向头节点（左侧第一个节点）的指针
+    quicklistNode* tail;    // 指向尾节点（右侧第一个节点）的指针
+    unsigned long count;    // 所有ziplist中entry数据项的总和
+    unsigned int len;   // quicklist中quicklistNode节点的数量
+    int fill;   // 填充因子，由list-max-ziplist-size配置项控制，表示ziplist中entry能保存的数量，具体看参数要点
+    unsigned int compress;  // 压缩深度，由list-compress-depth配置项控制，具体看参数要点
+    ......
+} quicklist;
+</code></pre>
+<br>
+<h2 id="22-quicklistnode结构定义">2.2 quicklistNode结构定义</h2>
+<pre><code class="language-c">strcut quicklistNode {
+    struct quicklistNode* prev;  // 前节点指针
+    struct quicklistNode* next; // 后节点指针
+    unsigned char *zl;   // 数据指针。当前节点的数据没有压缩，那么它指向一个ziplist结构；否则，它指向一个quicklistLZF结构。
+    unsigned int sz;    // ziplist实际占用内存大小。需要注意的是：如果ziplist被压缩了，那么这个sz的值仍然是压缩前的ziplist大小
+    unsigned int count; // ziplist里面包含的数据项个数
+    unsigned int encoding;  // ziplist是否压缩。1--ziplist，2--quicklistLZF
+    unsigned int container; // 预留字段，暂时没啥用，目前使用固定值2，表示使用ziplist作为数据存储容器
+    unsigned int recompress;    // 当我们使用类似lindex这样的命令查看了某一项本来压缩的数据时，需要把数据暂时解压，这时就设置recompress=1做一个标记，等有机会再把数据重新压缩
+    ......
+} quicklistNode;
+</code></pre>
+<br>
+<h2 id="23-ziplist结构定义">2.3 ziplist结构定义</h2>
+<p><a href="/post/data_structure_04/" target="_blank">详情可看《数据结构学习之路(四)：ZipList压缩链表》</a><br>
+<br></p>
+<h2 id="24-quicklistlzf结构定义">2.4 quicklistLZF结构定义</h2>
+<pre><code class="language-c">struct quicklistLZF {
+    unsigned int sz;    // LZF大小，压缩后ziplist大小
+    char compressed[];  // 柔性数组，存放压缩后的ziplist字节数组
+} quicklistLZF;
+</code></pre>
+<br>
+<h2 id="25-详细结构图">2.5 详细结构图</h2>
+<figure data-type="image" tabindex="2"><img src="http://mofish.pily.life/post-images/1642342234909.png" alt="" loading="lazy"></figure>
+<hr>
+<h1 id="3-常用操作">3. 常用操作</h1>
+<h2 id="31-插入">3.1 插入</h2>
+<p><code>quicklist</code>的插入方式大体可分为两种，一种是在头尾插入（<strong>quicklistPushHead和quicklistPushTail</strong>），一种是在中间任意位置插入（<strong>quicklistInsertAfter和quicklistInsertBefore</strong>）。</p>
+<h3 id="311-头尾节点插入">3.1.1 头尾节点插入</h3>
+<p>不管是在头部还是尾部插入数据，都包含两种情况：</p>
+<blockquote>
+<ul>
+<li>
+<p>如果头节点（尾节点）上<code>ziplist</code>的大小没<code>有超过限制</code>（即**_quicklistNodeAllowInsert<strong>返回1），那么新数据被直接插入到<code>ziplist</code>中（调用</strong>ziplistPush**）；</p>
+</li>
+<li>
+<p>如果头节点（尾节点）上<code>ziplist</code>的的大小<code>超过限制</code>，那么会新创建一个<code>quicklistNode</code>节点（对应的也会创建一个<code>ziplist</code>），然后把这个新创建的节点插入到<code>quicklist</code>双向链表中。</p>
+</li>
+</ul>
+</blockquote>
+<h3 id="312-中间节点插入">3.1.2 中间节点插入</h3>
+<p><strong>quicklistInsertAfter</strong>和<strong>quicklistInsertBefore</strong>就是分别在指定位置后面和前面插入数据项。这种在任意指定位置插入数据的操作，要比在头部和尾部的进行插入要复杂一些，包含下面四种情况：</p>
+<blockquote>
+<ul>
+<li>
+<p>当插入位置所在的ziplist大小没有超过限制时，直接插入到ziplist中就好了；</p>
+</li>
+<li>
+<p>当插入位置所在的ziplist大小超过了限制，但插入的位置位于ziplist两端，并且相邻的quicklist链表节点的ziplist大小没有超过限制，那么就转而插入到相邻的那个quicklist链表节点的ziplist中；</p>
+</li>
+<li>
+<p>当插入位置所在的ziplist大小超过了限制，但插入的位置位于ziplist两端，并且相邻的quicklist链表节点的ziplist大小也超过限制，这时需要新创建一个quicklist链表节点插入；</p>
+</li>
+<li>
+<p>对于插入位置所在的ziplist大小超过了限制的其它情况（主要对应于在ziplist中间插入数据的情况），则需要把当前ziplist分裂为两个节点，然后再其中一个节点上插入数据。</p>
+</li>
+</ul>
+</blockquote>
+<br>
+<h2 id="32-查找">3.2 查找</h2>
+<p>quicklist查找元素主要是针对index，即通过元素在链表中的下标查找对应元素。</p>
+<p>基本思路是，首先找到index对应的数据所在的<code>quicklistNode</code>节点，之后调用<code>ziplist</code>的接口函数<strong>ziplistGet</strong>得到index对应的数据，源码中的处理函数为quicklistIndex。</p>
+<br>
+<h2 id="33-删除">3.3 删除</h2>
+<p>删除相对于插入而言简单多了，因为删除节点无需判断节点大小（quicklist有节点最大容量，但没有最小容量限制），只需要通过index找到对应的数据直接删除即可。</p>
+<p>除此之外，用的比较多的区间元素删除的函数是<code>quicklistDelRange</code></p>
+<p><code>quicklist</code> 在区间删除时，会先找到<code>start</code>所在的<code> quicklistNode</code>，计算删除的元素是否小于要删除的<code> count</code>，如果不满足删除的个数，则会移动至下一个<code>quicklistNode</code>继续删除，依次循环直到删除完成为止。</p>
+<p><code>quicklistDelRange </code>函数的返回值为 int 类型，当返回 <code>1</code> 时表示<code>成功</code>的删除了指定区间的元素，返回<code>0</code>时表示<code>没有删除任何元素</code>。</p>
+<br>
+<h2 id="34-其它">3.4 其它</h2>
+<p>除了以上之外，还有很多别的常用Api接口，如下：</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>解析</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>quicklistCreate</td>
+<td>创建 quicklist</td>
+</tr>
+<tr>
+<td>quicklistInsertAfter</td>
+<td>在某个元素的后面添加数据</td>
+</tr>
+<tr>
+<td>quicklistInsertBefore</td>
+<td>在某个元素的前面添加数据</td>
+</tr>
+<tr>
+<td>quicklistReplaceAtIndex</td>
+<td>替换某个元素</td>
+</tr>
+<tr>
+<td>quicklistDelEntry</td>
+<td>删除单个元素</td>
+</tr>
+<tr>
+<td>quicklistDelRange</td>
+<td>删除区间元素</td>
+</tr>
+<tr>
+<td>quicklistPushHead</td>
+<td>头部插入元素</td>
+</tr>
+<tr>
+<td>quicklistPushTail</td>
+<td>尾部插入元素</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h1 id="4-参数要点">4. 参数要点</h1>
+<h2 id="41-list-max_ziplist-sizeziplist中的元素个数设定">4.1 list-max_ziplist-size（ziplist中的元素个数设定）</h2>
+<pre><code class="language-redis">list-max-ziplist-size -2 // 后面的参数可为正，可为负
+</code></pre>
+<ul>
+<li>
+<p>正数<br>
+表示按照数据项个数来限定每个节点中元素的个数，比如<strong>3</strong>代表每个节点存放的元素个人不能超过<strong>3</strong>个。</p>
+</li>
+<li>
+<p>负数<br>
+表示按照字节个数来限定每个节点的元素个数，它只能取**-1**~<strong>-5</strong>这五个数，其含义如下：</p>
+</li>
+</ul>
+<blockquote>
+<p>-1：每个节点的ziplist字节大小不能超过4kb<br>
+-2：每个节点的ziplist字节大小不能超过8kb<br>
+-3：每个节点的ziplist字节大小不能超过16kb<br>
+-4：每个节点的ziplist字节大小不能超过32kb<br>
+-5：每个节点的ziplist字节大小不能超过64kb</p>
+</blockquote>
+<h2 id="42-list-compress-depth压缩深度">4.2 list-compress-depth（压缩深度）</h2>
+<p>在<code>quicklist</code>的源码中提到了一个LZF的压缩算法，该算法用于对<code>quicklist</code>的节点进行压缩操作。<code>list</code>的设计目的是能够存放很长的数据列表，当列表很长时，必然会占用很高的内存空间，且<code>list</code>中<strong>最容易访问</strong>的是<strong>两端</strong>的数据，<strong>中间</strong>的数据<strong>访问率较低</strong>，于是就可以从这个出发点来进一步节省内存用于其他操作、</p>
+<p>Redis提供了一下的配置参数，用于表示中间节点是否压缩：</p>
+<pre><code class="language-redis">list-compress-depth 0
+</code></pre>
+<blockquote>
+<p>0 特殊值，表示不压缩<br>
+1 表示quicklist两端各有一个节点不压缩，中间的节点压缩<br>
+2 表示quicklist两端各有两个节点不压缩，中间的节点压缩<br>
+3 表示quicklist两端各有三个节点不压缩，中间的节点压缩<br>
+以此类推</p>
+</blockquote>
+<hr>
+<h1 id="5-总结">5. 总结</h1>
+<p><code>quicklist</code>同样采用了<code>linkedlist</code>的双端列表特性，然后<code>quicklist</code>中的每个节点又是一个<code>ziplist</code>，所以<code>quicklist</code>就是综合考虑了<code>linkedlist</code>容易产生碎片空间的问题和<code>ziplist</code>的读写性能两个维度而设计出来的一个数据结构。</p>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/data_structure_05/" class="post-title gt-a-link">
+                    数据结构学习之路(五)：Intset整数集合
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

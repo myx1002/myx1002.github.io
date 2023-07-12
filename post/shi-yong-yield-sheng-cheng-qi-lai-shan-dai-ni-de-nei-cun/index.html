@@ -1,0 +1,410 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>使用 Yield 生成器来善待你的内存（已迁移） | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    使用 Yield 生成器来善待你的内存（已迁移）
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-08-17 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/qo6XPqkl5/" class="post-tags">
+                            # php
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>很多PHP开发者或许都不知道生成器这个功能，可能是因为生成器是PHP 5.5.0才引入的功能，也可以是生成器作用不是很明显，但是生成器功能的确非常有用，可以很有效的节省内存。</p>
+<!-- more -->
+<p>https://mp.weixin.qq.com/s/sxCgLJyGms9nztTDicglQQ<br>
+https://mp.weixin.qq.com/s/QBgZKIoIotA_QD0flkaWHg</p>
+<h1 id="一-什么是-yield">一、 什么是 &quot;yield&quot;？</h1>
+<blockquote>
+<p>生成器函数看起来和普通函数一样，只是生成器不返回值，而是生成所需的值。</p>
+</blockquote>
+<p>看看以下示例：</p>
+<pre><code class="language-php">&lt;?
+function getValues() {
+    yield 'value';
+}
+
+// 输出字符串 &quot;value&quot;
+echo getValues();
+</code></pre>
+<p>当然， 这不是它生效的方式， 前面的例子会给你一个致命的错误： 类生成器的对象不能被转换成字符串。</p>
+<hr>
+<h1 id="二-yield-解决什么问题">二、yield 解决什么问题？</h1>
+<blockquote>
+<p>解决运行内存的瓶颈！</p>
+</blockquote>
+<p>用过的地方大概就是 excel 文件导出的时候了，因为要遍历大量处理，并且要 foreach 去处理每一项处理，如果等全部处理完再 return，那么就是弹出内存不足的提示：</p>
+<pre><code>Fatal Error: Allowed memory size of xxxxxx bytes 
+</code></pre>
+<p>虽然可以通过设置最大运行内存，但是当文件很大时，内存还是吃不消。</p>
+<pre><code>ini_set('memory_limit', '500M')
+</code></pre>
+<p>因为可以使用 yield 对数据一行一行的处理、写入。</p>
+<hr>
+<h1 id="三-yield-return-的区别">三、&quot;yield&quot; &amp; &quot;return&quot; 的区别？</h1>
+<p>前面的错误意味着 getValues() 方法不会如预期返回一个字符串，让我们检查一下他的类型：</p>
+<pre><code class="language-php">&lt;?
+function getValues() {
+    return 'value';
+}
+var_dump(getValues()); // string(5) &quot;value&quot;
+
+function getValues() {
+    yield 'value';
+}
+var_dump(getValues()); // class Generator#1 (0) {}
+</code></pre>
+<p>生成器 类实现了 生成器 接口， 这意味着你必须遍历 getValue() 方法来取值：</p>
+<pre><code class="language-php">&lt;?
+
+$values = getValues();
+foreach ($values as $value) {
+   echo $value;
+}
+</code></pre>
+<p>但这不是唯一的区别！</p>
+<blockquote>
+<p>生成器允许您编写使用 foreach 的代码对一组数据进行迭代的代码，而无需在内存中构建数组，那样可能会导致超出内存限制。</p>
+</blockquote>
+<p>在下面的例子里我们创建一个有 800,000 元素的数字同时从 getValues() 方法中返回他，同时在此期间，我们将使用函数 memory_get_usage() 来获取分配给次脚本的内存， 我们将会每增加 200,000 个元素来获取一下内存使用量，这意味着我们将会提出四个检查点：</p>
+<pre><code class="language-php">&lt;?php
+function getValues() {
+   $valuesArray = [];
+   // 获取初始内存使用量
+   echo round(memory_get_usage() / 1024 / 1024, 2) . ' MB' . PHP_EOL;
+   for ($i = 1; $i &lt; 800000; $i++) {
+      $valuesArray[] = $i;
+      // 为了让我们能进行分析，所以我们测量一下内存使用量
+      if (($i % 200000) == 0) {
+         // 来 MB 为单位获取内存使用量
+         echo round(memory_get_usage() / 1024 / 1024, 2) . ' MB'. PHP_EOL;
+      }
+   }
+   return $valuesArray;
+}
+$myValues = getValues(); // 一旦我们调用函数将会在这里创建数组
+foreach ($myValues as $value) {}
+?&gt;
+
+//  输出结果为内存消耗，脚本的输出结果如下
+0.34 MB
+8.35 MB
+16.35 MB
+32.35 MB
+</code></pre>
+<p>这意味着我们这几行脚本消耗了超过 30M 的内存，每次我们向 $valuesArray 数组添加元素，都会增加它在内存中的大小:</p>
+<p>举个使用 yield 的例子：</p>
+<pre><code class="language-php">&lt;?php
+function getValues() {
+   // 获取初始内存使用
+   echo round(memory_get_usage() / 1024 / 1024, 2) . ' MB' . PHP_EOL;
+   for ($i = 1; $i &lt; 800000; $i++) {
+      yield $i;
+
+      // 开始进行分析 测量内存占用
+      if (($i % 200000) == 0) {
+         // get memory usage in megabytes
+         echo round(memory_get_usage() / 1024 / 1024, 2) . ' MB'. PHP_EOL;
+      }
+
+   }
+}
+
+$myValues = getValues(); // 遍历完毕`values`之前不进行任何操作
+foreach ($myValues as $value) {} // 此处开始获取`values`
+
+
+// 输出结果为内存消耗，脚本的输出结果如下
+0.34 MB
+0.34 MB
+0.34 MB
+0.34 MB
+</code></pre>
+<p>因此，如果你在应用中创建会导致服务器上内存出问题的巨大数组，则 yield 更加适合你的情况。</p>
+<hr>
+<h1 id="四-什么是-yield-选项">四、什么是 &quot;yield&quot; 选项？</h1>
+<p>这里有很多 yield 的选项， 我将强调他们中的几个：</p>
+<h2 id="41-使用-yield-你也可以使用-return">4.1  使用 yield， 你也可以使用 return</h2>
+<pre><code class="language-php">&lt;?
+function getValues() {
+   yield 'value';
+   return 'returnValue';
+}
+
+$values = getValues();
+foreach ($values as $value) {}
+echo $values-&gt;getReturn(); // 'returnValue'
+&gt;
+</code></pre>
+<br>
+<h2 id="42-返回键值对">4.2 返回键值对</h2>
+<pre><code class="language-php">&lt;?
+function getValues() {
+   yield 'key' =&gt; 'value';
+}
+
+$values = getValues();
+foreach ($values as $key =&gt; $value) {
+   echo $key . ' =&gt; ' . $value;
+}
+&gt;
+</code></pre>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/php_learning_la_ji_hui_shou/" class="post-title gt-a-link">
+                    一文搞懂PHP的垃圾回收机制（已迁移）
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

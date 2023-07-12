@@ -1,0 +1,413 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>数据结构学习之路(三)：SDS简单动态字符串 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    数据结构学习之路(三)：SDS简单动态字符串
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2021-09-17 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tags">
+                            # redis
+                        </a>
+                    
+                        <a href="http://mofish.pily.life/tag/J4LLJ1xJr/" class="post-tags">
+                            # 数据结构
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>👉简单动态字符串SDS是Redis中String类型的底层数据结构</p>
+<p>👉Redis的实现方法并没用采用传统的C语言中的字符串表示，而是通过改进后自己定义了一种叫做简单动态字符串（simple dynamic string, 简称SDS）的抽象类型。</p>
+<!-- more -->
+<p>此外SDS在兼容C语言标准字符串极其处理函数外，还在此基础上保证了<code>二进制安全</code>，下面我们将详细的介绍SDS的实现。</p>
+<p>PS❗️：二进制安全通俗地讲，C 语言中，用 &quot;\0&quot; 表示字符串的结束， 如果字符串中本身就有 &quot;\0&quot; 字符，字符串就会被截断，即非二进制安全；若通过某种机制，保证读写字符串时不损害其内容，则是二进制安全。</p>
+<h3 id="a-name数据结构数据结构a"><a name="数据结构">数据结构</a></h3>
+<p>在Redis中，SDS根据字符串长短定义了5种数据接口，分别叫 sdshdr5、sdshdr8、sdshdr16、sdshdr32 和 sdshdr64，其结构体如下。</p>
+<pre><code class="language-C">sds.h
+
+//定义了一个char 指针
+typedef char *sds;
+
+/* Note: sdshdr5 is never used, we just access the flags byte directly.
+ * However is here to document the layout of type 5 SDS strings. */
+
+struct __attribute__ ((__packed__)) sdshdr5 {
+    unsigned char flags;  /* 低三位存类型, 高五位存长度 */
+    char buf[];  /* 柔性数组，存放实际内容 */
+};
+
+struct __attribute__ ((__packed__)) sdshdr8 {
+   //buf 已经使用的长度
+    uint8_t len;  /* 已使用长度，用 1 字节存 */
+
+    //buf 分配的长度，等于buf[]的总长度-1，因为buf有包括一个/0的结束符
+    uint8_t alloc;  /* 总长度，用 1 字节存 */
+
+    //只有3位有效位，因为类型的表示就是0到4，所有这个8位的flags 有5位没有被用到
+    unsigned char flags;  /* 低三位存类型, 高五位预留 */
+    
+    //实际的字符串存在这里
+    char buf[];  /* 柔性数组，存放实际内容 */
+};
+
+// 与上面的变化只有len和alloc， 就是长度不同而已
+struct __attribute__ ((__packed__)) sdshdr16 {
+    uint16_t len;  /* 已使用长度，用 2 字节存 */
+    uint16_t alloc; /* 总长度，用 2 字节存 */
+    unsigned char flags; /* 低三位存类型, 高五位预留 */
+    char buf[];
+};
+
+// 与上面的变化只有len和alloc， 就是长度不同而已
+struct __attribute__ ((__packed__)) sdshdr32 {
+    uint32_t len; /* 已使用长度，用 4 字节存 */
+    uint32_t alloc;  /* 总长度，用 4 字节存 */
+    unsigned char flags; /* 3 lsb of type, 5 unused bits */
+    char buf[];
+};
+
+// 与上面的变化只有len和alloc， 就是长度不同而已
+struct __attribute__ ((__packed__)) sdshdr64 {
+    uint64_t len; /* 已使用长度，用 8 字节存 */
+    uint64_t alloc;  /* 总长度，用 8 字节存 */
+    unsigned char flags; /* 3 lsb of type, 5 unused bits */
+    char buf[];
+};
+</code></pre>
+<br>
+<p>这五种结构体中的字段定义如下👇：</p>
+<ul>
+<li>len：表示 buf 中已占用的字节数；</li>
+<li>alloc：表示 buf 中已分配的字节数，记录的是 buf 分配的总长度；</li>
+<li>flags：标识当前结构体的类型，低三位存类型, 高五位预留；</li>
+<li>buf：柔性数组，真正存储字符串的数据空间。</li>
+</ul>
+<br>
+<p>之所以分成这个多不同类型的结构体，其优点是🤙🤙</p>
+<ul>
+<li>不同长度的字符串用不同的的类型表示，节约内存</li>
+<li>有单独的统计变量<code>len</code>和<code>alloc</code>，可以很方便的得到字符串长度</li>
+<li>SDS 对上层暴露的指针是直接指向柔性数组 buf 的，兼容 C 语言处理字符串的各种函数</li>
+<li>由于有长度统计变量 len 的存在，读写字符串时不依赖 &quot;\0&quot; 终止符，保证了二进制安全</li>
+</ul>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1615988723570.jpg" alt="" width="200" height="200" loading="lazy"></figure>
+<p>下面来详细看一下这几种 sdshdr 的结构，sdshdr8、sdshdr16、sdshdr32 和 sdshdr64 的结构相同<br>
+<code>sdshdr16</code>结构如下所示：<br>
+<img src="http://mofish.pily.life/post-images/1648603369505.png" alt="" loading="lazy"></p>
+<p><code>sdshdr5</code>与上述的不同，做了进一步的压缩，用 flags 中预留的 5 位存长度，把 len 和 alloc 也省掉了，其结构如下所示：<br>
+<img src="http://mofish.pily.life/post-images/1648603376187.png" alt="" loading="lazy"></p>
+<p>在 Redis 的源代码中，对类型的宏定义如下：</p>
+<pre><code class="language-C">#define SDS_TYPE_5  0
+#define SDS_TYPE_8  1
+#define SDS_TYPE_16 2
+#define SDS_TYPE_32 3
+#define SDS_TYPE_64 4
+</code></pre>
+<p>源码中的 <strong>attribute</strong>((<strong>packed</strong>)) 需要重点关注。一般情况下，结构体会按其所有变量大小的最小公倍数做字节对齐，而用 packed 修饰后，结构体则变为按 1 字节对齐。</p>
+<p>以 sdshdr32 为例，修饰前按 4 字节对齐，大小为 12 字节；修饰后按 1 字节对齐，注意 buf 是个 char 类型的柔性数组，地址连续，始终在 flags 之后。packed 修饰前后示意图如下所示：<br>
+<img src="http://mofish.pily.life/post-images/1648603529832.png" alt="" loading="lazy"></p>
+<p>这样的好处有两个：<br>
+1️⃣节省内存，例如 sdshdr32 可节省 3 个字节；</p>
+<p>2️⃣SDS 返回给上层的，不是结构体首地址，而是指向内容的 buf 指针 s。修饰后，无论是 sdshdr8、sdshdr16 还是 sdshdr32，都能通过 s[-1] 快速找到 flags，因为此时按 1 字节对齐。若没有 packed 的修饰，还需要对不同结构做处理，实现更复杂。</p>
+<h3 id="a-name两大特点两大特点a"><a name="两大特点">两大特点</a></h3>
+<h4 id="空间预分配">空间预分配</h4>
+<p>字符串拼接是字符串中最常用的操作，在SDS中具体的函数是<code>sdscatsds</code>：</p>
+<pre><code class="language-C">sds sdscatsds(sds s, const sds t) {
+    return sdscatlen(s, t, sdslen(t));
+}
+</code></pre>
+<p>但是<code>sdscatsds</code>只是暴露给上层的方法，其最终调用的函数是<code>sdscatlen</code>：</p>
+<pre><code class="language-C">/* 将指针 t 的内容和指针 s 的内容拼在一起，该操作是二进制安全的 */
+sds sdscatlen(sds s, const void *t, size_t len) {
+    size_t curlen = sdslen(s);
+
+    s = sdsMakeRoomFor(s,len);  // 扩容检查，如需扩容则返回扩容好的新的字符串
+    if (s == NULL) return NULL;
+    memcpy(s+curlen, t, len);  // 直接拼接，保证了二进制安全
+    sdssetlen(s, curlen+len);
+    s[curlen+len] = '\0';  // 加上结束符以保持兼容
+    return s;
+}
+</code></pre>
+<p>由于其中可能涉及 SDS 的扩容，sdscatlen 中调用 sdsMakeRoomFor 对待拼接的字符串 s 容量做了检查，若无须扩容则直接返回 s；若需要扩容，返回的则是扩容好的新字符串。</p>
+<pre><code>容量计算规则
+▪️ 扩容后长度小于 1MB：按新长度的 2 倍扩容；
+▪️ 扩容后长度超过 1MB：按新长度加上 1MB 扩容。
+
+扩容对象的选择
+▪️ SDS 类型未改变：通过 realloc 扩大柔性数组；
+▪️ SDS 类型发生变化：开辟新内存，拼接完内容后，释放旧指针。
+</code></pre>
+<p>❗️❗️通过空间预分配策略， Redis 可以减少连续执行字符串增长操作所需的内存重分配次数。</p>
+<br>
+<h4 id="惰性空间释放">惰性空间释放</h4>
+<p>Redis 通过 sdsfree 函数释放字符串占的内存，该方法通过对 s 的偏移，可定位到 SDS 结构的首部，取出长度 len，然后调用 s_free 进行内存的释放：</p>
+<pre><code class="language-C">void sdsfree(sds s) {
+    if (s == NULL) return;
+    s_free((char*)s-sdsHdrSize(s[-1]));  // 定位到 SDS 首部，直接释放内存
+}
+</code></pre>
+<p>❗️❗️为了优化性能（减少申请内存的开销），SDS 提供了不直接释放内存，而是通过重置统计值达到清空目的方法：sdsclear：</p>
+<pre><code class="language-C">void sdsclear(sds s) {
+    sdssetlen(s, 0);  // 统计值 len 清零
+    s[0] = '\0';  // 清空 buf
+}
+</code></pre>
+<p>该方法仅将 SDS 的 len 归零，此处已存在的 buf 并没有真正被清除，新的数据可以覆盖写，而不用重新申请内存。</p>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/data_structure_02/" class="post-title gt-a-link">
+                    数据结构学习之路(二)：哈希表
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

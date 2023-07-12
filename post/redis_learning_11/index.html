@@ -1,0 +1,525 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>Redis学习之路(十一)：过期删除策略和内存淘汰策略 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Redis学习之路(十一)：过期删除策略和内存淘汰策略
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2021-11-04 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tags">
+                            # redis
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>❓ 设置完一个键的过期时间后，到了这个时间，这个键还能获取到么？假如获取不到那这个键还占据着内存吗？<br>
+😐 如何设置Redis的内存大小？当内存满了之后，Redis有哪些内存淘汰策略？我们又该如何选择？</p>
+<!-- more -->
+<h2 id="目录">目录</h2>
+<ul>
+<li><a href="#过期删除策略">一、过期删除策略</a>
+<ul>
+<li><a href="#过期删除方式">1.1 过期删除方式</a></li>
+<li><a href="#redis使用的过期删除策略">1.2 redis使用的过期删除策略</a></li>
+<li><a href="#定时扫描规则">1.3 定时扫描规则</a></li>
+<li><a href="#从节点的key过期后是怎么处理的？">1.4 从节点的key过期后是怎么处理的？</a></li>
+</ul>
+</li>
+<li><a href="#内存淘汰策略">二、内存淘汰策略</a>
+<ul>
+<li><a href="#相关参数解释">2.1 相关参数解释</a></li>
+<li><a href="#淘汰方式">2.2  淘汰方式</a></li>
+<li><a href="#近似LRU算法">2.3 近似LRU算法</a></li>
+<li><a href="#近似LRU算法的优化">2.4 近似LRU算法的优化</a></li>
+<li><a href="#go实现LRU算法">2.5 go实现LRU算法</a></li>
+<li><a href="#LFU算法">2.6 LFU算法</a></li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="a-name过期删除策略一-过期删除策略a"><a name="过期删除策略">一、过期删除策略</a></h2>
+<p>在 redis 内部，每当我们设置一个 key 的过期时间时，redis 就会将该 key 带上过期时间存放到一个<code>过期字典</code>中，以后会<code>定时遍历</code>这个字典来<code>删除到期的 key</code>。</p>
+<p>处理定时遍历外，它还会使用<code> 惰性删除策略</code>来删除过期的 key，所谓<code> 惰性删除策略</code>就是在客户端访问这个 key 的时候，redis 对这个 key 的过期时间进行检查，如果过期了就立即删除。</p>
+<p>如果说<code>定时删除</code>是<code>集中处理</code>，那么<code>惰性删除</code>就是<code>零散处理</code>。</p>
+<h3 id="a-name过期删除方式11-过期删除方式a"><a name="过期删除方式">1.1 过期删除方式</a></h3>
+<p>通常删除某个key，我们有如下三种方式进行处理：</p>
+<ul>
+<li>
+<p>定时删除<br>
+描述：在设置某个 key 的过期时间的同时，创建一个定时器，让定时器在该过期时间到来时，立即执行删除操作<br>
+优点：对内存最友好的，能够保证内存的key一旦过期就能立即从内存中删除<br>
+缺点：对CPU最不友好，需要维护定时器，在过期key较多的情况下，对服务器的响应时间和吞吐量造成影响<br>
+总结：用处理器性能换取存储空间 （拿时间换空间）</p>
+</li>
+<li>
+<p>惰性删除<br>
+描述：当客户端访问该 key 时再去检查是否过期<br>
+优点：对CPU友好，只有当使用该 key 时才会进行检查，其它用不到的 key 就不用浪费时间进行检查<br>
+缺点：对内存不友好，因为当一个 key 过期后，如果一直没使用，就一直删除不了，内存就得不到释放。<br>
+总结：用存储空间换取处理器性能（拿空间换时间）</p>
+</li>
+<li>
+<p>定期删除<br>
+描述：每隔一段时间就对一些 key 进行检查，删除里面过期的key<br>
+优点：可以通过限制删除操作执行的时长和频率来减少删除操作对 CPU 的影响。另外定期删除，也能有效释放过期键占用的内存<br>
+缺点：需要控制执行时长和频率，频率太高就会变得像定时删除，频率太低又会变为惰性删除<br>
+总结：周期性抽查存储空间 （随机抽查，重点抽查）</p>
+</li>
+</ul>
+<hr>
+<h3 id="a-nameredis使用的过期删除策略12-redis使用的过期删除策略a"><a name="redis使用的过期删除策略">1.2 redis使用的过期删除策略</a></h3>
+<p>redis 使用的过期删除策略是：惰性删除 + 定期删除。</p>
+<pre><code class="language-redis"># redis.conf
+hz 10  // 定期删除 redis 配置，每秒运行的次数，默认每秒运行10次。
+</code></pre>
+<hr>
+<h3 id="a-name定期扫描规则13-定期扫描规则a"><a name="定期扫描规则">1.3 定期扫描规则</a></h3>
+<p>redis 默认每秒进行10次过期扫描，过期扫描不会遍历过期字典中所有的key，而是采用一种<code>简单的贪心策略</code>，步骤如下：</p>
+<p>1）从过期字典中随机选出20个key<br>
+2）删除这20个key中已经过期的key<br>
+3）如果过期的key的比例超过1/4，则重复步骤1）</p>
+<p>同时，为了保证过期扫描不会出现循环过度，导致线程卡死的现象，算法还增加了扫描时间上线，默认不会超过25ms。</p>
+<blockquote>
+<p>注意：<br>
+开发的时候一定要注意key的过期时间，如果有大批量key过期，尽量每个key设置一个随机范围，避免大量key同时过期，从而卡顿。<br>
+因为当大量key同时过期时，redis会持续扫描过期字典多次，直到过期的key变得稀疏，这会导致线上读写请求出现明显卡顿，导致卡顿的另外一个原因时内存管理器需要频繁回收内存页，这也会产生一下的CPU消耗。<br>
+虽然有设置扫描时间为25ms的限制，但是如果客户端超时时间设置得比较短，如10ms，就会出现大量的链接因为超时而关闭，从而造成业务异常。</p>
+</blockquote>
+<hr>
+<h3 id="a-name从节点的key过期后是怎么处理的14-从节点的key过期后是怎么处理的a"><a name="从节点的key过期后是怎么处理的？">1.4 从节点的key过期后是怎么处理的？</a></h3>
+<p>从节点<code>不会</code>进行过期扫描，从节点对过期的处理是<code>被动的</code>。主节点在 key 到期时，会在 AOF 文件里增加一条 del 指令，同步到所有的从节点，从节点通过执行这条 del 指令来删除过期的key。</p>
+<p>因为指令同步是异步进行的，所以如果主节点过期的 key 的 del 指令没有及时同步的从节点的话，就会出现主从数据不一致的情况，主节点没有的数据从节点还存在。</p>
+<!-- more -->
+<hr>
+<h2 id="a-name内存淘汰策略二-内存淘汰策略逐出算法a"><a name="内存淘汰策略">二、内存淘汰策略（逐出算法）</a></h2>
+<p>我们看到，通过过期删除策略，对于某些<code>冷 key</code> 或<code>永远用不到的 key</code>，并且多次定期删除也<code>没有选定并删除</code>，那么这些 key 同样会<code>一直驻留</code>在内存中，又或者在 redis 中存入大量的 key，这些操作可能都会导致 redis <code>内存不够用</code>，这时候就需要 redis 的<code>内存淘汰策略</code>了。</p>
+<h3 id="a-name相关参数解释21-相关参数解释a"><a name="相关参数解释">2.1 相关参数解释</a></h3>
+<blockquote>
+<p>最大可使用内存，默认值为0，表示不限制，生产环境根据需求设定，通常设置在50%以上<br>
+maxmemory</p>
+<p>每次选取待删除数据的个数，选取数据时不会全库扫描，而是随机获取<br>
+maxmemory-samples</p>
+<p>删除策略，达到最大内存后，对被挑选出来的数据进行删除的策略<br>
+maxmemory-policy</p>
+</blockquote>
+<hr>
+<h3 id="a-name淘汰方式22-淘汰方式a"><a name="淘汰方式">2.2 淘汰方式</a></h3>
+<ol>
+<li>
+<p>volatile（从设置了过期时间的key中查找server.db[i].expires）</p>
+<ul>
+<li>volatile-lru：挑选最近最少使用的数据淘汰</li>
+<li>volatile-lfu：挑选最近使用次数最少的数据淘汰</li>
+<li>volatile-ttl：挑选将要过期的数据淘汰</li>
+<li>volatile-random：任意选择数据淘汰</li>
+</ul>
+</li>
+<li>
+<p>allkeys（检测全库的数据server.db[i].dict）</p>
+<ul>
+<li>allkeys-lru：挑选最近最少使用的数据淘汰</li>
+<li>allkeys-lfu：挑选最近使用次数最少的数据淘汰</li>
+<li>allkeys-random：任意选择数据淘汰</li>
+</ul>
+</li>
+<li>
+<p>no-enviction</p>
+<ul>
+<li>no-enviction：禁止驱逐数据（redis4.0中默认策略），会引发错误OOM（out of memory）</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3 id="a-name近似lru算法23-近似lru算法a"><a name="近似LRU算法">2.3 近似LRU算法</a></h3>
+<p>redis 使用的是一种<code>近似LRU 算法</code>，它跟常规的 LRU 算法不太一样。近似 LRU 算法通过<code>随机采样法淘汰数据</code>，每次随机出5（默认）个key，从里面淘汰掉<code>最近最少使用</code>的key。</p>
+<blockquote>
+<p>可以通过maxmemory-samples参数修改采样数量： 例：maxmemory-samples 10<br>
+maxmenory-samples配置的越大，淘汰的结果越接近于严格的LRU算法</p>
+</blockquote>
+<p>redis 为了实现<code>近似LRU算法</code>，给每个 key 增加一个长度为24bit的额外的字段，用于存储最后一次被访问的时间戳。</p>
+<blockquote>
+<p>之所以不适用标准的LRU算法，是因为其需要消耗大量的内存，需要对现有的数据结构进行较大的改造（标准LRU算法需要额外维护一个链表）<br>
+而近似LRU算法很简单，只需要在现有的数据基础上是由随机采样法来淘汰元素即可<br>
+大大的节省了内存占用以及提升了性能</p>
+</blockquote>
+<hr>
+<h3 id="a-name近似lru算法的优化24-近似lru算法的优化a"><a name="近似LRU算法的优化">2.4 近似LRU算法的优化</a></h3>
+<p>Redis3.0对近似LRU算法进行了一些优化。新算法会维护<code>一个候选池</code>（大小为16），池中的数据根据访问时间进行排序，<code>第一次随机选取</code>的key都会放入池中，<code>随后每次</code>随机选取的key只有在访问时间<code>小于池中最小的时间</code>才会放入池中，直到候选池被<code>放满</code>。当放满后，如果有新的key需要放入，则将池中最后<code>访问时间最大</code>（最近被访问）的<code>移除</code>。</p>
+<p>当<code>需要淘汰</code>的时候，则直接从池中选取最近<code>访问时间最小</code>（最久没被访问）的key<code>淘汰</code>掉就行。</p>
+<hr>
+<h3 id="a-namego实现lru算法25-go实现lru算法a"><a name="go实现LRU算法">2.5 go实现LRU算法</a></h3>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+// Node 定义节点接口
+type Node struct {
+    Key string
+    Value string
+    pre *Node
+    next *Node
+}
+
+var head *Node
+var end *Node
+
+type LRUCache struct {
+    limit int
+    HashMap map[string]*Node
+}
+
+// GetLRUCache 初始化LRUCache
+func GetLRUCache(limit int) *LRUCache {
+    lruCache := LRUCache{limit: limit}
+    lruCache.HashMap = make(map[string]*Node, limit)
+    return &amp;lruCache
+}
+
+//获取值
+func (l *LRUCache) get(key string) string {
+    // 判断这个key是否在map中，在的话ok=true，不在的话ok=false
+    if v,ok := l.HashMap[key];ok {
+        l.refreshNode(v)
+        return v.Value
+    } else {
+        return &quot;&quot;
+    }
+}
+
+//插入新的值
+func (l *LRUCache) put(key, value string) {
+    if v,ok := l.HashMap[key];!ok {
+        if len(l.HashMap) &gt;= l.limit {
+            oldkey := l.removeNode(head)
+            delete(l.HashMap, oldkey)
+        }
+        node := Node{Key: key, Value: value}
+        l.addNode(&amp;node)
+        l.HashMap[key] = &amp;node
+    } else {
+        v.Value = value
+        l.refreshNode(v)
+    }
+}
+
+// 刷新node节点的位置，放到最后
+func (l *LRUCache) refreshNode(node *Node) {
+    if node == end {
+        return
+    }
+    l.removeNode(node)
+    l.addNode(node)
+}
+
+//移除节点关系
+func (l *LRUCache) removeNode(node *Node) string{
+    if node == end {
+        end = end.pre
+    } else if node == head {
+        head = head.next
+    } else {
+        node.pre.next = node.next
+        node.next.pre = node.pre
+    }
+    return node.Key
+}
+
+// 向队尾添加节点
+func (l *LRUCache) addNode(node *Node) {
+    if end != nil {
+        end.next = node
+        node.pre = end
+        node.next = nil
+    }
+
+    end = node
+    if head == nil {
+        head = node
+    }
+}
+
+
+func main() {
+    lruCache := GetLRUCache(5) // 定义一个map长度为5的LRU缓存池
+    lruCache.put(&quot;001&quot;, &quot;用户1信息&quot;)
+    lruCache.put(&quot;002&quot;, &quot;用户1信息&quot;)
+    lruCache.put(&quot;003&quot;, &quot;用户1信息&quot;)
+    lruCache.put(&quot;004&quot;, &quot;用户1信息&quot;)
+    lruCache.put(&quot;005&quot;, &quot;用户1信息&quot;)
+    fmt.Println(lruCache.HashMap)
+
+    lruCache.get(&quot;002&quot;)  // 获取了002，此时排序：001 003 004 005 002
+    fmt.Println(lruCache.HashMap)
+
+
+    lruCache.put(&quot;004&quot;, &quot;用户2信息更新&quot;) // 更新了004，此时排序：001 003 005 002 004
+    lruCache.put(&quot;006&quot;, &quot;用户3信息插入&quot;) // 插入了006，此时排序：003 005 002 004 006
+    fmt.Println(lruCache.get(&quot;001&quot;))        // 获取001，为空，因为已被删除
+    fmt.Println(lruCache.get(&quot;003&quot;))        // 获取了003，此时排序： 005 002 004 006 003
+    lruCache.put(&quot;007&quot;, &quot;用户4信息插入&quot;) // 插入了007，此时排序： 002 004 006 003 007
+    fmt.Println(lruCache.get(&quot;005&quot;))        // 获取005，为空，因为已被删除
+    fmt.Println(lruCache.HashMap)
+}
+
+</code></pre>
+<hr>
+<h3 id="a-namelfu算法26-lfu算法a"><a name="LFU算法">2.6 LFU算法</a></h3>
+<p><strong>LFU算法</strong>（Least Frequently Used）是<strong>redis4.0</strong>里面新加的一种淘汰策略，它的核心思想是根据 key 的最近被访问的频率进行淘汰，很少被访问的优先被淘汰，被访问多的则被留下来。</p>
+<p><strong>LFU算法</strong>能更好的表示一个 key 被访问的热度。假如使用的是<strong>LRU算法</strong>，一个 key 很久没有被访问，只是刚刚好偶尔被访问了一次，那么它就被认为是热点数据，不会被淘汰，而有些 key 是经常被访问的，只是最近比较少被访问，那么就有可能被误以为是冷数据而被淘汰。</p>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/redis_learning_10/" class="post-title gt-a-link">
+                    Redis学习之路(十)：持久化存储
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

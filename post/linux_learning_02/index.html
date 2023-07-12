@@ -1,0 +1,434 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>Linux日志关键字查找（已迁移） | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Linux日志关键字查找（已迁移）
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-01-27 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/62-1bH5aj/" class="post-tags">
+                            # linux
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>grep、tail、cat、more、less命令</p>
+<!-- more -->
+<h1 id="1-grep">1. grep</h1>
+<p>Linux grep 命令用于查找文件里符合条件的字符串。</p>
+<p>grep 指令用于查找内容包含指定的范本样式的文件，如果发现某文件的内容符合所指定的范本样式，预设 grep 指令会把含有范本样式的那一列显示出来。</p>
+<p>若不指定任何文件名称，或是所给予的文件名为<code>-</code>，则 grep 指令会从标准输入设备读取数据。</p>
+<h3 id="11-使用格式">1.1 使用格式</h3>
+<pre><code class="language-shell">$ grep &lt;参数&gt; &lt;查询条件&gt; &lt;文件名或文件夹&gt;
+</code></pre>
+<p><strong>常用参数：</strong></p>
+<ul>
+<li>-A&lt;显示行数&gt; 或 --after-context=&lt;显示行数&gt; : 除了显示符合范本样式的那一列之外，并显示该行之后的内容。</li>
+<li>-b 或 --byte-offset : 在显示符合样式的那一行之前，标示出该行第一个字符的编号。</li>
+<li>-B&lt;显示行数&gt; 或 --before-context=&lt;显示行数&gt; : 除了显示符合样式的那一行之外，并显示该行之前的内容。</li>
+<li>-c 或 --count : 计算符合样式的列数。</li>
+<li>-C&lt;显示行数&gt; 或 --context=&lt;显示行数&gt;或-&lt;显示行数&gt; : 除了显示符合样式的那一行之外，并显示该行之前后的内容。</li>
+<li>-e&lt;范本样式&gt; 或 --regexp=&lt;范本样式&gt; : 指定字符串做为查找文件内容的样式。</li>
+<li>-i 或 --ignore-case : 忽略字符大小写的差别。</li>
+<li>-n 或 --line-number : 在显示符合样式的那一行之前，标示出该行的列数编号。</li>
+<li>-r 或 --recursive : 此参数的效果和指定&quot;-d recurse&quot;参数相同。</li>
+<li>-v 或 --invert-match : 显示不包含匹配文本的所有行。</li>
+<li>-w 或 --word-regexp : 只显示全字符合的列。</li>
+</ul>
+<h3 id="12-常用实例">1.2 常用实例</h3>
+<pre><code class="language-shell">## 在logs目录中所有.log文件中查找包含“babytest”关键字的数据，并显示行数、忽略大小写
+$ grep -in babytest /logs/*.log
+
+## 查找完全匹配“babytest”的数据
+$ grep -inw babytest /logs/*.log
+
+## 在logs目录中所有.log文件中查找包含“babytest”关键字的数据，并显示该行之前后的3行内容
+$ grep -in -C3 babytest /logs/*.log
+
+## 以递归的方式查找符合条件的文件。例如，查找指定目录/logs及其子目录（如果存在子目录的话）下所有文件中包含字符串&quot;babytest&quot;的文件，并打印出该字符串所在行的内容
+$ grep -r babytest /logs
+
+## 从文件内容查找与正则表达式匹配的行：
+$ grep –e &quot;正则表达式&quot; 文件名
+
+## 从根目录开始查找所有扩展名为 .log 的文本文件，并找出包含 &quot;ERROR&quot; 的行
+$ find / -type f -name &quot;*.log&quot; | xargs grep &quot;ERROR&quot;
+</code></pre>
+<hr>
+<h1 id="2-tail">2. tail</h1>
+<p>tail 命令可用于查看文件的内容，有一个常用的参数 -f 常用于查阅正在改变的日志文件。</p>
+<p>tail 命令可用于查看文件的内容，有一个常用的参数 -f 常用于查阅正在改变的日志文件。</p>
+<h3 id="21-使用格式">2.1 使用格式</h3>
+<pre><code class="language-shell">$ tail [参数] [文件]
+</code></pre>
+<p><strong>常用参数：</strong></p>
+<ul>
+<li>-f 循环读取</li>
+<li>-n&lt;行数&gt; 显示文件的尾部 n 行内容</li>
+<li>--pid=PID 与-f合用,表示在进程ID,PID死掉之后结束</li>
+<li>-s, --sleep-interval=S 与-f合用,表示在每次反复的间隔休眠S秒</li>
+</ul>
+<h3 id="22-常用实例">2.2 常用实例</h3>
+<pre><code class="language-shell">## 默认显示 notes.log 文件的最后 10 行
+$ tail notes.log
+
+## 要跟踪名为 notes.log 的文件的增长情况，间隔时间为5秒
+$ tail -f -s 5 notes.log
+
+## 显示文件 notes.log 的内容，从第 20 行至文件末尾
+$ tail -n +20 notes.log
+</code></pre>
+<hr>
+<h1 id="3-cat">3. cat</h1>
+<p>cat命令用于连接文件并打印到标准输出设备上。</p>
+<h3 id="31-使用格式">3.1 使用格式</h3>
+<pre><code class="language-shell">$ cat [参数] [文件]
+</code></pre>
+<p><strong>常用参数：</strong></p>
+<ul>
+<li>-n 或 --number：由 1 开始对所有输出的行数编号。</li>
+<li>-b 或 --number-nonblank：和 -n 相似，只不过对于空白行不编号。</li>
+<li>-s 或 --squeeze-blank：当遇到有连续两行以上的空白行，就代换为一行的空白行。</li>
+</ul>
+<h3 id="32-常用实例">3.2 常用实例</h3>
+<pre><code class="language-shell">## 把notes.log的内容输出到设备上
+$ cat notes.log
+
+## 把 textfile1 的文档内容加上行号后输入 textfile2 这个文档里
+$ cat -n textfile1 &gt; textfile2
+
+## 把 textfile1 和 textfile2 的文档内容加上行号（空白行不加）之后将内容附加到 textfile3 文档里
+$ cat -b textfile1 textfile2 &gt;&gt; textfile3
+</code></pre>
+<hr>
+<h1 id="4-more">4. more</h1>
+<p>Linux more 命令类似 cat ，不过会以一页一页的形式显示，更方便使用者逐页阅读，而最基本的指令就是按空白键（space）就往下一页显示，按 b 键就会往回（back）一页显示，而且还有搜寻字串的功能（与 vi 相似），使用中的说明文件，请按 h 。</p>
+<h3 id="41-使用格式">4.1 使用格式</h3>
+<pre><code class="language-shell">$ more [参数] [fileNames..]
+</code></pre>
+<p><strong>常用参数：</strong></p>
+<ul>
+<li>-num 一次显示的行数</li>
+<li>-s 当遇到有连续两行以上的空白行，就代换为一行的空白行</li>
+<li>+/pattern 在每个文档显示前搜寻该字串（pattern），然后从该字串之后开始显示</li>
+<li>+num 从第 num 行开始显示</li>
+<li>fileNames 欲显示内容的文档，可为复数个数</li>
+</ul>
+<h3 id="42-常用实例">4.2 常用实例</h3>
+<pre><code class="language-shell">## 逐页显示error.log文档的内容，如果有两行以上的空行则以一行空行代替
+$ more -s error.log
+
+## 一次显示20行，并且从第40行开始显示
+$ more -num 20 +40 error.log
+</code></pre>
+<p><strong>常用操作命令</strong>：</p>
+<ul>
+<li>Enter 向下n行，需要定义。默认为1行</li>
+<li>Ctrl+F 向下滚动一屏</li>
+<li>空格键 向下滚动一屏</li>
+<li>Ctrl+B 返回上一屏</li>
+<li>= 输出当前行的行号</li>
+<li>：f 输出文件名和当前行的行号</li>
+<li>V 调用vi编辑器</li>
+<li>!命令 调用Shell，并执行命令</li>
+<li>q 退出more</li>
+</ul>
+<hr>
+<h1 id="5-less">5. less</h1>
+<p>less 与 more 类似，less 可以随意浏览文件，支持翻页和搜索，支持向上翻页和向下翻页，使用中的说明文件，请按 h 。</p>
+<h3 id="51-使用格式">5.1 使用格式</h3>
+<pre><code class="language-shell">$ less [参数] [fileNames..]
+</code></pre>
+<p><strong>常用参数：</strong></p>
+<ul>
+<li>-e 当文件显示结束后，自动离开</li>
+<li>-g 只标志最后搜索的关键词</li>
+<li>-i 忽略搜索时的大小写</li>
+<li>-m 显示类似more命令的百分比</li>
+<li>-N 显示每行的行号</li>
+<li>-o &lt;文件名&gt; 将less 输出的内容在指定文件中保存起来</li>
+<li>-s 显示连续空行为一行</li>
+</ul>
+<h3 id="52-常用实例">5.2 常用实例</h3>
+<pre><code class="language-shell">## 浏览多个文件
+$ less -sim error2021.log error2022.log
+
+## ps查看进程信息并通过less分页显示
+$ ps -ef | less
+</code></pre>
+<p><strong>常用操作命令</strong>：</p>
+<ul>
+<li>/字符串：向下搜索&quot;字符串&quot;的功能</li>
+<li>?字符串：向上搜索&quot;字符串&quot;的功能</li>
+<li>n：重复前一个搜索（与 / 或 ? 有关）</li>
+<li>N：反向重复前一个搜索（与 / 或 ? 有关）</li>
+<li>b 向上翻一页</li>
+<li>d 向后翻半页</li>
+<li>h 显示帮助界面</li>
+<li>Q 退出less 命令</li>
+<li>u 向前滚动半页</li>
+<li>y 向前滚动一行</li>
+<li>空格键 滚动一页</li>
+<li>回车键 滚动一行</li>
+<li>[pagedown]： 向下翻动一页</li>
+<li>[pageup]： 向上翻动一页</li>
+<li>ma - 使用 a 标记文本的当前位置</li>
+<li>'a - 导航到标记 a 处</li>
+</ul>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/linux_learning_01/" class="post-title gt-a-link">
+                    Linux的五个查找命令及其区别（已迁移）
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

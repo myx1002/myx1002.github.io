@@ -1,0 +1,738 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>Redis学习之路(十六)：集群之主从复制 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Redis学习之路(十六)：集群之主从复制
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2021-11-17 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tags">
+                            # redis
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>😡 为了避免单点Redis服务器故障，准备多台服务器，互相连通。将数据复制多个副本保存在不同的服<br>
+务器上，连接在一起，并保证数据是同步的。<br>
+😲 即使有其中一台服务器宕机，其它服务器依然可以继续提供服务，实现Redis的高可用，同时实现数据冗余备份。</p>
+<!-- more -->
+<h2 id="目录">目录</h2>
+<ul>
+<li>
+<p><a href="#CAP原理">1. CAP原理</a></p>
+</li>
+<li>
+<p><a href="#主从复制简介">2. 主从复制简介</a></p>
+<ul>
+<li><a href="#主从复制简介">2.1 单机的风险</a></li>
+<li><a href="#多台服务器连接方案">2.2 多台服务器连接方案</a></li>
+<li><a href="#主从复制简介">2.3 主从复制</a></li>
+</ul>
+</li>
+<li>
+<p><a href="#主从复制流程">3. 主从复制流程</a></p>
+<ul>
+<li><a href="#建立连接阶段">3.1 阶段一：建立连接阶段</a>
+<ul>
+<li><a href="#3.1.1 流程">3.1.1 流程</a></li>
+<li><a href="#3.1.2  连接方式">3.1.2 连接方式</a></li>
+<li><a href="#3.1.3  断开连接">3.1.3 断开连接</a></li>
+<li><a href="#3.1.4  配置参数">3.1.4 配置参数</a></li>
+</ul>
+</li>
+<li><a href="#数据同步阶段工作流程">3.2 阶段二：数据同步阶段工作流程</a>
+<ul>
+<li><a href="#3.2.1 流程">3.2.1 工作流程</a></li>
+<li><a href="#3.2.2 数据同步阶段master说明">3.2.2 数据同步阶段master说明</a></li>
+<li><a href="#3.2.3 数据同步阶段slave说明">3.2.3 数据同步阶段slave说明</a></li>
+</ul>
+</li>
+<li><a href="#命令传播阶段">3.3 阶段三：命令传播阶段</a></li>
+<li><a href="#主从复制完成流程">3.4 主从复制完成流程</a></li>
+</ul>
+</li>
+<li>
+<p><a href="#主从复制常见的问题">4. 主从复制常见的问题</a></p>
+<ul>
+<li><a href="#频繁的全量复制">4.1 心跳机制</a></li>
+<li><a href="#频繁的全量复制">4.2 频繁的全量复制</a></li>
+<li><a href="#频繁的网络中断">4.3 频繁的网络中断</a></li>
+<li><a href="#数据不一致">4.4 数据不一致</a></li>
+</ul>
+</li>
+</ul>
+<!-- more -->
+<h1 id="a-namecap原理1-cap原理a"><a name="CAP原理">1. CAP原理</a></h1>
+<p>在了解Redis的主从复制之前，我们先来理解一下现代分布式系统的理论基石——CAP原理。</p>
+<ul>
+<li><code>C</code>：Consistent，一致性</li>
+<li><code>A</code>：Availability，可用性</li>
+<li><code>P</code>：Partition Tolerance，分区容忍性</li>
+</ul>
+<p>分布式系统的节点往往都是分布在不通的机器进行网络隔离开的，这意味着必然有网络断开的风险，这个网络断开的场景的专业词汇叫做<code>网络分区</code>。</p>
+<p>当发生<code>网络分区</code>时，两个分布式节点之间无法进行通信了，导致数据无法同步，从而<code>一致性</code>无法得到满足。除非我们牺牲<code>可用性</code>，也就是暂停分布式节点服务，在网络分区分生时，不再提交修改数据的功能，知道网络状况完全恢复正常再继续对外服务。</p>
+<p>简单的用一句话概括<strong>CAP原理</strong>就是：当网络分区发生时，一致性和可用性两难全。</p>
+<!-- more -->
+<hr>
+<h1 id="a-name主从复制简介2-主从复制简介a"><a name="主从复制简介">2. 主从复制简介</a></h1>
+</br>
+<h2 id="a-name单机的风险21-单机的风险a"><a name="单机的风险">2.1 单机的风险</a></h2>
+<ul>
+<li>
+<p>问题1：可靠性低，遇到宕机的话，会导致数据丢失、数据库压力骤增，对业务造成灾难性打击</p>
+</li>
+<li>
+<p>问题2：内存容量瓶颈，没得横向扩展容量</p>
+</li>
+</ul>
+<h2 id="a-name多台服务器连接方案22-多台服务器连接方案a"><a name="多台服务器连接方案">2.2 多台服务器连接方案</a></h2>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1637223467508.png" alt="" width="400" height="200" loading="lazy"></figure>
+<ul>
+<li>
+<p>提供数据方：master<br>
+主服务器、主节点、主库、主客户端</p>
+</li>
+<li>
+<p>接收数据放：slave<br>
+从服务器、从节点、从库、从客户端</p>
+</li>
+<li>
+<p>需要解决的问题：数据同步</p>
+</li>
+<li>
+<p>核心工作：<code>master</code>数据复制到<code>slave</code>中</p>
+</li>
+</ul>
+<h2 id="a-name主从复制的作用23-主从复制的作用a"><a name="主从复制的作用">2.3 主从复制的作用</a></h2>
+<ol>
+<li>
+<p>读写分离：提高服务器读写负载能力</p>
+</li>
+<li>
+<p>负载均衡：基于主从结构，配合读写分离，由slave分担master的负载，并根据需求的变化，改变slave的数量，通过多个节点分担数据读取负载，大大提供redis服务器的并发量和数据吞吐量</p>
+</li>
+<li>
+<p>故障恢复：当master出问题时，有slave提供服务，实现快速的故障恢复</p>
+</li>
+<li>
+<p>数据冗余：实现数据热备份，时持久化之外的一种数据冗余方式</p>
+</li>
+<li>
+<p>高可用基石：基于主从复制，构建哨兵模式或集群，实现Redis的高可用方案</p>
+</li>
+</ol>
+<!-- more -->
+<hr>
+<h1 id="a-name主从复制流程3-主从复制流程a"><a name="主从复制流程">3. 主从复制流程</a></h1>
+<p>主从复制过程大体可以分为3个阶段</p>
+<ol>
+<li>建立连接阶段（即准备阶段）</li>
+<li>数据同步阶段</li>
+<li>命令传播阶段<br>
+<img src="http://mofish.pily.life/post-images/1637286622936.png" alt="" loading="lazy"></li>
+</ol>
+<h2 id="a-name建立连接阶段31-阶段一建立连接阶段a"><a name="建立连接阶段">3.1 阶段一：建立连接阶段</a></h2>
+<p>建立<code>slave</code>到<code>master</code>的连接，使得<code>master</code>能够识别<code>slave</code>，并保存<code>slave</code>端口号。</p>
+<h3 id="a-name311-流程311-流程a"><a name="3.1.1 流程">3.1.1 流程</a></h3>
+<p>步骤1： 设置<code>master</code>的<strong>地址</strong>和<strong>端口</strong>，保存<code>master</code>信息<br>
+步骤2：建立<code>socket</code>连接<br>
+步骤3：发送ping命令（定时器任务）<br>
+步骤4：身份验证<br>
+步骤5：发送slave端口信息</p>
+<p>至此，主从连接成功！</p>
+<figure data-type="image" tabindex="2"><img src="http://mofish.pily.life/post-images/1637288150375.png" alt="" loading="lazy"></figure>
+<blockquote>
+<p>状态：<br>
+salve：保存了<code>master</code>的<strong>地址</strong>和<strong>端口</strong><br>
+master：保存<code>slave</code>端口<br>
+总体：<code>master</code>和<code>slave</code>之间创建了连接的<code>socket</code></p>
+</blockquote>
+<h3 id="a-name312-连接方式312-连接方式a"><a name="3.1.2  连接方式">3.1.2  连接方式</a></h3>
+<ul>
+<li>方式一：客户端发送命令</li>
+</ul>
+<blockquote>
+<p>slaveof <strong><masterip></strong> <strong><masterport></strong></p>
+</blockquote>
+<ul>
+<li>方式二：启动服务器参数</li>
+</ul>
+<blockquote>
+<p>redis-server -slaveof <strong><masterip></strong> <strong><masterport></strong></p>
+</blockquote>
+<ul>
+<li>方式三：服务器配置</li>
+</ul>
+<blockquote>
+<p>slaveof <strong><masterip></strong> <strong><masterport></strong></p>
+</blockquote>
+<ul>
+<li>
+<p>slave系统信息</p>
+<ol>
+<li>master_link_down_since_seconds（记录与主节点连接失败的系统时间）</li>
+<li>master host</li>
+<li>masterport</li>
+</ol>
+</li>
+<li>
+<p>master系统信息</p>
+<ol>
+<li>slave_listening_port（多个）</li>
+</ol>
+</li>
+</ul>
+<h3 id="a-name313-断开连接313-断开连接a"><a name="3.1.3  断开连接">3.1.3 断开连接</a></h3>
+<p>客户端发送命令：slaveof no one</p>
+<pre><code>slave断开连接后，不会删除已有数据，只是不再接受master发送的数据。
+</code></pre>
+<h3 id="配置参数">配置参数</h3>
+<ul>
+<li>master 配置</li>
+</ul>
+<pre><code class="language-redis">daemonize no   ----&gt; daemonize yes(不影响当前会话,启动过程隐藏,守护进程)
+protected-mode yes ---&gt; protected-mode no(关闭保护模式,其他服务器可访问)
+</code></pre>
+<ul>
+<li>slave 配置</li>
+</ul>
+<pre><code class="language-redis">daemonize no   ----&gt; daemonize yes(不影响当前会话,启动过程隐藏,守护进程)
+protected-mode yes ---&gt; protected-mode no(关闭保护模式,其他服务器可访问)
+replicaof &lt;masterip&gt; &lt;masterport&gt;(主服务器的ip和端口)
+masterauth &lt;masterauth&gt;(主服务器的访问密码)
+</code></pre>
+<!-- more -->
+<h2 id="a-name数据同步阶段工作流程32-阶段二数据同步阶段工作流程a"><a name="数据同步阶段工作流程">3.2 阶段二：数据同步阶段工作流程</a></h2>
+<p>在salve初次连接master后，复制master中的所有数据到slave，将slave的数据库状态更新成master当前的数据库状态。</p>
+<h3 id="a-name321-流程321-工作流程a"><a name="3.2.1 流程">3.2.1 工作流程</a></h3>
+<p>步骤1：请求同步数据<br>
+步骤2：创建RDB同步数据<br>
+步骤3：恢复RDB同步数据<br>
+步骤4：请求部分同步数据<br>
+步骤5：恢复部分同步数据</p>
+<p>至此，数据同步工作完成！</p>
+<figure data-type="image" tabindex="3"><img src="http://mofish.pily.life/post-images/1637331755843.png" alt="" loading="lazy"></figure>
+<blockquote>
+<p>状态：<br>
+salve：具有了<code>master</code>端的全部数据，包括RDB过程接收的数据<br>
+master：保存<code>slave</code>当前数据同步的位置<br>
+总体：<code>master</code>和<code>slave</code>之间完成了数据克隆</p>
+</blockquote>
+<h3 id="a-name322-数据同步阶段master说明322-数据同步阶段master说明a"><a name="3.2.2 数据同步阶段master说明">3.2.2 数据同步阶段master说明</a></h3>
+<ol>
+<li>
+<p>如果<code>master</code>数据<strong>量巨大</strong>，数据同步阶段应<strong>避开</strong>流量<strong>高峰期</strong>，避免造成master阻塞，影响业务正常执行</p>
+</li>
+<li>
+<p>复<strong>制缓存区大小</strong>设置<strong>不合理</strong>，会导致<strong>数据溢出</strong>，使用增量复制时发现数据存在<strong>丢失情况</strong>，又得进行第二次全量复制，使得slave<strong>陷入死循环</strong>状态</p>
+</li>
+</ol>
+<blockquote>
+<p>repl-backlog-size 1mb</p>
+</blockquote>
+<ol start="3">
+<li><code>master</code>单机内存占用主机内存比例不应过大，建议**50%-70%**左右，留下部分内存用于执行bgsave命令和创建复制缓存区</li>
+</ol>
+<h3 id="a-name323-数据同步阶段slave说明323-数据同步阶段slave说明a"><a name="3.2.3 数据同步阶段slave说明">3.2.3 数据同步阶段slave说明</a></h3>
+<ol>
+<li>为避免<code>slave</code>进行全量复制、增量复制时服务器<strong>响应阻塞或不同步</strong>，<strong>建议关闭</strong>此期间的<strong>对外服务</strong></li>
+</ol>
+<blockquote>
+<p>slave-serve-stable-data yes|no</p>
+</blockquote>
+<ol start="2">
+<li>尽量避免多个<code>slave</code><strong>同时</strong>对<code>master</code>请求数据同步，因为发送的RDB文件<strong>增多</strong>，可能会对带宽造成巨大<strong>冲击</strong>，因为需要<strong>适量错峰</strong></li>
+</ol>
+<p>3.<code> slave</code>过多时，建议调整拓扑结构，又<strong>一主多从</strong>结构改为<strong>树状结构</strong>，中间的节点既是master，也是slave。但是也要主要深度，因为<strong>层级越深</strong>，slave与顶层的master间的数据同步<strong>延迟越大</strong>。</p>
+<!-- more -->
+<h2 id="a-name命令传播阶段33-阶段三命令传播阶段a"><a name="命令传播阶段">3.3 阶段三：命令传播阶段</a></h2>
+<ul>
+<li>
+<p>当<code>master</code>数据库状态被<strong>修改后</strong>，导致<strong>主从</strong>服务器<strong>数据库状态不一致</strong>，此时需要主从数据<strong>同步到一致的状态</strong>，同步的动作成为<strong>命令传播</strong>。</p>
+</li>
+<li>
+<p><code>master</code>将接收到的数据<strong>变更命令</strong>发送给<code>slave</code>，<code>slave</code>接收命令后执行命令。</p>
+</li>
+<li>
+<p>命令传播阶段的<strong>三个核心要素</strong>：服务器的运行id（run id）、复制积压缓冲区、复制偏移量</p>
+</li>
+</ul>
+<h3 id="a-name服务器的运行id331-服务器的运行idrun-ida"><a name="服务器的运行id">3.3.1 服务器的运行id（run id）</a></h3>
+<ul>
+<li>概念</li>
+</ul>
+<blockquote>
+<p>服务器运行ID是每台服务器每次运行的<strong>身份识别码</strong>，一台服务器多次运行可生成多个运行ID</p>
+</blockquote>
+<ul>
+<li>组成</li>
+</ul>
+<blockquote>
+<p>由<strong>40位字符</strong>组成，是一个<strong>随机的</strong>十六进制字符</p>
+</blockquote>
+<ul>
+<li>作用</li>
+</ul>
+<blockquote>
+<p>被用于在服务器之间进行传输时<strong>识别身份</strong></p>
+</blockquote>
+<ul>
+<li>实现方式</li>
+</ul>
+<blockquote>
+<p>运行ID在<strong>启动时</strong>自动<strong>生成</strong>，<code>master</code>在<strong>首次连接</strong><code>slave</code>时，会把自己的运行ID发送给s<code>lave</code>，<code>salve</code><strong>保存</strong>此ID。可通过info Server命令查看节点运行ID。</p>
+</blockquote>
+<h3 id="a-name复制积压缓冲区332-复制积压缓冲区a"><a name="复制积压缓冲区">3.3.2 复制积压缓冲区</a></h3>
+<ul>
+<li>概念</li>
+</ul>
+<blockquote>
+<p>复制积压缓冲区，是一个先进先出（FIFO）的队列，用于存储服务器执行过的命令，每次传播命令，master都会将传播的命令记录下来，并存储在复制缓冲区。</p>
+</blockquote>
+<ul>
+<li>由来</li>
+</ul>
+<blockquote>
+<p>服务器启动时，如果开启由AOF或被连接成为master节点，即创建复制缓冲区。</p>
+</blockquote>
+<ul>
+<li>作用</li>
+</ul>
+<blockquote>
+<p>用于保存master收到的所有指令（仅影响数据变更的指令，如set、select）。</p>
+</blockquote>
+<ul>
+<li>数据来源</li>
+</ul>
+<blockquote>
+<p>当master接收到主客户端的指令时，除了将指令执行，会将该指令存储到缓冲区中。</p>
+</blockquote>
+<ul>
+<li>注意事项</li>
+</ul>
+<blockquote>
+<p>复制缓冲区默认存储空间大小为1M，由于存储空间大小是固定的，当空间满了之后，最先入队的元素会被弹出，以便新的元素入队。</p>
+</blockquote>
+<h3 id="a-name复制偏移量333-复制偏移量a"><a name="复制偏移量">3.3.3 复制偏移量</a></h3>
+<ul>
+<li>概念</li>
+</ul>
+<blockquote>
+<p>一个数字，描述复制缓冲区中指令字节的位置</p>
+</blockquote>
+<ul>
+<li>分类</li>
+</ul>
+<blockquote>
+<p>master复制偏移量：记录发送给所有slave的指令字节对应的位置（多个）<br>
+slave复制偏移量：记录slave接收master发送过来的指令字节对应的位置（一个）</p>
+</blockquote>
+<ul>
+<li>数据来源</li>
+</ul>
+<blockquote>
+<p>master端：发送一次记录一次<br>
+slave端：接收一次记录一次</p>
+</blockquote>
+<ul>
+<li>作用</li>
+</ul>
+<blockquote>
+<p>同步信息，对比master和slave的差异，slave断开后，恢复数据使用</p>
+</blockquote>
+<h2 id="a-name主从复制完成流程34-主从复制完成流程a"><a name="主从复制完成流程">3.4 主从复制完成流程</a></h2>
+<figure data-type="image" tabindex="4"><img src="http://mofish.pily.life/post-images/1637472526617.png" alt="" loading="lazy"></figure>
+<!-- more -->
+<hr>
+<h1 id="a-name主从复制常见的问题4-主从复制常见的问题a"><a name="主从复制常见的问题">4. 主从复制常见的问题</a></h1>
+<h2 id="a-name心跳机制41-心跳机制重点a"><a name="心跳机制">4.1 心跳机制（重点）</a></h2>
+<p>进入命令传播阶段后，<code>master</code>与<code>slave</code>间需要进行信息交换，使用<strong>心跳机制</strong>来进行<strong>维护</strong>，实现双方连接<strong>保持在线</strong>。</p>
+<ul>
+<li>
+<p><code>master</code>心跳：</p>
+<ul>
+<li>指令：PING</li>
+<li>周期：由<code> repl-ping-replica-period</code>决定，默认10秒</li>
+<li>作用：判断<code>slave</code>是否在线</li>
+<li>查询：INFO relication 获取<code>slave</code>最后一次连接时间间隔，lag项维持在0或1是为正常</li>
+</ul>
+</li>
+<li>
+<p><code>slave</code>心跳：</p>
+<ul>
+<li>指令：REPLCONF ACK {offset}</li>
+<li>周期：1秒</li>
+<li>作用1：汇报<code>slave</code>自己的复制的偏移量，获取最新的数据变更指令</li>
+<li>作用2：判断<code>master</code>是否在线</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>注意事项：</p>
+<ul>
+<li>当<code>slave</code><strong>多数掉线</strong>，或者<strong>延迟过高</strong>时，<code>master</code>为<strong>保障</strong>数据<strong>稳定性</strong>，将<strong>拒绝写请求</strong>，防止发生脑裂问题</li>
+</ul>
+</blockquote>
+<pre><code class="language-shell">min-replicas-to-write 3   // 表示连接到master的最少slave数量
+min-replicas-max-lag 10 // 表示连接到master的最少slave数量
+</code></pre>
+<blockquote>
+<ul>
+<li>slave数量和延迟由slave发送REPLCONF ACK命令做确认</li>
+</ul>
+</blockquote>
+<!-- more -->
+<h2 id="a-name频繁的全量复制42-频繁的全量复制a"><a name="频繁的全量复制">4.2 频繁的全量复制</a></h2>
+<h3 id="频繁的全量复制1">频繁的全量复制（1）</h3>
+<p>伴随着系统的运行，master的数据量越来越大，一旦master重启，run id将发生变化，会导致全部slave的全量复制操作。</p>
+<p>内部优化调整方案：</p>
+<ol>
+<li>
+<p>master内部创建master_replid变量，使用run id相同的策略生成，长度为41位，并发送给所有slave</p>
+</li>
+<li>
+<p>在master关闭时执行shutdown save，进行RDB持久化，将run id与offset保存到RDB文件中</p>
+<ul>
+<li>repl-id  repl-offset</li>
+<li>通过redis-check-rdb命令可以查看该信息</li>
+</ul>
+</li>
+<li>
+<p>master重启后加载RDB文件，将RDB文件保存的relp-id和repl-offset加载到内存中，恢复数据</p>
+<ul>
+<li>master_repl_id = repl master_repl_offset = repl-offset</li>
+<li>通过info命令可以查看该信息</li>
+</ul>
+</li>
+</ol>
+<blockquote>
+<p>作用：本机保存上次run id，重启后恢复该值，使所有slave认为还是之前的master。</p>
+</blockquote>
+<h3 id="频繁的全量复制2">频繁的全量复制（2）</h3>
+<ul>
+<li>
+<p>问题现象：网络环境不佳，出现网络中断，salve不提供服务</p>
+</li>
+<li>
+<p>问题原因：复制缓冲区过小，断网后slave的offset越界，出发全量复制</p>
+</li>
+<li>
+<p>最终结果：slave反复执行全量复制</p>
+</li>
+<li>
+<p>解决方案：修改复制缓冲区大小：repl-backlog-size {size}</p>
+</li>
+</ul>
+<!-- more -->
+<h2 id="a-name频繁的网络中断43-频繁的网络中断a"><a name="频繁的网络中断">4.3 频繁的网络中断</a></h2>
+<h3 id="频繁的网络中断1">频繁的网络中断（1）</h3>
+<ul>
+<li>
+<p>问题现象：master的CPU占用过高或slave频繁断开连接</p>
+</li>
+<li>
+<p>问题原因：</p>
+<ul>
+<li>slave每1秒发送REPLCONF ACK命令到master</li>
+<li>当slave接到了慢查询时，会大量占用CPU性能</li>
+<li>master每1秒调用复制定时函数，比对slave发现长时间没有进行响应</li>
+</ul>
+</li>
+<li>
+<p>最终结果：master各种资源（输出缓冲区、带宽、连接等）被严重占用</p>
+</li>
+<li>
+<p>解决方案：通过设置合理的超时时间，确认是否释放slave：repl-timeout。</p>
+</li>
+</ul>
+<h3 id="频繁的网络中断2">频繁的网络中断（2）</h3>
+<ul>
+<li>
+<p>问题现象：salve与master连接断开</p>
+</li>
+<li>
+<p>问题原因：</p>
+<ul>
+<li>master发送ping指令频率较低</li>
+<li>master设定超时时间较短</li>
+<li>ping指令在网络中存在丢包</li>
+</ul>
+</li>
+<li>
+<p>解决方案：提高ping指令发送的频率：repl-ping-slave-period（超时时间repl-time的时间至少是ping指令频度的5到10倍，否则slave很容易判定超时）</p>
+</li>
+</ul>
+<!-- more -->
+<h2 id="a-name数据不一致44-数据不一致a"><a name="数据不一致">4.4 数据不一致</a></h2>
+<ul>
+<li>
+<p>问题现象：多个slave获取相同数据不同步</p>
+</li>
+<li>
+<p>问题原因：网络信息不同步，数据发送有延迟</p>
+</li>
+<li>
+<p>解决方案：</p>
+<ul>
+<li>优化主从间的网络环境，尽量部署在同一机房</li>
+<li>监控主从节点延迟（通过offset）判断，如果slave延迟过大，在那时屏蔽程序对该salve的数据访问：slave-serve-stale-data yes|no （慎用）</li>
+</ul>
+</li>
+</ul>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/network_learning_02/" class="post-title gt-a-link">
+                    计算机网络知识点(二)：常见的HTTP状态码（已迁移）
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,518 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <div class="main-content">
+        <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+
+        <div class="post-list-container">
+    <div class="post-inner">
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/network_learning_06/">
+                            <span class="post-title gt-c-content-color-first">计算机网络知识点(六)：Cookie、Session、Token和Jwt（已迁移）</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>🤠 继续整理一些比较零散的知识点。</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2021-12-10 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/k6ND9yEKgx/" class="post-tag">
+                                # 计算机网络
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/network_learning_05/">
+                            <span class="post-title gt-c-content-color-first">计算机网络知识点(五)：URI、URL、URN区别（已迁移）</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>🤠 这章节整理一些比较零散的知识点。</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2021-12-09 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/k6ND9yEKgx/" class="post-tag">
+                                # 计算机网络
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/network_learning_04/">
+                            <span class="post-title gt-c-content-color-first">计算机网络知识点(四)：Http和Https（已迁移）</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>😵 同样是面试重灾区呀！！<br>
+👻 Http的报文格式，各个版本的特性，Https的工作原理等等</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2021-12-01 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/k6ND9yEKgx/" class="post-tag">
+                                # 计算机网络
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/network_learning_03/">
+                            <span class="post-title gt-c-content-color-first">计算机网络知识点(三)：TCP和UDP（已迁移）</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>😵 面试重灾区呀！！<br>
+👻 TCP三次握手和四次挥手、TCP、UDP协议的区别、TCP 协议如何保证可靠传输等等</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2021-11-25 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/k6ND9yEKgx/" class="post-tag">
+                                # 计算机网络
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/redis_learning_18/">
+                            <span class="post-title gt-c-content-color-first">Redis学习之路(十八)：集群之cluster</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>😎 在前面的文章中介绍过了redis的主从和哨兵两种集群方案，redis从3.0版本开始引入了redis-cluster(集群)。<br>
+👍 从主从-哨兵-集群可以看到redis的不断完善，主从复制解决了数据同步问题、哨兵可以同时管理多个主从同步方案同时也可以处理主从自动故障转移，但是单个节点的性能压力问题无法解决。而集群解决了前面两个方案的所有问题。</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2021-11-23 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tag">
+                                # redis
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/redis_leatning_15/">
+                            <span class="post-title gt-c-content-color-first">Redis学习之路(十七)：集群之哨兵模式</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>👮 哨兵（sentinel）是一个分布式系统，用于对主从结构中的每台服务器进行监控，当出现故障时，通过投票机制选择新的master，并讲slave连接到新的master。</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2021-11-21 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tag">
+                                # redis
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/redis_learning_16/">
+                            <span class="post-title gt-c-content-color-first">Redis学习之路(十六)：集群之主从复制</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>😡 为了避免单点Redis服务器故障，准备多台服务器，互相连通。将数据复制多个副本保存在不同的服<br>
+务器上，连接在一起，并保证数据是同步的。<br>
+😲 即使有其中一台服务器宕机，其它服务器依然可以继续提供服务，实现Redis的高可用，同时实现数据冗余备份。</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2021-11-17 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tag">
+                                # redis
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/network_learning_02/">
+                            <span class="post-title gt-c-content-color-first">计算机网络知识点(二)：常见的HTTP状态码（已迁移）</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>🤗 稍微记录一下</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2021-11-14 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/k6ND9yEKgx/" class="post-tag">
+                                # 计算机网络
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/redis_learning_15/">
+                            <span class="post-title gt-c-content-color-first">Redis学习之路(十五)：Redis分布式锁</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>✍️ 分布式应用进行逻辑处理时经常会遇到并发问题，为了防止该问题发生就要使用到分布式锁来限制程序的并发执行。<br>
+👌 而Redis分布式锁使用得非常广泛，也是面试需要考察得地方。</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2021-11-13 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tag">
+                                # redis
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+            <div class="post gt-bg-theme-color-second">
+                <div class="post-left">
+                    <div>
+                        
+                        <a href="http://mofish.pily.life/post/redis_learning_14/">
+                            <span class="post-title gt-c-content-color-first">Redis学习之路(十四)：缓存穿透、击穿、雪崩</span>
+                        </a>
+                    </div>
+                    <div class="gt-post-content post-abstract gt-c-content-color-second">
+                        <p>👉 使用缓存的主要目是提升查询速度和保护数据库等稀缺资源不被占满导致整个服务异常<br>
+🖖 而缓存最常见的问题是缓存穿透、击穿和雪崩，在高并发下这三种情况都会有大量请求落到数据库，导致数据库资源占满，引起数据库故障。</p>
+
+                    </div>
+                    <div class="post-info">
+                        <time class="post-time gt-c-content-color-first">
+                            发布于 · 2021-11-12 ·
+                        </time>
+                        
+                            <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tag">
+                                # redis
+                            </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        
+    </div>
+</div>
+
+        <div class="pagination-container">
+    
+        <a href="http://mofish.pily.life/page/4/" class="prev-page gt-a-link">上一页</a>
+    
+    
+        <a href="http://mofish.pily.life/page/6/" class="prev-page gt-a-link">下一页</a>
+    
+</div>
+
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

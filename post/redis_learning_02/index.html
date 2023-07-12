@@ -1,0 +1,397 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>Redis学习之路(二)：布隆过滤器 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Redis学习之路(二)：布隆过滤器
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2021-04-27 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tags">
+                            # redis
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>📱 日常我们刷抖音的时候，它都会不停地给我们推荐新的内容，而每次推荐时都要去重，<br>
+😮如果我们每次去重时都要频繁地对数据库进行exists查询，当系统并发量高时，数据库是很难扛得住的<br>
+😕而当我们把这些历史记录都缓存起来呢？那内存可能直接爆掉了，随着时间的推荐，占用的空间会越来越大，那么有啥效率高、占用小的方法呢？</p>
+<!-- more -->
+<center>👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇</center>
+<br>
+<p>没错，就是<strong>布隆过滤器</strong>！！👏👏<br>
+它就是专门用来解决这种去重问题的，它在起到去重作用的同时，在空间上还能大大节省，<br>
+虽然稍微有一点点不精确，有一点点误判概率，但是只要参数设置得合理，精确度还是能控制的👏👏</p>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1619616257498.jfif" alt="" width="200" height="200" loading="lazy"></figure>
+<h2 id="一-布隆过滤器是什么">一、布隆过滤器是什么？🤷‍♂</h2>
+<p>我们其实可以把它理解为一个不算非常精确的set结构，当它说某个值存在时，这个值不能不存在，但它说这个值不存在时，那么一定不存在。</p>
+<p>举个现实生活中的例子，就是当一个人说认识你的时候，可能只是有个朋友跟你长得很像，误认为是你，当它说不认识你的时候，就真的不认识你了。</p>
+<p>因此，在部分需要过滤大量数据，避免重复时，就可以用到<code>布隆过滤器</code>，在合理的参数设置下，可以精准的过滤掉重复数据。</p>
+<blockquote>
+<p>注意：Redis官方提供的布隆过滤器到了Redis4.0提供了插件功能之后才正式登场。</p>
+</blockquote>
+<!-- more -->
+<h2 id="二-布隆过滤器的基本用法️">二、布隆过滤器的基本用法✍️</h2>
+<blockquote>
+<p>使用前记得确保版本&gt;4.0，并且安装了Rebloom插件噢😲<br>
+可参考：https://www.jianshu.com/p/2cc55cd1e13a</p>
+</blockquote>
+<p><code>bf.add</code>和<code>bf.madd</code>，一个是添加一个元素，一个是批量添加元素<br>
+<code>bf.exists</code>和<code>bf.exists</code>，一个是查询单个元素，一个是批量查询<br>
+下面我们来用用看：</p>
+<pre><code class="language-redis">127.0.0.1:6379&gt; bf.add users user1
+(integer) 1
+127.0.0.1:6379&gt; bf.add users user2
+(integer) 1
+127.0.0.1:6379&gt; bf.add users user3
+(integer) 1
+127.0.0.1:6379&gt; bf.exists users user4
+(integer) 0
+127.0.0.1:6379&gt; bf.madd users user4 user5 user6 user7
+1) (integer) 1
+2) (integer) 1
+3) (integer) 1
+4) (integer) 1
+127.0.0.1:6379&gt; bf.mexists users user4 user3 user8
+1) (integer) 1
+2) (integer) 1
+3) (integer) 0
+</code></pre>
+<br>
+熟悉了基本命令后，我们尝试一下用脚本测试一下，大概的测试流程就是插入50000个元素，然后用另外不同的50000个元素去检测，看看是否有检测失败的。
+<blockquote>
+<p>如用不使用bf.reserve，默认的error_rate是0.01，默认的initial_size是100个元素<br>
+error_rate越低，需要的空间越大<br>
+initial_size表示预计方法的元素数量，当实际数量超出这个数值时，误判率会上升，因此需要提前设置一个较大的值<br>
+使用bf.reserve命令前，需要确保对应的key不存在，不然会报错</p>
+</blockquote>
+<h2 id="三-简单代码示例php">三、简单代码示例(PHP)</h2>
+<pre><code class="language-php">&lt;?php
+
+$redis = new Redis();
+$redis-&gt;connect('127.0.0.1', '6379');
+$redis-&gt;auth('xxxxxxxx');
+
+// 如果不使用bf.reserve，默认initial_size=100，error_rate=0.01
+// 可在预估成员数量时，适当的调整initial_size
+// 调整前确保这个key是不存在的，不然会报错：ERR item exists
+$redis-&gt;rawCommand('del', 'users');
+$redis-&gt;rawCommand('bf.reserve', 'users', 0.01, 50000);
+
+$exists = 0;
+for ($i = 1; $i &lt;= 100000; $i++)
+{
+    // 前50000个插入
+    if ($i &lt;= 50000) {
+        $redis-&gt;rawCommand('bf.add', 'users', $i);
+    } else {
+        $check = $redis-&gt;rawCommand('bf.exists', 'users', $i);
+        $check != 1 ? : $exists++;
+    }
+}
+
+echo $exists . PHP_EOL;
+echo round($exists / 50000, 3);
+</code></pre>
+<blockquote>
+<p>结果<br>
+误差数：304    误差率：0.006</p>
+</blockquote>
+<p>如果把<code>error_rate</code>设为0.001的话，结果如下</p>
+<blockquote>
+<p>结果<br>
+误差数：1    误差率：0</p>
+</blockquote>
+<p>Ps：布隆过滤器的<code>initial_size</code>设置<code>过大</code>，会<code>浪费存储空间</code>，设置得<code>过小</code>，就会<code>影响准确率</code>，因此用户在使用之前一定要尽可能<code>精确的估计元素数量</code>，还需要加上一定的冗余空间以避免实际元素可能会意外高出估计值许多。</p>
+<!-- more -->
+<h2 id="四-布隆过滤器的原理位数组hash算法">四、布隆过滤器的原理（位数组+hash算法）</h2>
+<p>每个布隆过滤器对应到Redis的数据结构里面就是一个大型的位数组和几个不一样的无偏hash函数，如下图所示的HASH1、HASH2、HASH3就是这样的hash函数。</p>
+<figure data-type="image" tabindex="2"><img src="http://mofish.pily.life/post-images/1620658969448.PNG" alt="" width="400" height="400" loading="lazy"></figure>
+<p>而所谓的<code>无偏</code>就是能把元素的hash值算的比较均匀，让元素被hash映射到位数组中的位置比较随机。</p>
+<h3 id="添加元素步骤">添加元素(步骤)</h3>
+<ol>
+<li>使用多个hash函数对key进行hash计算，算的一个整数的索引值</li>
+<li>然后对位数组长度进行取模运算得到一个位置，每个hash函数都会算的一个不同的位置</li>
+<li>在把位数组的这几个位置都置为1，就完成了添加操作</li>
+</ol>
+<h3 id="查找元素">查找元素</h3>
+<p>其实与添加一样，都是使用多个hash函数计算，找到位数组中对应的值，然后检查这几个位置是否都是1，如果有一个是0，那么说明这个值不存在。</p>
+<p>但是如果都是1的话，也可能是因为其它的值存在所导致的。</p>
+<blockquote>
+<p>因此如果这个位数组比较稀疏，判断正确的概率会大很多<br>
+如果这个位数组比较拥挤，那么判断正确的概率就会大大降低<br>
+所以当返回的结果说你不存在时就真的不存在，而说你存在时，可能不存在。</p>
+</blockquote>
+<h3 id="注意点">注意点</h3>
+<p>使用时不要让实际元素数量远大于初始化数量，当实际元素数量开始超出初始化数量时，应该对布隆过滤器进行重建，重新分配一个size更大的过滤器，再将所有历史元素批量添加进去。</p>
+<p>因为error_rate不会因为数量刚一超出就急剧增加，这给我们重建过滤器提供了较为宽松的时间。</p>
+<h2 id="五-优缺点">五、优缺点</h2>
+<h3 id="优势省空间高性能">优势：省空间+高性能</h3>
+<p><strong>省空间</strong><br>
+如果是真实存储一个URL(64B)的话，经过hash函数对应着一个数组位(比特位)，这样空间比例大约时64*8 : 1，即512 : 1，因此用来存储判断是否存在的数据来说，布隆过滤器的空间效率是极其高效的。</p>
+<p><strong>高性能</strong><br>
+BloomFilter 不存在像链表查询一样，需要一个一个去遍历。反而会像数组一样，类似于直接取下标就可以找到所需要的结果。</p>
+<p>不同的是，BloomFilter 需要过几个hash function，去查找下标。所以，综合来看，性能是很高的！</p>
+<p>综合时间和空间效率，在有很低的误识别率情况下，各方面都是远超其他算法的。</p>
+<h3 id="不足有误判不能删除元素">不足：有误判+不能删除元素</h3>
+<p><strong>有误判</strong><br>
+因为hash可能会存在冲突，从而导致不存在的元素可能也会被会判为存在。</p>
+<p>因此使用Redis的布隆过滤器时，要合理的设置位数组大小和误判率，尽量把误判率控制在自己可以接受的范围内。</p>
+<p><strong>不能删除元素</strong><br>
+不用元素通过hash函数使得对应位置都置为1了，所以如果把其置为0的话，会影响到其它元素，因此是绝对不能删除。</p>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/design_patterns_08/" class="post-title gt-a-link">
+                    硬啃设计模式(八)：代理模式
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

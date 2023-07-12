@@ -1,0 +1,579 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>数据结构学习之路(七)：SkipList跳跃表 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    数据结构学习之路(七)：SkipList跳跃表
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-01-18 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tags">
+                            # redis
+                        </a>
+                    
+                        <a href="http://mofish.pily.life/tag/J4LLJ1xJr/" class="post-tags">
+                            # 数据结构
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>zset是Redis提供的一个非常特别的数据结构，常用作排行榜等功能，以用户id为value，关注时间或者分数作为score进行排序。与其他数据结构相似，zset也有两种不同的实现，分别是ZipList和HashMap+SkipList。</p>
+<p>ZipList和HashMap前面我们已经介绍过了，这章节就着重介绍跳跃表。</p>
+<!-- more -->
+<h1 id="1-简述">1. 简述</h1>
+<p>SkipList实质是一个可进行二分查找的有序链表，它通过在每个节点中维持多个指向其他节点的指针，从而达到快速访问节点的目的。在功能上主要用来快速查询<code>一个</code>或者<code>一个范围内</code>的数据。</p>
+<p>那为什么要用跳表呢？</p>
+<p>我们先来看一个有序链表，如下图：</p>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1643039984952.png" alt="" loading="lazy"></figure>
+<p>如果我们要查找某个数据，那么需要从头开始逐个进行比较，直到找到包含数据的那个节点，也就是说，时间复杂度为O(n)。同样，当我们要插入新数据的时候，也要经历同样的查找过程，从而确定插入位置。</p>
+<p>假如我们在原链表之上新建一个链表，新链表是原链表每隔一个节点取一个。假设原链表为L0，新链表为L1，L1中的元素是L0中的第1、3、5、7、9……个节点，然后再建立L1和L0中各个节点的指针。这样L1就可以将L0中的范围缩小一半，同理对L1再建立新链表L2……，更高level的链表划分更大的区间，确定值域的大区间后，逐级向下缩小范围，如下图：</p>
+<figure data-type="image" tabindex="2"><img src="http://mofish.pily.life/post-images/1643205220608.png" alt="" loading="lazy"></figure>
+<p>假设我们想找13，我们可以在L3中确定2-14的范围，在L2中确定8-14的范围，在L1中确定10-14的范围，在L0中找到13，整体寻找路径如下图红色路径，是不是比直接在L0中找13的绿色路径所经过的节点数少一些。</p>
+<figure data-type="image" tabindex="3"><img src="http://mofish.pily.life/post-images/1643207587181.png" alt="" loading="lazy"></figure>
+<p>我们可以看到这种实现很像二分查找，只不过是实现将二分查找的中间点存储下来，用额外的空间换取了时间，因为其时间复杂度也和二分查找一致，都是O(logn)。</p>
+<blockquote>
+<p>注意，只要高Level中有的节点，低Level中一定有，但高Level链表中出现的概率会随着level指数递减，具体可看下面的<code>随即层数</code>。</p>
+</blockquote>
+<figure data-type="image" tabindex="4"><img src="http://mofish.pily.life/post-images/1643207926441.png" alt="" loading="lazy"></figure>
+<hr>
+<h1 id="2-基本结构">2. 基本结构</h1>
+<figure data-type="image" tabindex="5"><img src="http://mofish.pily.life/post-images/1643213457904.png" alt="" loading="lazy"></figure>
+<pre><code class="language-c">/**
+ * 有序集合结构体
+ */
+ typedef struct zset {
+    // Redis 会将跳跃表中所有的元素和分值组成key-value 的形式保存在字典中
+    dict *dict;
+    // 底层指向的跳跃表的指针
+    zskiplist *zsl;
+} zset;
+
+/**
+ * 跳跃表结构体
+ */
+typedef struct zskiplist {
+    // 头指针header和尾指针tail
+    struct zskiplistNode *header, *tail;   
+    // 链表长度length，即链表包含的节点总数。注意，新创建的skiplist包含一个空的头指针，这个头指针不包含在length计数中。
+    unsigned long length;
+    // 目前表内节点的最大层数
+    int level;
+} zskiplist;
+
+
+/**
+ * 跳跃表中的数据节点
+ */
+typedef struct zskiplistNode {
+    //  sds对象。用于保存字符串
+    sds ele;
+    // 分数
+    double score;
+    // 后退指针，节点只有1个后退指针，所以只有第1层链表是一个双向链表。
+    struct zskiplistNode *backward;
+    // 存放指向各层链表后一个节点的指针（前进指针）
+    struct zskiplistLevel {
+        // 前进指针，
+        struct zskiplistNode *forward;
+        /**
+         * 跨度实际上是用来计算元素排名(rank)的，
+         * 在查找某个节点的过程中，将沿途访过的所有层的跨度累积起来，
+         * 得到的结果就是目标节点在跳跃表中的排位
+         */
+        unsigned long span;
+    } level[];
+} zskiplistNode;
+</code></pre>
+<hr>
+<h1 id="3-常用操作">3. 常用操作</h1>
+<p>下面简单记录一下skiplist的插入、删除和更新操作。</p>
+<h2 id="31-插入">3.1 插入</h2>
+<ul>
+<li>从顶层逐步降级寻找目标节点，得到“搜索路径”</li>
+<li>获取一个随机值作为新节点的层数</li>
+<li>如果新的层数 &gt; 当前最高层数，则初始化表头节点</li>
+<li>创建新节点</li>
+<li>重排前向指针</li>
+<li>重排后退指针</li>
+</ul>
+<pre><code class="language-c">zskiplistNode *zslInsert(zskiplist *zsl, double score, sds ele) {
+    // 存储搜索路径
+    zskiplistNode *update[ZSKIPLIST_MAXLEVEL], *x;
+    // 存储经过的节点跨度
+    unsigned int rank[ZSKIPLIST_MAXLEVEL];
+    int i, level;
+
+    serverAssert(!isnan(score));
+    x = zsl-&gt;header;
+
+    // 在各个层查找节点插入的位置，从头节点开始搜索，一层层向下搜索， 直到直到最后一层, update数组中保存着每层应该插入的位置，即“搜索路径”
+    for (i = zsl-&gt;level-1; i &gt;= 0; i--) {
+        // 如果i不是zsl-&gt;level-1层，即最高层，那么 i 层的起始 rank 值为 i+1 层的 rank 值
+        // 各个层的 rank 值一层层累积，最终 rank[0] 的值加一就是新节点的前置节点的排位
+        rank[i] = i == (zsl-&gt;level-1) ? 0 : rank[i+1];
+
+        // 沿着前进指针遍历，如果score相等，还需要比较value
+        while (x-&gt;level[i].forword &amp;&amp; 
+                    (x-&gt;level[i].forward-&gt;score &lt; score ||  
+                        (x-&gt;level[i].forward-&gt;score == score &amp;&amp; sdscmp(x-&gt;level[i].forward-&gt;ele, ele) &lt; 0)
+                    )
+        ) {
+            // 记录沿途跨越了多少个节点，即记录每层距离头部位置的距离
+            rank[i] += x-&gt;level[i].span;
+            // 移至下一个指针
+            x            = x-&gt;level[i].forward;
+        }
+
+        // 记录将要和新节点相连接的节点
+        update[i] = x;
+    }
+
+    // 正式进入插入过程：zslInsert() 的调用者会确保同分值且同成员的元素不会出现，所以这里不需要进一步检查，可以直接创建新元素。
+
+    // 获取一个随机值作为新节点的层数
+    level = zslRandomLevel();
+
+    // 如果新节点的层数比当前最大层数要大，那么初始化新的层数头节点，并记录到update数组中，将来也指向新节点。
+    if (level &gt; zsl-&gt;level) {
+        for (i = zsl-&gt;level-1; i &lt; level; i++) {
+            rank[i] = 0;
+            update[i] = zsl-&gt;header;
+            update[i]-&gt;level[i].span = zsl-&gt;length; // 这里的span应该是插入的节点的rank值？
+        }
+
+        // 更新表中节点的最大层数
+        zsl-&gt;level = level;
+    }
+
+    // 创建新的节点
+    x = zslCreateNode(level, score, ele);
+
+    // 重排前向指针，将前面记录的指针指向新节点，并做相应的设置
+    for (i == 0; i &lt; level; i++) {
+        // 设置新节点得 forward 指针
+        x-&gt;level[i].forward = update[i]-&gt;level[i].forward;
+        // 将沿途记录得各个节点得 forward 指针指向新节点
+        update[i]-&gt;level[i].forward = x;
+        // 计算新节点跨越的节点数量，即更新update数组中span值和新插入元素span值, rank[0]存储的是x元素距离头部的距离, rank[i]存储的是update[i]距离头部的距离
+         x-&gt;level[i].span = update[i]-&gt;level[i].span - (rank[0] - rank[i]);
+         // 更新新节点插入之后，沿途节点的 span 值，其中的 +1 计算的是新节点
+         update[i]-&gt;level[i].span = (rank[0] - rank[i]) + 1;
+    }
+
+     // level可能小zsl-&gt;level, 无变动的元素span依次增加1
+     for (i = level; i &lt; zsl-&gt;level; i++) {
+         update[i]-&gt;level[i].span++;
+     }
+
+     // 设置新节点后退指针
+     x-&gt;backward = update[0] == zsl-&gt;header ? NULL : update[0];
+     if (x-&gt;level[0].forward)
+        x-&gt;level[0].backward = x;
+     else
+        z-&gt;tail = x;   //下一个元素为空,则表示x为尾部元素
+
+    // 跳跃表的节点计数增一
+    zsl-&gt;length++;
+    return x;
+}
+</code></pre>
+<h2 id="32-删除">3.2 删除</h2>
+<ul>
+<li>从顶层逐步降级寻找目标节点，得到“搜索路径”</li>
+<li>更新元素的span值</li>
+<li>对于每个层的节点重排一下前进指针和后退指针</li>
+<li>判断是否需要更新层高</li>
+<li>释放删除的节点</li>
+</ul>
+<pre><code class="language-c">int zslDelete(zskiplist *zsl, double score, sds ele) {
+    zskiplistNode *update[ZSKIPLIST_MAXLEVEL], *x;
+    int i;
+
+    x = zsl-&gt;header;
+    for (i = zsl-&gt;level; i &gt;=0; i++) {
+        while (x-&gt;level[i].forward-&gt;score &lt; score || 
+            (x-&gt;level[i].forward-&gt;score == score &amp;&amp; compareStringObjects(x-&gt;level[i].forward-&gt;ele,ele) &lt; 0)
+        )
+        x = x-&gt;level[i].forward;
+        update[i] = x;
+    }
+
+    // 由于score值可能相等，因此需要精确匹配score和ele值
+    x = x-&gt;level[0].forward
+    if (x &amp;&amp; score == x-&gt;score &amp;&amp; equalStringObjects(x-&gt;ele, ele)) {
+        zslDeleteNode(zsl, x, update);  // 正式删除节点，修改前后指针
+        zslFreeNode(x);  // 释放节点
+        return 1;
+    }
+
+    // not found
+    return 0;
+}
+
+void zslDeleteNode(zskiplist *zsl, zskiplistNode *x, zskiplistNode **update) {
+    int i;
+
+    // 删除元素需要更新update元素的span值以及重置前指针
+    for (i = 0; i &lt; zsl-&gt;level; i++) {
+        if (update[i]-&gt;level[i].forward == x) {
+            update[i]-&gt;level[i].span += x-&gt;level[i].span - 1;
+            update[i]-&gt;level[i].forward = x-&gt;level[i].forward
+        } else {
+            update[i]-&gt;level[i].span -= 1;
+        }
+    }
+
+    // 处理元素的后退指针
+    if (x-&gt;level[0].forwad) {
+         // 非尾部元素则需要重置backforward指针
+         x-&gt;level[0].forward-&gt;backward = x-&gt;backward;
+    } else {
+        // 删除x可能是最后一个元素, 需要重置尾部指针
+        zsl-&gt;tail = x-&gt;backward;
+    }
+
+    // 删除元素位于最上层，并且仅有此一个元素，删除之后，需要降低跳跃表层数
+    while (zsl-&gt;level &gt; 1 &amp;&amp; zsl-&gt;header-&gt;level[zsl-&gt;level-1].forward == NULL) {
+        zsl-&gt;level--;
+    }
+
+    zsl-&gt;length--;
+}
+</code></pre>
+<h2 id="33-更新节点">3.3 更新节点</h2>
+<p>当我们调用 zadd 方法时，如果对应的 value 不存在，那就是插入过程。</p>
+<p>如果 value 已经存在了，只是调整了一下 score 的值，那就走更新流程。假设这个新的 score 值不会带来排序上的改变，那么就不需要调整位置，直接修改元素的 score 值即可。</p>
+<p>但是如果排序位置改变了，那就要调整位置。</p>
+<pre><code class="language-c">/* Remove and re-insert when score changes. */
+if (score != curscore) {
+    zskiplistNode *node;
+    // 重新插入新节点
+    serverAssert(zslDelete(zs-&gt;zsl, curscore, ele, &amp;node));
+    znode = zslInsert(zs-&gt;zsl, score, node-&gt;ele);
+
+    // 删除释放旧节点
+    node-&gt;ele = NULL;
+    zslFreeNode(node);
+
+    // hash-table对应的节点无需删除，只需要更新其对应的score值即可
+    dictGetVal(de) = &amp;znode-&gt;score; /* Update socre ptr */
+    *flags |= ZADD_UPDATED;
+}
+return 1;
+</code></pre>
+<p>因为我们可以看到 Redis 使用的策略就是先删除元素，再插入元素，需要经过两次路径搜索。</p>
+<hr>
+<h1 id="4-注意点">4. 注意点</h1>
+<p>除了以上知识点，还有几个细节需要了解的。</p>
+<h2 id="41-随机层数">4.1 随机层数</h2>
+<p>对于每一个新插入的节点，都需要调用一个随机算法给它分配一个合理的层数，源码在t_zset.c/zslRandomLevel(void)中被定义：</p>
+<pre><code class="language-c">int zslRandomLevel(void){
+    int level = 1;
+    while((random()&amp;0xFFFF) &lt; (ZSKIPLIST_P * 0xFFFF))
+        level += 1;
+    retrun (level &lt; ZSKIPLST_MAXLAVEL) ? level : ZSKIPLST_MAXLAVEL;
+}
+// 0xFFFF 65535
+// ZSKIPLIST_P 默认为 0.25，即1/4
+// define ZSKIPLST_MAXLAVEL 32 常量值为32
+</code></pre>
+<blockquote>
+<p>任何数和0xFFFF与运算其实就是暗含<code>高位清零</code>，低位与结果就是一个0和65535之间的数<br>
+(random()&amp;0xFFFF 得到 &lt;= 0xFFFF的随机数，这个随机数比ZSKIPLIST_P * 0xFFFF小的概率为ZSKIPLIST_P。<br>
+每一次while为true的概率都为ZSKIPLIST_P，换个角度想就是level n的概率为 ZSKIPLIST_P ^ (n-1)。</p>
+</blockquote>
+<h2 id="42-时间复杂度分析">4.2 时间复杂度分析</h2>
+<p>首先来分析对于有** n<strong>个节点的链表，需要建立多少级索引。根据上面的例子可以得到，如果我们每两个节点会提取一个节点作为一个索引节点，那么第一级索引节点的个数为</strong> n/2**，第二级索引节点的个数为** n/4**，依此类推，则第K级的索引节点的个数为** n/(2^k)**。</p>
+<p>假设索引有** h<strong>级，且第</strong> h<strong>级的索引节点个数为2，如下图所示。则我们可以得出</strong> n/(2^h)=2**，这样可以得到** h=logn-1**（这里的 log是指以2为底）,加上链表本身的一层，则整个跳表的高度为** logn**。我们在跳表中查询某个数据时，如果每一层都需要遍历** m<strong>个节点，那么在跳表中查询某个数的时间复杂度为</strong> O(m*logn)**。</p>
+<figure data-type="image" tabindex="6"><img src="http://mofish.pily.life/post-images/1642514606629.PNG" alt="" loading="lazy"></figure>
+<h2 id="43-空间复杂度分析">4.3 空间复杂度分析</h2>
+<p>跳表查找效率的提高是通过建立多级索引实现的，而建立索引肯定需要消耗内存空间。对于跳表的内存空间分析并不难，对于有** n<strong>个节点的链表，第一级索引节点的个数为</strong> n/2**，第二级索引节点的个数为 <strong>n/4</strong>，最后一级的索引节点的个数为<strong>2</strong>，我们可以得出一个等比数列：** n/2+n/4+n/8+...+4+2=n-2**,因此跳表的空间复杂度为** O(n)**。</p>
+<figure data-type="image" tabindex="7"><img src="http://mofish.pily.life/post-images/1642518504543.png" alt="" loading="lazy"></figure>
+<p>顺着公式依次带入：<strong>a1=n/2，an= 2，q=1/2</strong>，求得<strong>Sn= n-2</strong>，所以空间复杂度为<strong>O(n)</strong>，与此同时，我们顺便考虑一下每三个节点抽取一个索引的情况，还是依据刚刚的思路，发现Sn= n-1/2，空间复杂度将近缩减了一半。<br>
+总之，跳表就是空间换时间的那个思路，但如果链表中存储的对象很大时，其实索引占用的这些空间对整个来说是可以忽略不计的。</p>
+<h2 id="44-score值一样怎么办">4.4 score值一样怎么办</h2>
+<p>score值一样的情况下，还需要比较value值（字符串比较）。</p>
+<h2 id="45-rank如何计算">4.5 rank如何计算</h2>
+<p>Redis在SkipList的forward指针上进行了优化，给每一个 forward指针都增加span属性，span 是“跨度”的意思，表示从前一个节点沿着当前层的 forward针跳到当前这个节点中间会跳过多少个节点。 Redis 在插入、删除操作时会小心翼翼地更新 span 值的大小。</p>
+<pre><code class="language-c">struct zslforward {
+    zslnode* item;
+    long span;    // 跨度
+}
+
+struct zsl {
+    string value;
+    double score;
+    zslforward*[] forwards;   // 多层连接指针
+    zslnode* backward;  // 回溯指针
+}
+</code></pre>
+<p>当我们要计算一个元素的排名时，只需要讲“搜索路径”经过的所有节点的跨度span进行叠加就可以算出元素最终的rank值。</p>
+<hr>
+<h1 id="5-为什么使用跳跃表而不是平衡树等用来做有序元素的查找">5. 为什么使用跳跃表，而不是平衡树等用来做有序元素的查找</h1>
+<ul>
+<li>
+<p>红黑树在插入删除的时候可能需要做rebalance的操作，这样的操作可能会涉及到整个树的其他部分；而链表的操作就会相对局部，只需要关注插入删除的位置即可</p>
+</li>
+<li>
+<p>有序集合经常会进行 zrange 或 zrevrange 这样的范围查找，跳表里的双向链表可以十分方便的进行这操作</p>
+</li>
+<li>
+<p>实现简单，zrank 还能达到O(logn)的时间复杂度</p>
+</li>
+</ul>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/data_structure_06/" class="post-title gt-a-link">
+                    数据结构学习之路(六)：QuickList快速列表
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

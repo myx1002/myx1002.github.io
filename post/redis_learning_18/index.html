@@ -1,0 +1,506 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>Redis学习之路(十八)：集群之cluster | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Redis学习之路(十八)：集群之cluster
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2021-11-23 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tags">
+                            # redis
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>😎 在前面的文章中介绍过了redis的主从和哨兵两种集群方案，redis从3.0版本开始引入了redis-cluster(集群)。<br>
+👍 从主从-哨兵-集群可以看到redis的不断完善，主从复制解决了数据同步问题、哨兵可以同时管理多个主从同步方案同时也可以处理主从自动故障转移，但是单个节点的性能压力问题无法解决。而集群解决了前面两个方案的所有问题。</p>
+<!-- more -->
+<h1 id="1-为什么需要redis-cluster">1. 为什么需要Redis Cluster？</h1>
+<ul>
+<li>主从复制<strong>不能</strong>实现<strong>高可用</strong></li>
+<li>业务量增大，<strong>超过</strong>服务器所能<strong>承受范围</strong>，需要使用<strong>分流</strong></li>
+<li><strong>内存容量</strong>和<strong>QPS</strong>无法满足业务需求</li>
+</ul>
+<hr>
+<!-- more -->
+<h1 id="2-redis-cluster是什么">2. Redis Cluster是什么？</h1>
+<p>什么是Redis Cluster呢？很简单，就是<strong>n个主从架构组合</strong>在一起对外服务，而且Redis Cluster<strong>至少</strong>需要<strong>3主3从</strong>才能组成一个集群。</p>
+<p>除此之外，集群的主从跟单机的主从有一个<strong>重要的区别</strong>，就是虽然Redis Cluster中的每个master都挂载了一个slave节点，但是slave节点<strong>只</strong>从当一个<strong>数据备份</strong>的角色，<strong>读写请求</strong>其实都是在<strong>master上完成</strong>的。</p>
+<p>当master宕机时，就会讲对应的slave节点提拨为master，来重新对外服务。</p>
+<hr>
+<!-- more -->
+<h1 id="3-节点负载均衡">3. 节点负载均衡</h1>
+<p>这么多个master节点，实际存储的时候到底选择哪个节点呢？</p>
+<h2 id="31-普通哈希算法">3.1 普通哈希算法</h2>
+<p>一般的负载均衡算法，会选择<strong>哈希算法</strong>。</p>
+<p>首先对<code>key</code>使用<strong>哈希算法</strong>计算出一个哈希值，然后用哈希值对master数量进行<strong>取模</strong>。由此可以将key<strong>负载均衡</strong>到<strong>每一个redis节点</strong>上，这就是简单的哈希算法实现。</p>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1637684212604.jfif" alt="" loading="lazy"></figure>
+<blockquote>
+<p>但是Redis Cluster并<code>没有采取</code>这种哈希算法<br>
+因为如果此时<code>某一台master</code>发生了<code>宕机</code>的话，就可能会<code>导致</code>Redis中所有的<code>缓存都失效</code>😱！！<br>
+为什么是所有呢？因为之前有<code>n个master</code>，那么算法应该是<code>hash % 3</code>，但是当<code>一台master宕机</code>后，就变成<code>hash % 2</code>了，会<code>影响</code>到之前<code>所有的key</code>😵，这样的问题显然是<code>致命</code>的！</p>
+</blockquote>
+<h2 id="32-一致性哈希">3.2 一致性哈希</h2>
+<p>那么Redis Cluster是采取什么样的算法来实现节点的选择呢？答案是使用一种<code>类似于一致性哈希</code>的算法来实现的。</p>
+<p>在了解类一致性哈希算法前，我们先看一下什么是一致性哈希。</p>
+<p>上面提到哈希算法是对master实例数量取模的，而一致性哈希则是对<code>2^32^取模</code>，也就是值的<code>范围是[0, 2^32-1^]</code>。一致性哈希将其范围<code>抽象成了一个圆环</code>，使用<code>CRC16算法</code>计算出来的哈希值会落到圆环的某个地方。</p>
+<p>然后Redis实例也分布在圆环上，最后在圆环上<code>顺时针</code>找到第一个Redis实例，这样就完成了对key节点的分配</p>
+<figure data-type="image" tabindex="2"><img src="http://mofish.pily.life/post-images/1637719998750.jpg" alt="" width="300" height="300" loading="lazy"></figure>
+<p>假设我们有A、B、C三个Redis实例按照如图所示的位置分布在圆环上，此时计算出来的hash值，取模之后位置落在了位置D，那么我们按照顺时针的顺序，就能够找到我们这个key应该分配的Redis实例B。同理如果我们计算出来位置在E，那么对应选择的Redis的实例就是A。</p>
+<p>即使这个时候Redis<code>实例B挂了</code>，也<code>不会影响</code>到实例A和C的缓存。</p>
+<figure data-type="image" tabindex="3"><img src="http://mofish.pily.life/post-images/1637720157467.jpg" alt="" loading="lazy"></figure>
+<p>例如此时<code>节点B挂了</code>，那之前计算出来在<code>位置D的key</code>，此时会按照顺时针的顺序，<code>找到节点C</code>。相当于<code>自动的</code>把原来节点<code>B的流量</code>给<code>转移</code>到了<code>节点C</code>上去。而其他<code>原本</code>就在节点A和节点C的数据则完全<code>不受影响</code>。</p>
+<p>这就是<code>一致性哈希</code>，能够在我们后续需要<code>新增节点</code>或者<code>删除节点</code>的时候，<code>不影响其他节点</code>的正常运行。</p>
+<blockquote>
+<p>优点：</p>
+<ul>
+<li>采用客户端分片方式：哈希 + 顺时针(优化取余)</li>
+<li>节点伸缩时，只影响邻近节点，较好的容错性和可扩展性x</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>节点分布不均衡造成数据倾斜问题，导致部分节点需要处理更多的key</li>
+</ul>
+</blockquote>
+<h2 id="33-虚拟槽分区类一致性哈希">3.3 虚拟槽分区（类一致性哈希）</h2>
+<p>但是上面的一致性哈希也是有小问题的，例如当我们的<code>节点分布不均匀</code>时，就容易<code>导致数据倾斜</code>了：</p>
+<figure data-type="image" tabindex="4"><img src="http://mofish.pily.life/post-images/1637728926434.jpg" alt="" loading="lazy"></figure>
+<p>此时数据落在节点A上的<code>概率</code>明显是<code>大于</code>其他两个节点的，其次落在节点C上的概率最小。这样一来会导致整个集群的<code>数据存储不平衡</code>，AB节点<code>压力较大</code>，而C节点<code>资源利用不充分</code>。为了解决这个问题，一致性哈希算法引入了<code>虚拟节点机制</code>。</p>
+<figure data-type="image" tabindex="5"><img src="http://mofish.pily.life/post-images/1637729176313.jpg" alt="" loading="lazy"></figure>
+<p>在圆环中，增加了对应节点的<code>虚拟节点</code>，然后完成了<code>虚拟节点</code>到<code>真实节点</code>的<code>映射</code>。假设现在计算得出了位置D，那么按照顺时针的顺序，我们找到的第一个节点就是C #1，最终数据实际还是会落在节点C上。</p>
+<p>通过增加虚拟节点的方式，使ABC三个节点在圆环上的位置<code>更加均匀</code>，平均了落在每一个节点上的概率。这样一来就解决了上文提到的数据存储存在不均匀的问题了，这就是一致性哈希的<code>虚拟节点机制</code>。</p>
+<p>除此之外，Redis Cluster使用的类一致性哈希<code>还有一点不同</code>的是，一致性哈希是对<code>2^32^取模</code>，而Redis Cluster则是对<code>2^14^（也就是16384）取模</code>。</p>
+<p>Redis Cluster将自己分成了<code>16384个Slot（槽位）</code>。通过<code>CRC16算法</code>计算出来的<code>哈希值会跟16384取模</code>，取模之后得到的值就是对应的槽位，然后<code>每个Redis节点</code>都会负责<code>处理一部分的槽位</code>，就像下表这样。</p>
+<table>
+<thead>
+<tr>
+<th>节点</th>
+<th>处理槽位</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>0 - 5000</td>
+</tr>
+<tr>
+<td>B</td>
+<td>5001 - 10000</td>
+</tr>
+<tr>
+<td>C</td>
+<td>10001 - 16383</td>
+</tr>
+</tbody>
+</table>
+<p><code>每个Redis</code>实例会自己<code>维护一份slot - Redis节点的映射关系</code>，假设你在<code>节点A上</code>设置了某个key，但是这个key通过<code>CRC16</code>计算出来的<code>槽位</code>是由<code>节点B维护</code>的，那么就会提示你需要去<code>节点B</code>上进行<code>操作</code>。</p>
+<figure data-type="image" tabindex="6"><img src="http://mofish.pily.life/post-images/1637730605712.jpg" alt="" loading="lazy"></figure>
+<blockquote>
+<p>总结一下：</p>
+<ol>
+<li>把16384槽按照节点数量进行平均分配，由节点进行管理</li>
+<li>对每个key按照CRC16规则进行hash运算，把hash结果对16383进行取余</li>
+<li>节点接收到数据，验证是否在自己管理的槽编号的范围
+<ul>
+<li>如果在自己管理的槽编号范围内，则把数据保存到数据槽中，然后返回执行结果</li>
+<li>如果在自己管理的槽编号范围外，则会把数据发送给正确的节点，由正确的节点来把数据保存在对应的槽中</li>
+</ul>
+</li>
+<li>Redis Cluster的<code>节点之间</code>会<code>共享消息</code>，每个节点都会知道是哪个节点负责哪个范围内的数据槽</li>
+</ol>
+</blockquote>
+<hr>
+<!-- more -->
+<h1 id="4-怎么做到高可用">4. 怎么做到高可用</h1>
+<p>关于Redis Cluster是如何做到高可用的，主要有两个方面：</p>
+<ul>
+<li>master节点故障时如何处理？</li>
+<li>集群需要扩容节点时怎么办？</li>
+</ul>
+<h2 id="41-扩容">4.1 扩容</h2>
+<p>我们之前说过，Redis Cluster是可以<code>支持横向扩容</code>的，当有新的节点加进来时，可通过<code>reshard（重新分片）</code>来给新的节点<code>分配槽位</code>。</p>
+<p><code>reshard</code>可以将<code>已经分配给某个节点</code>的<code>任意数量的slot</code>迁移给另一个节点，在Redis内部是由<code>redis-trib</code>负责执行的。你可以理解为Redis其实已经封装好了所有的命令，而redis-trib则负责向获取slot的节点和被转移slot的节点发送命令来最终实现reshard。</p>
+<blockquote>
+<p>注意：这里迁移的slot一定是空闲的、与键值没有映射关系的slot，而且该分配也是均匀分配的，即每个节点的slot基本都是均匀的。</p>
+</blockquote>
+<p><code>reshard</code>完成之后，<code>redis-trib</code>会向集群中所有<code>主节点</code>发送<code>槽位的变更信息</code>，以便明确自己可接收的槽位数据。</p>
+<h2 id="42-高可用及故障转移">4.2 高可用及故障转移</h2>
+<p>Redis Cluster中保证集群高可用的思路和实现和Redis Sentinel其实差不多，无论是主观下线、客观下线、投票选择、节点切换都是差不多的。</p>
+<h3 id="421-故障发现">4.2.1 故障发现</h3>
+<ul>
+<li>
+<p>主观下线：针对A节点，某一个节点认为A宕机了，那么此时是主观下线</p>
+</li>
+<li>
+<p>客观下线：如果集群内超过半数的节点认为A挂了， 那么此时A就会被标记为客观下线。</p>
+</li>
+</ul>
+<h3 id="422-故障转移">4.2.2 故障转移</h3>
+<ul>
+<li>
+<p>资格检查：一旦节点A被标记为了<code>客观下线</code>，集群就会开始执行故障转移。其余<code>正常运行的master</code>节点会进行<code>投票选举</code>，从<code>A节点的slave节点</code>中选举出一个，将其切换成新的master对外提供服务。当某个slave获得了<code>超过半数</code>的master节点投票，就成功当选。</p>
+</li>
+<li>
+<p>替换主节点：当选成功之后，新的master会执行<code>slaveof no one</code>来让自己停止复制A节点，使自己成为master。然后将A节点所负责处理的slot，<code>全部转移</code>给自己，然后就会向集群<code>发PONG消息</code>来<code>广播自己的最新状态</code>。</p>
+</li>
+</ul>
+<figure data-type="image" tabindex="7"><img src="http://mofish.pily.life/post-images/1637742091267.jpg" alt="" width="240" height="240" loading="lazy"></figure>
+<hr>
+<!-- more -->
+<h1 id="5-gossip协议消息">5. gossip协议消息</h1>
+<p>这是Redis Cluster各个节点之间交换数据、通信所采用的一种协议，叫做gossip。</p>
+<figure data-type="image" tabindex="8"><img src="http://mofish.pily.life/post-images/1637742358455.jpg" alt="" loading="lazy"></figure>
+<p>很简单，就像图里这样。每个Redis节点每秒钟都会向其他的节点发送PING，然后被PING的节点会回一个PONG。</p>
+<h2 id="gossip协议消息类型">gossip协议消息类型</h2>
+<p>Redis Cluster中，节点之间的消息类型有5种，分别是MEET、PING、PONG、FAIL和PUBLISH。</p>
+<table>
+<thead>
+<tr>
+<th>消息类型</th>
+<th>消息内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MEET</td>
+<td>给某个节点发送MEET消息，请求接收消息的节点加入到集群中。</td>
+</tr>
+<tr>
+<td>PING</td>
+<td>每隔一秒钟，选择5个最久没有通信的节点，发送PING消息，检测对应的节点是否在线；同时还有一种策略是，如果某个节点的通信延迟大于<code>cluster-node-time</code>的值的一半，就会立即给该节点发送PING消息，避免数据交换过久。</td>
+</tr>
+<tr>
+<td>PONG</td>
+<td>当节点接收到MEET、PING消息之后，会回一个PONG消息给发送方，代表自己收到了该消息。同时节点也可以主动的通过PONG消息向集群中广播自己的信息，让其他节点获取到自己的最新属性，就像上面完成故障转移后，新的master向集群发送PONG消息一样。</td>
+</tr>
+<tr>
+<td>FAIL</td>
+<td>用于广播自己对某个节点的宕机判断，假设当前节点对A节点判断未宕机，就会立即向集群广播自己对A节点的判断，所有收到消息的节点就会对A节点做标记。</td>
+</tr>
+<tr>
+<td>PUBLISH</td>
+<td>用于向指定的Channel发送消息，某个节点收到PUBLISH消息之后会直接在集群内广播，这样一来，客户端无论连接到任何节点都能够订阅这个Channel。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="使用gossip的优劣">使用gossip的优劣</h2>
+<blockquote>
+<p>优点：</p>
+<ul>
+<li>扩展性：网络可以允许节点的任意增加和减少，新增加的节点的状态最终会与其他节点一致。</li>
+<li>容错性：由于每个节点都持有一份完整元数据，所以任何节点宕机都不会影响gossip的运行</li>
+<li>健壮性：与容错性类似，由于所有节点都持有数据，地位平台，是一个去中心化的设计，任何节点都不会影响到服务的运行</li>
+<li>最终一致性：当有新的信息需要传递时，消息可以快速的发送到所有的节点，让所有的节点都拥有最新的数据</li>
+</ul>
+</blockquote>
+<blockquote>
+<p>缺点：</p>
+<ul>
+<li>消息可能最终会经过很多轮才能到达目标节点，而这可能会带来较大的延迟</li>
+<li>由于节点会随机选出5个最久没有通信的节点，这可能会造成某一个节点同时收到n个重复的消息</li>
+</ul>
+</blockquote>
+<hr>
+<!-- more -->
+<h1 id="6常见问题">6.常见问题</h1>
+<h2 id="61-为啥rediscluster设计成16384个槽">6.1 为啥RedisCluster设计成16384个槽？</h2>
+<ul>
+<li>如果槽位为65536，发送心跳信息的消息头达8k，发送的心跳包过于庞大</li>
+<li>redis的集群主节点数量基本不可能超过1000个</li>
+<li>槽位越小，节点少的情况下，压缩率高</li>
+</ul>
+<blockquote>
+<p>简而言之，它是消息大小和主机持有的平均slot数之间权衡的结果。</p>
+</blockquote>
+<h2 id="62-集群支持读写分离吗">6.2 集群支持读写分离吗？</h2>
+<p>集群模式下，从节点不接受任何读写请求</p>
+<h2 id="63-数据倾斜原因">6.3 数据倾斜原因？</h2>
+<ul>
+<li>节点和槽分配不均（如果使用redis-trib.rb工具构建集群，则出现这种情况的机会不多）</li>
+<li>不同槽对应键值数量差异比较大（可能存在hash_tag或者包含bigkey）</li>
+<li>内存相关配置不一致</li>
+<li>请求倾斜：某个节点访问量大（某个节点有一个非常重要的key，就会存在热点问题）</li>
+<li>集群倾斜：某个节点使用的内存量大（可能存在hash_tag或者包含bigkey）</li>
+</ul>
+<hr>
+<!-- more -->
+<h1 id="7总结">7.总结</h1>
+<blockquote>
+<ol>
+<li>Redis Cluster数据分区规则采用虚拟槽方式(16384个槽)，每个节点负责一部分槽和相关数据，实现数据和请求的负载均衡。</li>
+</ol>
+</blockquote>
+<blockquote>
+<ol start="2">
+<li>搭建Redis Cluster划分四个步骤：准备节点，meet操作，分配槽，主从复制数据。</li>
+</ol>
+</blockquote>
+<blockquote>
+<ol start="3">
+<li>集群伸缩通过在节点之间移动槽和相关数据实现<br>
+3.1 扩容时根据槽迁移计划把槽从源节点迁移到新节点<br>
+3.2 收缩时如果下线的节点有负责的槽需要迁移到其他节点，再通过cluster forget命令让集群内所有节点忘记被下线节点</li>
+</ol>
+</blockquote>
+<blockquote>
+<ol start="4">
+<li>集群自动故障转移过程分为故障发现和节点恢复。节点下线分为主观下线和客观下线，当超过半数节点认为故障节点为主观下线时，标记这个节点为客观下线状态。从节点负责对客观下线的主节点触发故障恢复流程，保证集群的可用性。</li>
+</ol>
+</blockquote>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/redis_leatning_15/" class="post-title gt-a-link">
+                    Redis学习之路(十七)：集群之哨兵模式
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

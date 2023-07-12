@@ -1,0 +1,528 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>Redis学习之路(十)：持久化存储 | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Redis学习之路(十)：持久化存储
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2021-10-16 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/P-RRy8DydH/" class="post-tags">
+                            # redis
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>❓ 为了防止数据的意外丢失，确保数据安全性，因此需要对数据进行持久化存储。<br>
+😱 利用永久性存储介质讲数据进行保存，在特定的时间将保存的数据进行恢复的工作机制称为持久化。</p>
+<!-- more -->
+<h2 id="目录">目录</h2>
+<ul>
+<li><a href="#持久化过程保存的是什么？">一、持久化过程保存的是什么？</a></li>
+<li><a href="#RDB">二、RDB</a></li>
+<li><a href="#AOF">三、AOF</a></li>
+<li><a href="#RDB和AOF的区别">四、RDB和AOF的区别</a></li>
+<li><a href="#混合持久化">五、混合持久化</a></li>
+</ul>
+<hr>
+<h2 id="a-name持久化过程保存的是什么一-持久化过程保存的是什么a"><a name="持久化过程保存的是什么？">一、持久化过程保存的是什么？</a></h2>
+<ul>
+<li>
+<p>将当前数据状态进行保存，快照形式，存储<code>数据结果</code>，存储格式简单，关注点在<code>数据</code></p>
+</li>
+<li>
+<p>将数据的操作过程进行保存，日志形式，存储<code>操作过程</code>，存储格式复杂，关注点在<code>数据的操作过程</code></p>
+</li>
+</ul>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1634544697949.png" alt="" loading="lazy"></figure>
+<hr>
+<h2 id="a-namerdb二-rdba"><a name="RDB">二、RDB</a></h2>
+<p>RDB 是一种以快照形式进行全量备份的持久化机制之一，快照是内存数据数据的二进制序列化形式，在存储上非常紧凑。</p>
+<p>服务器中每X小时执行bgsave备份，并将RDB文件拷贝到远程机器中，用于灾难恢复。</p>
+<h3 id="21-快照原理">2.1 快照原理</h3>
+<p>我们都知道 Redis 是单线程程序，这个线程需要同时负责多个客户端套接字的并发读写操作和内存数据结构的逻辑读写。</p>
+<p>在服务线上请求的同时， Redis 还需要进行内存快照，内存快照要求 Redis 必须进行文件IO操作，可文件IO操作不能使用多路复用API，这意味着单线程再服务线上请求的同时，还要进行文件IO操作，而文件IO操作会严重拖累服务器的性能。</p>
+<p>除此之外，还有一个重要问题就是 Redis 需要一边持久化，一边响应客户端的请求。可持久化的同时，内存数据结构还在改变，可能持久化还没完成，某个key就被删除掉了，这怎么办？</p>
+<p>为了解决这个问题 ， Redis使用操作系统的<code>多进程 COW </code>（copy on Write），<code>写时拷贝</code>机制来实现快照持久化。</p>
+<h2 id="22-写时拷贝">2.2 写时拷贝</h2>
+<p>Redis 在持久化时会调用 glibc 的函数 fork 产生一个子进程，快照持久化完全交给子进程来处理，父进程继续处理客户端请求。<br>
+子进程刚刚产生时，它和父进程共享内存里面的代码段和数据段，这时你可以把父子进程想象成一个连体婴儿，它们在共享身体，所以为了节约内存资源，尽可能让它们共享起来。</p>
+<p>子进程做数据持久化，不会修改现有的内存数据结构，它只对数据结构进行遍历读取，然后序列化写到磁盘中。但是父进程不一样，它必须持续服务客户端请求，然后对内存数据结构进行不间断的修改。</p>
+<p>这个时候就会使用操作系统的 COW 机制来进行数据段页面的分离，如下图：</p>
+<figure data-type="image" tabindex="2"><img src="http://mofish.pily.life/post-images/1635152241011.png" alt="" loading="lazy"></figure>
+<p>数据段是由很多操作系统的页面组合而成，当父进程对其中一个页面的数据进行修改时，会将被共享的页面复制一份出来，然后对这个复制的页面进行修改。这时子进程相应的页面是没有变化的，还是进程产生时那一瞬间的数据。</p>
+<p>随着父进程修改操作的持续进行，越来越多的共享页面被分离出来，内存就会持续增长，但是也不会超过原有数据内存的2倍大小。另外，Redis 实例里冷数据占的比例往往是比较高的，所以很少会出现所有的页面都被分离的情况。</p>
+<p>最后，子进程因为数据没有变化，它能看到的内存里的数据再进程产生的一瞬间就凝固了，再也不会改变，这也是为什么的 RDB 的持久化方式叫作 ‘快照’ 的原因，接下来子进程就可以安心地遍历数据，进行序列化写磁盘了。</p>
+<h2 id="23-save相关命令和配置">2.3 save相关命令和配置</h2>
+<h3 id="231-相关命令">2.3.1 相关命令</h3>
+<figure data-type="image" tabindex="3"><img src="http://mofish.pily.life/post-images/1635154388498.png" alt="" loading="lazy"></figure>
+<ul>
+<li>
+<p>save指令<br>
+作用：手动执行一次保存操作<br>
+注意：会阻塞当前Redis服务器，直到当前RDB过程完成为止，有可能会造成长时间阻塞，线上环境不建议使用</p>
+</li>
+<li>
+<p>bgsave指令<br>
+作用：手动启动后台保存操作，但不是立即执行<br>
+注意： bgsave命令是针对save阻塞问题做的优化。Redis内部所有涉及到RDB操作都采用bgsave的方式，save命令可以放弃使用。</p>
+</li>
+</ul>
+<figure data-type="image" tabindex="4"><img src="http://mofish.pily.life/post-images/1635155345965.png" alt="" loading="lazy"></figure>
+<h3 id="232-相关配置">2.3.2 相关配置</h3>
+<ul>
+<li>
+<p>dbfilename dump.rdb<br>
+说明：设置本地数据库文件名，默认值为dunp.rdb<br>
+建议：通常设置为<code>dump端口号.rdb</code></p>
+</li>
+<li>
+<p>dir<br>
+说明：设置存储.rdb文件的路径</p>
+</li>
+<li>
+<p>rdbcompression yes<br>
+说明：设置存储至本地数据库时是否压缩数据，默认为yes，采用LZF压缩<br>
+建议：通常默认为开启状态，如果设置为no，可以节省CPU处理时间，但是会使存储文件增大</p>
+</li>
+<li>
+<p>rdbchecksum yes<br>
+说明：设置是否进行rdb文件格式校验，该校验过程在写文件和读文件过程均进行<br>
+建议：通常默认为开启状态，如果设置为no，可以节省读写时间，但是存在一定的数据损坏风险</p>
+</li>
+<li>
+<p>stop-writes-on-bgsave-error yes<br>
+说明：后台存储过程中如果出现错误现象，是否停止保存操作</p>
+</li>
+<li>
+<p>save second changes<br>
+说明：满足限定时间范围内key的变化数量达到指定数量即进行持久化<br>
+参数：<br>
+  second：监控时间范围<br>
+  changes：监控key的变化量<br>
+建议：<br>
+  根据实际业务情况进行设置，频率过高或过低都会出现性能和备份不及时的问题<br>
+  多个配置时，尽量是互补关系，不要设置成包含关系，以防重复触发增加性能压力<br>
+  save配置启动后执行的是bgsave操作</p>
+</li>
+</ul>
+<h2 id="24-触发方式">2.4 触发方式</h2>
+<ul>
+<li>
+<p>全量复制<br>
+在主从复制中详解</p>
+</li>
+<li>
+<p>服务器运行过程中重启</p>
+</li>
+</ul>
+<blockquote>
+<p>debug reload</p>
+</blockquote>
+<ul>
+<li>关闭服务器时指定保存数据</li>
+</ul>
+<blockquote>
+<p>shutdown save</p>
+</blockquote>
+<h2 id="25-优缺点">2.5 优缺点</h2>
+<h3 id="优点">优点：</h3>
+<ol>
+<li>RDB是一个紧凑压缩的<code>二进制文件</code>，存储<code>效率较高</code></li>
+<li>RDB内部存储的是redis在<code>某个时间点</code>的<code>数据快照</code>，非常适合用于数据备份，全量复制等场景</li>
+<li>RDB恢复数据的速度要<code>比AOF快</code>很多</li>
+</ol>
+<h3 id="缺点">缺点：</h3>
+<ol>
+<li>RDB方式无论是执行指令还是利用配置，<code>无法</code>做到<code>实时持久化</code>，具有较大的<code>可能</code>性<code>丢失数据</code></li>
+<li>bgsave指令每次运行要执行fork操作创建子进程，要牺牲掉一些性能</li>
+<li>Redis的众多版本中未进行RDB文件格式的版本统一，有可能出现各版本服务之间数据格式无法兼容现象</li>
+<li>基于快照的思想，每次读写都是全量数据，当数据量巨大时，效率非常低</li>
+</ol>
+<!-- more -->
+<hr>
+<h2 id="a-nameaof三-aofa"><a name="AOF">三、AOF</a></h2>
+<p>为了解决RDB存储的弊端，AOF（append only file）持久化来了，以独立日志的方式记录每次写命令，重启时再重新执行aof文件中的命令达到恢复数据的目的，与RDB相比可以简单描述为<code>AOF记录了数据产生的过程</code>。</p>
+<ul>
+<li>不写全数据，仅记录部分数据</li>
+<li>降低区分数据是否改变的难度，改记录数据为记录操作过程</li>
+<li>对所有操作均进行记录，排除丢失数据的风险</li>
+</ul>
+<blockquote>
+<p>AOF主要作用是解决了数据持久化的实时性</p>
+</blockquote>
+<h2 id="31-aof原理">3.1 AOF原理</h2>
+<p><strong>AOF日志</strong>存储的是 Redis 服务器的顺序指令序列，并且<code>只记录</code>对内存进行修改的<code>指令记录</code>，在恢复数据时<code>顺序执行</code>日志中的所有指令——也就是<code>“重放”</code>，以此来恢复 Redis 当前实例的内存数据结构的状态。</p>
+<p>Redis 会在收到客户端修改指令后，进行参数检验、逻辑处理，如果没有问题，就立即将该指令文本存储到<strong>AOF日志</strong>中，也就是说，<code>先</code>执行指令<code>再</code>将日志落盘。</p>
+<figure data-type="image" tabindex="5"><img src="http://mofish.pily.life/post-images/1635492113651.png" alt="" loading="lazy"></figure>
+<h2 id="32-三种策略appendfsync">3.2 三种策略(appendfsync)</h2>
+<ul>
+<li>
+<p>always（每次）<br>
+每次写入操作均同步到AOF文件中，数据零误差，性能较低，不建议使用</p>
+</li>
+<li>
+<p>everysec（每秒）<br>
+每秒将缓冲区中的指令同步到AOF文件中，数据准确性较高，性能较高，建议使用，也是默认配置<br>
+在系统突然宕机的情况下丢失1秒内的数据</p>
+</li>
+<li>
+<p>no（系统控制）<br>
+由操作系统控制每次同步到AOF文件的周期，整体过程不可控</p>
+</li>
+</ul>
+<h2 id="33-相关配置">3.3 相关配置</h2>
+<ul>
+<li>
+<p>appendonly yes|no<br>
+作用：是否开启AOF持久化功能，默认为不开启状态</p>
+</li>
+<li>
+<p>appendfsync always | everysec | no<br>
+作用：AOF写数据策略</p>
+</li>
+<li>
+<p>appendfilename filename<br>
+作用：AOF持久化文件名，默认文件名为appendonly.aof，建议配置为appendonly-端口号.aof</p>
+</li>
+<li>
+<p>dir<br>
+作用：AOF持久化文件保存路径，与RDB持久化文件保持一致即可</p>
+</li>
+</ul>
+<h2 id="34-aof重写">3.4 AOF重写</h2>
+<p>随着命令不断写入AOF日志，文件会越来越大，为了解决这个问题，Redis引入了AOF重写机制来压缩文件体积。</p>
+<p>AOF文件重写是将Redis进程内的数据转化为写命令同步到新AOF文件的过程，简单说就是将对同一数据的若干个命令执行结果转化成最终结果数据对应的指令进行记录。</p>
+<h3 id="341-重写作用">3.4.1 重写作用</h3>
+<ul>
+<li>减低磁盘占用量，提高磁盘利用率</li>
+<li>提高持久化效率，降低持久化写时间，提高IO性能</li>
+<li>降低数据恢复用时，提高数据恢复效率</li>
+</ul>
+<h3 id="342-重写规则">3.4.2 重写规则</h3>
+<ul>
+<li>进程内已超时的数据不再写入文件</li>
+<li>忽略无效指令，重写时使用进程内数据直接生成，这样新的AOF文件只保留最终数据的写入命令</li>
+<li>对同一数据的多条写命令合并为一条命令<br>
+如lpush list1 a、lpush list1 b、 lpush list1 c 可以转化为：lpush list1 a b c<br>
+为防止数据量过大造成客户端缓冲区溢出，对list、set、hash、zset等类型，每条指令最多写入64个元素</li>
+</ul>
+<h3 id="343-两种重写方式">3.4.3 两种重写方式</h3>
+<ul>
+<li>手动重写</li>
+</ul>
+<blockquote>
+<p>bgrewriteaof</p>
+</blockquote>
+<ul>
+<li>自动重写</li>
+</ul>
+<blockquote>
+<p>auto-aof-rewrite-min-size size<br>
+auto-aof-rewrite-percentage percentage</p>
+</blockquote>
+<h3 id="344-aof自动重写方式">3.4.4 AOF自动重写方式</h3>
+<ul>
+<li>自动重写触发条件设置</li>
+</ul>
+<blockquote>
+<p>auto-aof-rewrite-min-size size<br>
+auto-aof-rewrite-percentage percentage</p>
+</blockquote>
+<ul>
+<li>自动重写触发比对参数（ 运行指令info Persistence获取具体信息 ）</li>
+</ul>
+<blockquote>
+<p>aof_current_size(代表当前AOF文件空间)<br>
+aof_base_size)(上一次重写后AOF文件空间)</p>
+</blockquote>
+<ul>
+<li>自动重写触发条件</li>
+</ul>
+<blockquote>
+<p>aof_current_size &gt; auto-aof-rewrite-min-size<br>
+<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>(</mo><mi>a</mi><mi>o</mi><mi>f</mi><mi mathvariant="normal">_</mi><mi>c</mi><mi>u</mi><mi>r</mi><mi>r</mi><mi>e</mi><mi>n</mi><mi>t</mi><mi mathvariant="normal">_</mi><mi>s</mi><mi>i</mi><mi>z</mi><mi>e</mi><mo>−</mo><mi>a</mi><mi>o</mi><mi>f</mi><mi mathvariant="normal">_</mi><mi>b</mi><mi>a</mi><mi>s</mi><mi>e</mi><mi mathvariant="normal">_</mi><mi>s</mi><mi>i</mi><mi>z</mi><mi>e</mi><mo>)</mo><mo>÷</mo><mi>a</mi><mi>o</mi><mi>f</mi><mi mathvariant="normal">_</mi><mi>b</mi><mi>a</mi><mi>s</mi><mi>e</mi><mi mathvariant="normal">_</mi><mi>s</mi><mi>i</mi><mi>z</mi><mi>e</mi><mo>&gt;</mo><mo>=</mo></mrow><annotation encoding="application/x-tex">(aof\_current\_size-aof\_base\_size) \div aof\_base\_size&gt;=</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.06em;vertical-align:-0.31em;"></span><span class="mopen">(</span><span class="mord mathdefault">a</span><span class="mord mathdefault">o</span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">c</span><span class="mord mathdefault">u</span><span class="mord mathdefault" style="margin-right:0.02778em;">r</span><span class="mord mathdefault" style="margin-right:0.02778em;">r</span><span class="mord mathdefault">e</span><span class="mord mathdefault">n</span><span class="mord mathdefault">t</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">s</span><span class="mord mathdefault">i</span><span class="mord mathdefault" style="margin-right:0.04398em;">z</span><span class="mord mathdefault">e</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1.06em;vertical-align:-0.31em;"></span><span class="mord mathdefault">a</span><span class="mord mathdefault">o</span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">b</span><span class="mord mathdefault">a</span><span class="mord mathdefault">s</span><span class="mord mathdefault">e</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">s</span><span class="mord mathdefault">i</span><span class="mord mathdefault" style="margin-right:0.04398em;">z</span><span class="mord mathdefault">e</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">÷</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1.00444em;vertical-align:-0.31em;"></span><span class="mord mathdefault">a</span><span class="mord mathdefault">o</span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">b</span><span class="mord mathdefault">a</span><span class="mord mathdefault">s</span><span class="mord mathdefault">e</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">s</span><span class="mord mathdefault">i</span><span class="mord mathdefault" style="margin-right:0.04398em;">z</span><span class="mord mathdefault">e</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">&gt;</span></span><span class="base"><span class="strut" style="height:0.36687em;vertical-align:0em;"></span><span class="mrel">=</span></span></span></span>auto-aof-rewrite-percentage</p>
+</blockquote>
+<h3 id="345-aof重写流程">3.4.5 AOF重写流程</h3>
+<figure data-type="image" tabindex="6"><img src="http://mofish.pily.life/post-images/1635499702282.png" alt="" width="400" height="400" loading="lazy"></figure>
+<p>1). 重写条件出发，执行<code>bgrewriteaof</code>命令</p>
+<p>2). 父进程<code> fork 子进程</code>进行重写，fork 子进程的同时父进程阻塞，fork完毕后，父进程继续接受指令</p>
+<p>3). 子进程在创建新的AOF文件的同时，父进程继续接收write指令，并且继续存到aof_buf缓存中和<br>
+aof_rewirte_buf缓存中，所以父进程<code>继续</code>往<code>旧的AOF文件中备份</code>，<code>同时</code>也要往<code>新的AOF文件中备份</code>。</p>
+<p>4). 子进程根据内存快照，按照命令合并规则写入到新的AOF文件</p>
+<p>5.1). 子进程<code>写完</code>新的AOF文件后，<code>向父进程发信号</code>，父进程更新统计信息，具体可以通过info persistence查看</p>
+<p>5.2). 父进程把<code>AOF重写缓冲区</code>（aof_rewrite_buf）的数据<code>写入</code>到<code>新的AOF文件</code>，这样就保证了新AOF文件所保存的数据库状态和服务器当前<code>状态一致</code></p>
+<p>5.3). 使用新的AOF文件<code>替换</code>老文件，完成AOF重写</p>
+<!-- more -->
+<hr>
+<h2 id="a-namerdb和aof的区别四-rdb和aof的区别a"><a name="RDB和AOF的区别">四、RDB和AOF的区别</a></h2>
+<figure data-type="image" tabindex="7"><img src="http://mofish.pily.life/post-images/1636014785349.png" alt="" loading="lazy"></figure>
+<ul>
+<li>RDB和AOF的选择实际上是在做一种权衡，每种都有利弊</li>
+<li>如不能承受分钟以内的数据丢失，对业务数据非常敏感的，建有选用AOF</li>
+<li>如能承受数分钟以内的数据丢失，且追求大数据集的恢复速度，建议选用RDB</li>
+<li>灾难恢复选用RDB</li>
+<li>双保险策略，<code>同时开启</code>RDB和AOF，采用<code>混合持久化方案</code>，重启后，Redis<code>优先使用AOF</code>来恢复数据，降低丢失数据的风险</li>
+</ul>
+<!-- more -->
+<hr>
+<h2 id="a-name混合持久化五-混合持久化a"><a name="混合持久化">五、混合持久化</a></h2>
+<p>重启 redis 时，很少使用RDB来恢复内存状态，因为会丢失大量数据，我们通常都是用AOF日志来重放，但是重放AOF日志相较于RDB来说要慢很多，这样在 redis 实例很大的时候，启动需要花费很长的时间。</p>
+<p>redis 4.0 为了解决这个问题，新增了一个<code>混合持久化</code>选项。如下图所示，将 RDB 文件的内容和增量 AOF 日志文件存一起。这里的 AOF 日志不再是全量的日志，而是<code>自持久化开始</code>到<code>持久化结束</code>的这段时间发生的<code>增量 AOF 日志</code>，通常这部分 AOF 日志很小。</p>
+<figure data-type="image" tabindex="8"><img src="http://mofish.pily.life/post-images/1636017091593.png" alt="" loading="lazy"></figure>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/redis_learning_09/" class="post-title gt-a-link">
+                    Redis学习之路(九)：为什么 Redis 单线程却能支撑高并发?
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

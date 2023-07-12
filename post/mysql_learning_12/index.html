@@ -1,0 +1,355 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>MySql学习之路(十二)：什么是分布式事务？ | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    MySql学习之路(十二)：什么是分布式事务？
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-05-09 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/YVLEbqd3K/" class="post-tags">
+                            # mysql
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>随着微服务架构的普及，一个大型业务系统往往由若干个子系统构成，这些子系统又拥有各自独立的数据库。往往一个业务流程需要由多个子系统共同完成，而且这些操作可能需要在一个事务中完成。在微服务系统中，这些业务场景是普遍存在的。此时，我们就需要在数据库之上通过某种手段，实现支持跨数据库的事务支持，这也就是大家常说的“分布式事务”。</p>
+<!-- more -->
+<p>https://juejin.cn/post/6844903734753886216<br>
+https://juejin.cn/post/6844903647197806605#heading-15<br>
+https://juejin.cn/post/6844903573667446797#heading-11<br>
+https://blog.csdn.net/weixin_44792186/article/details/122898611</p>
+<h1 id="一-分布式事务的基础">一、分布式事务的基础👏</h1>
+<h2 id="11-cap理论">1.1 CAP理论👇</h2>
+<h3 id="定义"><strong>定义：</strong></h3>
+<p>CAP又被称作布鲁尔定理，其定义为在一个分布式系统中，当设计读写操作时，只能保证一致性(Consistence)、可用性(Availability)和分区容错性(PartitionTolerance)三者中的两个，另外一个必须被牺牲。</p>
+<br>
+<h3 id="cap"><strong>CAP：</strong></h3>
+<ul>
+<li>C - Consistence 一致性：</li>
+</ul>
+<blockquote>
+<p>对某个指定的客户端来说，读操作能返回最新的写操作结果。</p>
+<p>对于数据分布在不同节点上的数据来说，如果在某个节点更新了数据，那么在其它节点如果能读取到这个最新的数据，那么就称为<code>强一致性</code>。如果某个节点没有读取到，那就是分布式不一致。</p>
+</blockquote>
+<ul>
+<li>A - Availibility 可用性</li>
+</ul>
+<blockquote>
+<p>非故障的节点在<code>合理的时间内</code>返回<code>合理的响应</code>（不是错误或超时的响应）。</p>
+<p>这里强调的是<code>合理的响应</code>，不能超时，不能出错。注意并没有说<code>正确</code>的结果，例如，应该返回 100 但实际上返回了 90，肯定是<code>不正确</code>的结果，但可以是一个<code>合理</code>的结果。</p>
+</blockquote>
+<ul>
+<li>P - PartitionTolerance 分区容忍性</li>
+</ul>
+<blockquote>
+<p>当出现<code>网络分区</code>后，系统能够继续<code>履行职责</code>，即这个集群仍然可以继续工作。</p>
+<p>网络分区指的是，一个分布式系统里面，节点组成的网络本来是连通的，然而可能因为一些故障导致部分节点之间断开了，整个网络就分成了几块区域，数据就散布在这些不连通的区域中。</p>
+</blockquote>
+<br>
+<h3 id="如何选择"><strong>如何选择：</strong></h3>
+<p>虽然<code>CAP</code>理论定义是三个要素只能选择<code>其中两个</code>，但是在分布式系统下，我们会发<code>P(分区容忍性)</code>是必须要选择的要素，因为网络本身无法做到<code>100%可靠</code>，有可能会出现故障或者短暂的网络分区，因此<code>分区</code>是一个<code>必然现象</code>，所以是不可能选择<code>CA</code>架构的。</p>
+<ul>
+<li>
+<p>CP (一致性+分区容忍性)<br>
+对于 CP 来说，放弃了可用性，追求强一致性和分区容忍性，确认不同节点的数据是强一致的。</p>
+</li>
+<li>
+<p>AP （可用性+分区容忍性）<br>
+放弃一致性(这里说的一致性是强一致性)，追求分区容错性和可用性，这是很多分布式系统设计时的选择，后面的BASE也是根据AP来扩展。</p>
+</li>
+</ul>
+<blockquote>
+<p>另外，只能选择CP或者AP是指系统发生分区现象时无法同时保证C（一致性）和A（可用性），但不是意味着什么都不做，当分区故障解决后，系统还是要保持保证CA。</p>
+</blockquote>
+<br>
+<h2 id="12-base理论">1.2 BASE理论👇</h2>
+<figure data-type="image" tabindex="1"><img src="http://mofish.pily.life/post-images/1652777242151.png" alt="" width="400" height="400" loading="lazy"></figure>
+<h4 id="定义-2"><strong>定义：</strong></h4>
+<p>BASE 是指基本可用（Basically Available）、软状态（ Soft State）、最终一致性（ Eventual Consistency），核心思想是即使无法做到强一致性（CAP 的一致性就是强一致性），但应用可以采用适合的方式达到最终一致性，<code>是对CAP中AP的一个扩展</code>。</p>
+<br>
+<h4 id="base"><strong>BASE：</strong></h4>
+<ul>
+<li>
+<p>BA - Basic Available 基本可用<br>
+分布式系统在出现故障时，允许损失部分可用性，即保证核心可用。</p>
+</li>
+<li>
+<p>S - Soft State 柔性状态<br>
+同一数据的不同副本的状态，可以不需要实时一致，这里指的是CAP中的不一致。</p>
+</li>
+<li>
+<p>E - Eventual Consisstency 最终一致性<br>
+最终一致性 同一数据的不同副本的状态，可以不需要实时一致，但一定要保证经过一定时间后最终是一致的。</p>
+</li>
+</ul>
+<br>
+<h2 id="13-平衡">1.3 平衡👇</h2>
+<p>ACID能够保证事务的强一致性，即数据是实时一致的。这在本地事务中是没有问题的，在分布式事务中，强一致性会极大影响分布式系统的性能，因此分布式系统中遵循BASE理论即可。</p>
+<p>但分布式系统的不同业务场景对一致性的要求也不同。</p>
+<p>如交易场景下，就要求强一致性，此时就需要遵循ACID理论，而在注册成功后发送短信验证码等场景下，并不需要实时一致，因此遵循BASE理论即可。因此要根据具体业务场景，在ACID和BASE之间寻求平衡。</p>
+<hr>
+<!-- more -->
+<h1 id="二-分布式事务解决方案">二、分布式事务解决方案</h1>
+<h2 id="mq本地任务表确保最终一致性">Mq+本地任务表（确保最终一致性）</h2>
+<h2 id="seata">Seata</h2>
+<h3 id="xa">XA</h3>
+<h3 id="tcc">TCC</h3>
+<h3 id="at">AT</h3>
+<h3 id="saga">SAGA</h3>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/mysql_learning_11/" class="post-title gt-a-link">
+                    MySql学习之路(十一)：死锁的原因及其解决方法
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

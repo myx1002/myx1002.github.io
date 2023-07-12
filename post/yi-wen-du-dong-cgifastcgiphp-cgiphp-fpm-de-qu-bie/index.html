@@ -1,0 +1,347 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>一文读懂CGI、FastCGI、php-cgi、php-fpm的区别（已迁移） | 鸡毛蒜皮事(●&#39;◡&#39;●)</title>
+
+<link rel="shortcut icon" href="http://mofish.pily.life/favicon.ico?v=1689146956047">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://mofish.pily.life/styles/main.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"> -->
+
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script> -->
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <style>
+    /* 导航栏样式 */
+    .navbar {
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand {
+        display: inline-block;
+        padding-top: 0.3125rem;
+        padding-bottom: 0.3125rem;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        line-height: inherit;
+        white-space: nowrap;
+    }
+
+    .navbar-brand:hover,
+    .navbar-brand:focus {
+        text-decoration: none;
+    }
+
+    .navbar-nav {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .navbar-collapse {
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-toggler:hover,
+    .navbar-toggler:focus {
+        text-decoration: none;
+    }
+
+    @media (min-width: 992px) {
+        .navbar-expand-lg {
+            -ms-flex-flow: row nowrap;
+            flex-flow: row nowrap;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+        }
+
+        .navbar-expand-lg .navbar-nav {
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .navbar-expand-lg .navbar-collapse {
+            display: -ms-flexbox !important;
+            display: flex !important;
+            -ms-flex-preferred-size: auto;
+            flex-basis: auto;
+        }
+
+        .navbar-expand-lg .navbar-toggler {
+            display: none;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #navbarSupportedContent {
+            display: none;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            鸡毛蒜皮事(●&#39;◡&#39;●)
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+            <div class="nav-item">
+                
+                <a href="/" class="menu gt-a-link">
+                    首页
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/tags" class="menu gt-a-link">
+                    标签
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/archives" class="menu gt-a-link">
+                    归档
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                
+                <a href="/post/about" class="menu gt-a-link">
+                    关于
+                </a>
+                
+            </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1689146956047"
+                action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+<script>
+    /* 移动端导航栏展开/收起切换 */
+    document.getElementById('changeNavbar').onclick = function () {
+        var element = document.getElementById('navbarSupportedContent');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+    }
+</script>
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    一文读懂CGI、FastCGI、php-cgi、php-fpm的区别（已迁移）
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-08-27 ·
+                    </time>
+                    
+                        <a href="http://mofish.pily.life/tag/qo6XPqkl5/" class="post-tags">
+                            # php
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>😣 经典面试问题了，所以简单记录一下。</p>
+<!-- more -->
+<h1 id="前言">前言</h1>
+<p>在CGI诞生之前Web服务器负责静态文件的存储、查找及响应,此时的服务器还不能处理php或asp此类文件。</p>
+<p>随着人们对于网站的要求越来越高，出现了动态技术，此时服务器依然不能直接运行php文件，虽然自己没有办法识别，缺可以将识别的过程交给别的程序完成。</p>
+<p>对于服务器与这个程序之间，我们需要一些规则来进行约定，这个约定便是 <code>CGI协议</code>。</p>
+<p><code>CGI协议</code>是<code>Web服务器</code>与<code>CGI程序</code>之间传递信息的接口标准，当<code>Web服务器</code>获取到客户端提交的数据后，通过<code>CGI接口</code>转交给<code>CGI程序</code>处理后再返回给客户端。</p>
+<hr>
+<h1 id="cgi">CGI</h1>
+<p>CGI 全称是“公共网关接口”（Common GateWay Interface），是一种通用网关接口规范，该规范详细描述了 Web Server（如：nginx）和后端应用服务器（如：php-cgi）在获取及返回数据过程中传输数据的标准。</p>
+<p>简单的说就是 Web Server 与 Web Application 之间数据交换的一种协议。</p>
+<hr>
+<h1 id="php-cgi">PHP-CGI</h1>
+<p>PHP-CGI 支持 CGI协议 的 php解释器，是一个 CGI程序，即是 PHP （Web Application）对 Web Server 提供的 CGI 协议的接口程序。</p>
+<p><strong>工作原理：</strong></p>
+<blockquote>
+<p>当用户请求Web服务器的动态脚本</p>
+<p>Web服务器fork出一个新的进程启动CGI程序[启动的过程中需要加载配置、扩展等],将动态脚本交给CGI程序处理</p>
+<p>CGI程序启动后解析动态脚本</p>
+<p>将结果返回Web服务器</p>
+<p>Web服务器将结果返回客户端，fork的进程关闭</p>
+</blockquote>
+<p><strong>缺点：</strong></p>
+<blockquote>
+<p>每次有了动态脚本处理的请求，都需要fork新进程，处理完毕后也要进行关闭，效率非常低下。</p>
+</blockquote>
+<hr>
+<h1 id="fastcgi">FastCGI</h1>
+<p>FastCGI（Fast Common Gateway Interface）快速通用网关接口，是 CGI 的增强版本。</p>
+<p>它的诞生就是为了减轻Web服务器与CGI程序的交互负载，使得服务器可以同时处理更多的请求。</p>
+<hr>
+<h1 id="php-fpm">PHP-FPM</h1>
+<p>PHP-FPM 支持 FastCGI协议 的 php解释器，是一个 FastCGI程序，即是 PHP （Web Application）对 Web Server 提供的 FastCGI 协议的接口程序，而且还额外提供了一些相对智能的任务管理功能。</p>
+<blockquote>
+<p>众所周知，CGI 程序的反复加载是 CGI 性能低下的主要原因，如果CGI进程保持在内存中，并接受 FastCGI 进程管理器调度，则可以提供良好的性能、伸缩性、Fail-Over 特性等等。</p>
+<p>FastCGI 像是一个<code>常驻(long-live)型的 CGI</code>，它可以一直执行着，只要激活后，不会每次都要花费时间去 fork 一次。</p>
+</blockquote>
+<p><strong>工作原理：</strong></p>
+<blockquote>
+<p>客户端请求Web服务器的动态脚本</p>
+<p>服务器将之交给 FastCGI master 进程</p>
+<p>FastCGI master 进程 安排空闲 worker进程 解析脚本</p>
+<p>随后处理结果返回服务器</p>
+<p>服务器返回客户</p>
+<p>上面的 worker进程 并不会关闭，而是继续等待 master进程 分配任务</p>
+</blockquote>
+<p><strong>PHP-FPM对进程的管理：</strong></p>
+<blockquote>
+<p>首先，先启一个master，解析配置文件，初始化执行环境，然后再启动多个worker。</p>
+<p>当请求过来时，master会传递给一个worker，然后立即可以接受下一个请求。这样就避免了重复的劳动，效率自然是高。</p>
+<p>而且当worker不够用时，master可以根据配置预先启动几个worker等着；当然空闲worker太多时，也会停掉一些，这样就提高了性能，也节约了资源。</p>
+<p>这就是php-fpm的对进程的管理</p>
+</blockquote>
+<hr>
+<h1 id="cgi-与-fastcgi-的区别">CGI 与 FastCGI 的区别</h1>
+<ul>
+<li>
+<p>CGI 模式中，直接杀死 php-cgi 进程，php就不能运行了。FastCGI 模式就没有这个问题，守护进程会平滑重新生成新的 php-cgi 子进程。</p>
+</li>
+<li>
+<p>对于 CGI 来说，每一个 Web 请求 PHP 都必须重新解析 php.ini、重新载入全部扩展，并重新初始化全部数据结构。而使用 FastCGI，所有这些都只在进程启动时发生一次。一个额外的好处是，持续数据库连接（Persistent database connection）可以工作。</p>
+</li>
+<li>
+<p>修改 php.ini 之后，php-cgi 进程无法平滑重启。php-fpm 对此的处理机制是新的 worker 用新的配置，已经存在的 worker 处理完手上的活就不再接受新的请求并准备退出，通过这种机制来平滑过度。</p>
+</li>
+<li>
+<p>由于 FastCGI 是多进程，所以比 CGI 消耗更多的服务器内存。</p>
+</li>
+</ul>
+<hr>
+<h1 id="php-cgi和php-fpm的关系特别注意">PHP-CGI和PHP-FPM的关系（特别注意）</h1>
+<blockquote>
+<p>php5.4 前后分别是两种不同的关系</p>
+<p>php5.4之前，php-fpm(第三方编译)是管理器，php-cgi是解析器</p>
+<p>php5.4之后，php-fpm(官方自带)，master 与 pool 模式。此时的php-fpm 和 php-cgi 没有关系了。php-fpm即是解析器，又是管理器。</p>
+</blockquote>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="http://mofish.pily.life/post/php-zhong-de-opcache-shi-shi-me-opcache-shi-yong-lai-gan-ma-de/" class="post-title gt-a-link">
+                    PHP中的opcache是什么，opcache是用来干嘛的？（已迁移）
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">打工人！打工魂！我爱打工！</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        Powered by <a href="https://github.com/myx1002/myx1002.github.io" target="_blank">Moyuxing</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="http://mofish.pily.life/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>
